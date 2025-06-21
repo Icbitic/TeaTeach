@@ -35,8 +35,8 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: List project files for debugging
-        run: tree .
+#      - name: List project files for debugging
+#        run: tree .
 
       - name: Wait for MySQL to be ready
         run: |
@@ -47,7 +47,7 @@ jobs:
 
       - name: Initialize MySQL schema
         run: |
-          mysql -h127.0.0.1 -uroot -proot teateach < src/test/resources/schema.sql
+          mysql -h127.0.0.1 -uroot -proot teateach < ./src/test/java/resources/schema.sql
 
       - name: Build and run tests with Maven
         run: mvn clean test --file pom.xml
