@@ -24,7 +24,7 @@ public class ResourceService {
     // Configure your file storage path in application.properties or similar
     // private final String fileStorageLocation = "/path/to/your/upload/directory";
     // For simplicity, using a dummy path here. In real app, inject from properties.
-    private final String fileStorageLocation = System.getProperty("user.home") + "/teateach_uploads";
+    private final String fileStorageLocation = "./teateach_uploads";
 
     @Autowired
     public ResourceService(ResourceMapper resourceMapper) {
@@ -82,10 +82,20 @@ public class ResourceService {
         if (originalFileName != null && originalFileName.contains(".")) {
             fileExtension = originalFileName.substring(originalFileName.lastIndexOf(".") + 1);
         }
-        String storedFileName = UUID.randomUUID().toString() + "." + fileExtension;
+        String storedFileName = UUID.randomUUID() + "." + fileExtension;
         Path targetLocation = Paths.get(fileStorageLocation).resolve(storedFileName);
 
-        Files.copy(file.getInputStream(), targetLocation);
+        try {
+            Files.copy(file.getInputStream(), targetLocation);
+        } catch (IOException e) {
+            // If file copy fails, attempt to delete any partially created file
+            try {
+                Files.deleteIfExists(targetLocation);
+            } catch (IOException cleanupException) {
+                System.err.println("Failed to clean up partial file after upload failure: " + targetLocation + " Error: " + cleanupException.getMessage());
+            }
+            throw e; // Re-throw the original exception to ensure transaction rollback
+        }
 
         Resource resource = new Resource();
         resource.setCourseId(courseId);
