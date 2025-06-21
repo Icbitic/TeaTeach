@@ -24,7 +24,7 @@ public class ResourceService {
     // Configure your file storage path in application.properties or similar
     // private final String fileStorageLocation = "/path/to/your/upload/directory";
     // For simplicity, using a dummy path here. In real app, inject from properties.
-    private final String fileStorageLocation = "./teateach_uploads";
+    private final String fileStorageLocation = System.getProperty("user.home") + "/teateach_uploads";
 
     @Autowired
     public ResourceService(ResourceMapper resourceMapper) {
@@ -82,7 +82,7 @@ public class ResourceService {
         if (originalFileName != null && originalFileName.contains(".")) {
             fileExtension = originalFileName.substring(originalFileName.lastIndexOf(".") + 1);
         }
-        String storedFileName = UUID.randomUUID() + "." + fileExtension;
+        String storedFileName = UUID.randomUUID().toString() + "." + fileExtension;
         Path targetLocation = Paths.get(fileStorageLocation).resolve(storedFileName);
 
         try {

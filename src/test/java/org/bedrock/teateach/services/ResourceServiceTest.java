@@ -167,7 +167,7 @@ class ResourceServiceTest {
 
             mockedUUID.when(UUID::randomUUID).thenReturn(fixedUUID);
 
-            Path targetPath = Paths.get( "./teateach_uploads").resolve(expectedFileName);
+            Path targetPath = Paths.get( System.getProperty("user.home") + "/teateach_uploads").resolve(expectedFileName);
             mockedFiles.when(() -> Files.copy(any(InputStream.class), eq(targetPath))).thenReturn((long) fileContent.length);
 
             doNothing().when(resourceMapper).insert(any(Resource.class));
