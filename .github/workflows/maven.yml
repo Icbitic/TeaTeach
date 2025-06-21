@@ -47,7 +47,7 @@ jobs:
 
       - name: Initialize MySQL schema
         run: |
-          mysql -h127.0.0.1 -uroot -proot teateach < ./src/test/java/resources/schema.sql
+          mysql -h127.0.0.1 -uroot -pkalenitid618 teateach < ./src/test/java/resources/schema.sql
 
       - name: Build and run tests with Maven
         run: mvn clean test --file pom.xml
