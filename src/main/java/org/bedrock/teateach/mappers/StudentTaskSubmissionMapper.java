@@ -92,6 +92,18 @@ public interface StudentTaskSubmissionMapper {
             "FROM student_task_submissions WHERE task_id = #{taskId}")
     List<StudentTaskSubmission> findByTaskId(@Param("taskId") Long taskId);
 
+
+    /**
+     * Finds all StudentTaskSubmission records for a specific student.
+     * Useful for teachers to see all submissions for a particular student.
+     *
+     * @param studentId The ID of the student.
+     * @return A list of StudentTaskSubmission objects for the given student.
+     */
+    @Select("SELECT id, task_id, student_id, submission_content, submission_time, score, feedback, completion_status " +
+            "FROM student_task_submissions WHERE student_id = #{studentId}")
+    List<StudentTaskSubmission> findByStudentId(@Param("taskId")Long studentId);
+
     /**
      * Finds all StudentTaskSubmission records in the database.
      *
@@ -100,4 +112,5 @@ public interface StudentTaskSubmissionMapper {
     @Select("SELECT id, task_id, student_id, submission_content, submission_time, score, feedback, completion_status " +
             "FROM student_task_submissions")
     List<StudentTaskSubmission> findAll();
+
 }
