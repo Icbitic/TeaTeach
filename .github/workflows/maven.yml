@@ -35,6 +35,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: List project files for debugging
+        run: tree .
+
       - name: Wait for MySQL to be ready
         run: |
           until mysqladmin ping -h127.0.0.1 -uroot -proot --silent; do
