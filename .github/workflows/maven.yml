@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   build:
 
@@ -40,7 +44,7 @@ jobs:
 
       - name: Wait for MySQL to be ready
         run: |
-          until mysqladmin ping -h127.0.0.1 -uroot -proot --silent; do
+          until mysqladmin ping -h127.0.0.1 -uroot -pkalenitid618 --silent; do
             echo "Waiting for MySQL..."
             sleep 2
           done
