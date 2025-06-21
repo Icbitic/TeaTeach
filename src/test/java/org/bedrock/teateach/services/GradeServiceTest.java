@@ -47,7 +47,7 @@ class GradeServiceTest {
         testSubmission.setStudentId(100L);
         testSubmission.setSubmissionContent("Answer text");
         testSubmission.setSubmissionTime(LocalDateTime.now());
-        testSubmission.setCompletionStatus(2); // Submitted
+        testSubmission.setCompletionStatus(2);
 
         testLearningTask = new LearningTask();
         testLearningTask.setId(10L);
