@@ -17,7 +17,6 @@ public class KnowledgeGraphGenerator {
     private final LLMService llmService;
     private final KnowledgePointService knowledgePointService;
 
-    @Autowired
     public KnowledgeGraphGenerator(LLMService llmService, KnowledgePointService knowledgePointService) {
         this.llmService = llmService;
         this.knowledgePointService = knowledgePointService;
