@@ -29,7 +29,17 @@ public interface QuestionMapper {
      */
     @Select("SELECT id, question_text, question_type, difficulty, knowledge_point_ids, options, correct_answer, created_at, updated_at " +
             "FROM questions WHERE id = #{id}")
-    @ResultMap("questionResultMap")
+    @Results({
+            @Result(property = "id",                 column = "id"),
+            @Result(property = "questionText",       column = "question_text"),
+            @Result(property = "questionType",       column = "question_type"),
+            @Result(property = "difficulty",         column = "difficulty"),
+            @Result(property = "knowledgePointIds",  column = "knowledge_point_ids"),
+            @Result(property = "options",            column = "options"),
+            @Result(property = "correctAnswer",      column = "correct_answer"),
+            @Result(property = "createdAt",          column = "created_at"),
+            @Result(property = "updatedAt",          column = "updated_at")
+    })
     Question findById(Long id);
 
     /**
@@ -57,7 +67,17 @@ public interface QuestionMapper {
      */
     @Select("SELECT id, question_text, question_type, difficulty, knowledge_point_ids, options, correct_answer, created_at, updated_at " +
             "FROM questions")
-    @ResultMap("questionResultMap")
+    @Results({
+            @Result(property = "id",                 column = "id"),
+            @Result(property = "questionText",       column = "question_text"),
+            @Result(property = "questionType",       column = "question_type"),
+            @Result(property = "difficulty",         column = "difficulty"),
+            @Result(property = "knowledgePointIds",  column = "knowledge_point_ids"),
+            @Result(property = "options",            column = "options"),
+            @Result(property = "correctAnswer",      column = "correct_answer"),
+            @Result(property = "createdAt",          column = "created_at"),
+            @Result(property = "updatedAt",          column = "updated_at")
+    })
     List<Question> findAll();
 
     /**
@@ -81,7 +101,17 @@ public interface QuestionMapper {
             "</where>",
             "</script>"
     })
-    @ResultMap("questionResultMap")
+    @Results({
+            @Result(property = "id",                 column = "id"),
+            @Result(property = "questionText",       column = "question_text"),
+            @Result(property = "questionType",       column = "question_type"),
+            @Result(property = "difficulty",         column = "difficulty"),
+            @Result(property = "knowledgePointIds",  column = "knowledge_point_ids"),
+            @Result(property = "options",            column = "options"),
+            @Result(property = "correctAnswer",      column = "correct_answer"),
+            @Result(property = "createdAt",          column = "created_at"),
+            @Result(property = "updatedAt",          column = "updated_at")
+    })
     List<Question> findByTypeAndDifficulty(@Param("type") String type, @Param("difficulty") String difficulty);
 
     /**
@@ -92,21 +122,16 @@ public interface QuestionMapper {
      */
     @Select("SELECT id, question_text, question_type, difficulty, knowledge_point_ids, options, correct_answer, created_at, updated_at " +
             "FROM questions WHERE knowledge_point_ids = #{knowledgePointId}") // Changed from knowledge_point_id to knowledge_point_ids
-    @ResultMap("questionResultMap")
-    List<Question> findByKnowledgePointId(Long knowledgePointId);
-
-    // This ResultMap helps MyBatis map snake_case database columns to camelCase Java bean properties.
-    @Results(id = "questionResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "questionText", column = "question_text"),
-            @Result(property = "questionType", column = "question_type"),
-            @Result(property = "difficulty", column = "difficulty"), // Changed from difficultyLevel
-            @Result(property = "knowledgePointIds", column = "knowledge_point_ids"), // Changed from knowledgePointId
-            @Result(property = "options", column = "options"),
-            @Result(property = "correctAnswer", column = "correct_answer"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at")
+    @Results({
+            @Result(property = "id",                 column = "id"),
+            @Result(property = "questionText",       column = "question_text"),
+            @Result(property = "questionType",       column = "question_type"),
+            @Result(property = "difficulty",         column = "difficulty"),
+            @Result(property = "knowledgePointIds",  column = "knowledge_point_ids"),
+            @Result(property = "options",            column = "options"),
+            @Result(property = "correctAnswer",      column = "correct_answer"),
+            @Result(property = "createdAt",          column = "created_at"),
+            @Result(property = "updatedAt",          column = "updated_at")
     })
-    // Empty method, just to hold the @Results annotation
-    default void questionResultMap() {}
+    List<Question> findByKnowledgePointId(Long knowledgePointId);
 }

@@ -4,6 +4,7 @@ import org.bedrock.teateach.beans.Student;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @Mapper
 public interface StudentMapper {
@@ -28,5 +29,7 @@ public interface StudentMapper {
     @Select("SELECT * FROM students")
     List<Student> findAll();
 
+    @Select("SELECT * FROM students WHERE email = #{email}")
+    Optional<Student> findByEmail(String email);
     // You'd add more complex queries here, e.g., for search
 }

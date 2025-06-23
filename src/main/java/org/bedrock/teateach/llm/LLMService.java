@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
  */
 @Service
 public class LLMService {
-
     private final String apiKey;
 
     public LLMService(@Value("${llm.api.key}")String apiKey) {

@@ -29,7 +29,19 @@ public interface ResourceMapper {
      */
     @Select("SELECT id, resource_name, file_path, file_type, file_size, course_id, task_id, description, uploaded_by, created_at, updated_at " +
             "FROM resources WHERE id = #{id}")
-    @ResultMap("resourceResultMap") // Assuming you have a resultMap defined in XML if fields differ, or relying on auto-mapping
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "resourceName", column = "resource_name"),
+            @Result(property = "filePath", column = "file_path"),
+            @Result(property = "fileType", column = "file_type"),
+            @Result(property = "fileSize", column = "file_size"),
+            @Result(property = "courseId", column = "course_id"),
+            @Result(property = "taskId", column = "task_id"),
+            @Result(property = "description", column = "description"),
+            @Result(property = "uploadedBy", column = "uploaded_by"),
+            @Result(property = "createdAt", column = "created_at"),
+            @Result(property = "updatedAt", column = "updated_at")
+    })
     Resource findById(Long id);
 
     /**
@@ -58,7 +70,19 @@ public interface ResourceMapper {
      */
     @Select("SELECT id, resource_name, file_path, file_type, file_size, course_id, task_id, description, uploaded_by, created_at, updated_at " +
             "FROM resources WHERE course_id = #{courseId}")
-    @ResultMap("resourceResultMap")
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "resourceName", column = "resource_name"),
+            @Result(property = "filePath", column = "file_path"),
+            @Result(property = "fileType", column = "file_type"),
+            @Result(property = "fileSize", column = "file_size"),
+            @Result(property = "courseId", column = "course_id"),
+            @Result(property = "taskId", column = "task_id"),
+            @Result(property = "description", column = "description"),
+            @Result(property = "uploadedBy", column = "uploaded_by"),
+            @Result(property = "createdAt", column = "created_at"),
+            @Result(property = "updatedAt", column = "updated_at")
+    })
     List<Resource> findByCourseId(Long courseId);
 
     /**
@@ -69,7 +93,19 @@ public interface ResourceMapper {
      */
     @Select("SELECT id, resource_name, file_path, file_type, file_size, course_id, task_id, description, uploaded_by, created_at, updated_at " +
             "FROM resources WHERE task_id = #{taskId}")
-    @ResultMap("resourceResultMap")
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "resourceName", column = "resource_name"),
+            @Result(property = "filePath", column = "file_path"),
+            @Result(property = "fileType", column = "file_type"),
+            @Result(property = "fileSize", column = "file_size"),
+            @Result(property = "courseId", column = "course_id"),
+            @Result(property = "taskId", column = "task_id"),
+            @Result(property = "description", column = "description"),
+            @Result(property = "uploadedBy", column = "uploaded_by"),
+            @Result(property = "createdAt", column = "created_at"),
+            @Result(property = "updatedAt", column = "updated_at")
+    })
     List<Resource> findByTaskId(Long taskId);
 
     /**
@@ -79,12 +115,28 @@ public interface ResourceMapper {
      */
     @Select("SELECT id, resource_name, file_path, file_type, file_size, course_id, task_id, description, uploaded_by, created_at, updated_at " +
             "FROM resources")
-    @ResultMap("resourceResultMap")
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "resourceName", column = "resource_name"),
+            @Result(property = "filePath", column = "file_path"),
+            @Result(property = "fileType", column = "file_type"),
+            @Result(property = "fileSize", column = "file_size"),
+            @Result(property = "courseId", column = "course_id"),
+            @Result(property = "taskId", column = "task_id"),
+            @Result(property = "description", column = "description"),
+            @Result(property = "uploadedBy", column = "uploaded_by"),
+            @Result(property = "createdAt", column = "created_at"),
+            @Result(property = "updatedAt", column = "updated_at")
+    })
     List<Resource> findAll();
 
 
-    // If you plan to use XML mapping for result maps or complex queries, you'd define them in an XML file
-    // and reference them here. For example, if you have snake_case columns and camelCase fields in Resource bean:
+    /**
+     * Defines the result mapping for Resource objects.
+     * This is a placeholder select method that's never called directly,
+     * but MyBatis uses its @Results annotation for mapping.
+     */
+    @Select("SELECT 1 FROM dual")
     @Results(id = "resourceResultMap", value = {
             @Result(property = "id", column = "id"),
             @Result(property = "resourceName", column = "resource_name"),
@@ -98,6 +150,5 @@ public interface ResourceMapper {
             @Result(property = "createdAt", column = "created_at"),
             @Result(property = "updatedAt", column = "updated_at")
     })
-    // Empty method, just to hold the @Results annotation
-    default void resourceResultMap() {}
+    Resource defineResourceResultMap();
 }
