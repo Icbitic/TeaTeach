@@ -1,0 +1,60 @@
+@startuml
+package "Model" {
+  class PlaybackVector {
+    - id: Long
+    - studentId: Long
+    - resourceId: Long
+    - playbackData: byte[]
+    - videoDuration: Integer
+    - lastUpdated: LocalDateTime
+    + setPlaybackFromBooleanArray(boolean[])
+    + getPlaybackAsBooleanArray(): boolean[]
+    + markSecondAsPlayed(int)
+    + markSecondsAsPlayed(int[])
+    + calculatePlaybackPercentage(): double
+  }
+}
+
+package "Repository" {
+  interface PlaybackVectorMapper {
+    + insert(PlaybackVector)
+    + update(PlaybackVector)
+    + delete(Long)
+    + findById(Long): PlaybackVector
+    + findByStudentAndResource(Long, Long): PlaybackVector
+    + findByStudentId(Long): List<PlaybackVector>
+    + findByResourceId(Long): List<PlaybackVector>
+    + findAll(): List<PlaybackVector>
+  }
+}
+
+package "Service" {
+  class PlaybackVectorService {
+    - playbackVectorMapper: PlaybackVectorMapper
+    - resourceService: ResourceService
+    + getPlaybackVector(Long, Long): PlaybackVector
+    + getPlaybackVectorsByResource(Long): List<PlaybackVector>
+    + getPlaybackVectorsByStudent(Long): List<PlaybackVector>
+    + createPlaybackVector(Long, Long): PlaybackVector
+    + updatePlaybackVector(Long, Long, int[]): PlaybackVector
+    + generateHeatmap(Long): int[]
+    + getWatchPercentage(Long, Long): double
+    - getVideoDuration(Resource): Integer
+  }
+}
+
+package "Controller" {
+  class PlaybackVectorController {
+    - playbackVectorService: PlaybackVectorService
+    + recordPlayedSeconds(Long, Long, int[]): ResponseEntity<?>
+    + getWatchProgress(Long, Long): ResponseEntity<?>
+    + getHeatmap(Long): ResponseEntity<?>
+  }
+}
+
+PlaybackVectorController --> PlaybackVectorService
+PlaybackVectorService --> PlaybackVectorMapper
+PlaybackVectorService --> PlaybackVector
+PlaybackVectorMapper --> PlaybackVector
+
+@enduml
