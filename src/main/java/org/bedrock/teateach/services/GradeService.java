@@ -7,6 +7,8 @@ import org.bedrock.teateach.mappers.GradeAnalysisMapper;
 import org.bedrock.teateach.mappers.LearningTaskMapper;
 import org.bedrock.teateach.mappers.StudentTaskSubmissionMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,7 @@ public class GradeService {
     }
 
     @Transactional
+    @CacheEvict(value = {"studentGrades", "courseGrades"}, allEntries = true)
     public StudentTaskSubmission recordSubmissionScore(Long submissionId, Double score) {
         StudentTaskSubmission submission = submissionMapper.findById(submissionId);
         if (submission != null) {
@@ -54,6 +57,7 @@ public class GradeService {
 
     // This method aggregates and updates the overall grade for a student in a course
     @Transactional
+    @CacheEvict(value = {"studentGrades", "courseGrades"}, allEntries = true)
     public void updateStudentOverallGrade(Long studentId, Long courseId) {
         List<StudentTaskSubmission> submissions = submissionMapper.findByStudentAndCourse(studentId, courseId);
         // Calculate overall grade based on task scores
@@ -78,10 +82,12 @@ public class GradeService {
         }
     }
 
+    @Cacheable(value = "studentGrades", key = "#studentId + '-' + #courseId")
     public GradeAnalysis getStudentCourseGrade(Long studentId, Long courseId) {
         return gradeAnalysisMapper.findByStudentAndCourse(studentId, courseId);
     }
 
+    @Cacheable(value = "courseGrades", key = "#courseId")
     public List<GradeAnalysis> getCourseGrades(Long courseId) {
         return gradeAnalysisMapper.findByCourseId(courseId);
     }

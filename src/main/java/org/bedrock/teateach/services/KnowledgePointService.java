@@ -4,6 +4,10 @@ import org.bedrock.teateach.beans.KnowledgePoint;
 import org.bedrock.teateach.llm.LLMService;
 import org.bedrock.teateach.mappers.KnowledgePointMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +32,7 @@ public class KnowledgePointService {
      * @return The created knowledge point with its generated ID.
      */
     @Transactional
+    @CacheEvict(value = {"allKnowledgePoints", "courseKnowledgePoints"}, allEntries = true)
     public KnowledgePoint createKnowledgePoint(KnowledgePoint knowledgePoint) {
         knowledgePointMapper.insert(knowledgePoint);
         return knowledgePoint;
@@ -39,6 +44,11 @@ public class KnowledgePointService {
      * @return The updated knowledge point.
      */
     @Transactional
+    @Caching(put = { @CachePut(value = "knowledgePoints", key = "#knowledgePoint.id") },
+             evict = { 
+                 @CacheEvict(value = "allKnowledgePoints", allEntries = true),
+                 @CacheEvict(value = "courseKnowledgePoints", key = "#knowledgePoint.courseId")
+             })
     public KnowledgePoint updateKnowledgePoint(KnowledgePoint knowledgePoint) {
         knowledgePointMapper.update(knowledgePoint);
         return knowledgePoint;
@@ -49,6 +59,8 @@ public class KnowledgePointService {
      * @param id The ID of the knowledge point to delete.
      */
     @Transactional
+    @CacheEvict(value = {"knowledgePoints", "allKnowledgePoints", "courseKnowledgePoints"}, 
+               allEntries = true)
     public void deleteKnowledgePoint(Long id) {
         knowledgePointMapper.delete(id);
     }
@@ -58,6 +70,7 @@ public class KnowledgePointService {
      * @param id The ID of the knowledge point.
      * @return An Optional containing the knowledge point if found, or empty otherwise.
      */
+    @Cacheable(value = "knowledgePoints", key = "#id")
     public Optional<KnowledgePoint> getKnowledgePointById(Long id) {
         return Optional.ofNullable(knowledgePointMapper.findById(id));
     }
@@ -67,6 +80,7 @@ public class KnowledgePointService {
      * @param courseId The ID of the course.
      * @return A list of knowledge points for the given course.
      */
+    @Cacheable(value = "courseKnowledgePoints", key = "#courseId")
     public List<KnowledgePoint> getKnowledgePointsByCourseId(Long courseId) {
         return knowledgePointMapper.findByCourseId(courseId);
     }
@@ -75,6 +89,7 @@ public class KnowledgePointService {
      * Retrieves all knowledge points in the system.
      * @return A list of all knowledge points.
      */
+    @Cacheable(value = "allKnowledgePoints")
     public List<KnowledgePoint> getAllKnowledgePoints() {
         return knowledgePointMapper.findAll();
     }

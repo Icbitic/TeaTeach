@@ -4,6 +4,8 @@ package org.bedrock.teateach.services;
 import org.bedrock.teateach.beans.Resource;
 import org.bedrock.teateach.mappers.ResourceMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,7 +14,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID; // For unique file names
@@ -21,9 +22,7 @@ import java.util.UUID; // For unique file names
 public class ResourceService {
 
     private final ResourceMapper resourceMapper;
-    // Configure your file storage path in application.properties or similar
-    // private final String fileStorageLocation = "/path/to/your/upload/directory";
-    // For simplicity, using a dummy path here. In real app, inject from properties.
+
     private final String fileStorageLocation = System.getProperty("user.home") + "/teateach_uploads";
 
     @Autowired
@@ -38,26 +37,31 @@ public class ResourceService {
     }
 
     @Transactional
+    @CacheEvict(value = {"courseResources"}, key = "#resource.courseId")
     public Resource createResource(Resource resource) {
         resourceMapper.insert(resource);
         return resource;
     }
 
+    @Cacheable(value = "resources", key = "#id")
     public Optional<Resource> getResourceById(Long id) {
         return Optional.ofNullable(resourceMapper.findById(id));
     }
 
+    @Cacheable(value = "courseResources", key = "#courseId")
     public List<Resource> getResourcesByCourseId(Long courseId) {
         return resourceMapper.findByCourseId(courseId);
     }
 
     @Transactional
+    @CacheEvict(value = {"resources", "courseResources"}, allEntries = true)
     public Resource updateResource(Resource resource) {
         resourceMapper.update(resource);
         return resource;
     }
 
     @Transactional
+    @CacheEvict(value = {"resources", "courseResources"}, allEntries = true)
     public void deleteResource(Long id) {
         Optional<Resource> resourceOptional = getResourceById(id);
         if (resourceOptional.isPresent()) {
@@ -76,6 +80,7 @@ public class ResourceService {
     }
 
     @Transactional
+    @CacheEvict(value = {"courseResources"}, key = "#courseId")
     public Resource uploadFile(MultipartFile file, Long courseId, Long taskId, String resourceName, String description) throws IOException {
         String originalFileName = file.getOriginalFilename();
         String fileExtension = "";
