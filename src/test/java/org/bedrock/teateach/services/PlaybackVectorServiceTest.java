@@ -49,7 +49,7 @@ class PlaybackVectorServiceTest {
         testVector.setStudentId(studentId);
         testVector.setResourceId(resourceId);
         testVector.setVideoDuration(120); // 2 minutes
-        testVector.setPlaybackData(new byte[15]); // Initialize with empty data
+        testVector.setPlaybackData(new int[120]); // Initialize with zeros
         testVector.setLastUpdated(LocalDateTime.now());
     }
 
@@ -112,10 +112,10 @@ class PlaybackVectorServiceTest {
         assertNotNull(result);
         verify(playbackVectorMapper).update(any(PlaybackVector.class));
 
-        // Verify seconds were marked as played
-        boolean[] playback = result.getPlaybackAsBooleanArray();
+        // Verify seconds were incremented
+        int[] playbackData = result.getPlaybackDataAsIntArray();
         for (int second : playedSeconds) {
-            assertTrue(playback[second], "Second " + second + " should be marked as played");
+            assertEquals(1, playbackData[second], "Second " + second + " should have been incremented");
         }
     }
 
@@ -140,13 +140,23 @@ class PlaybackVectorServiceTest {
         // Given
         PlaybackVector vector1 = new PlaybackVector();
         vector1.setVideoDuration(100);
-        vector1.setPlaybackData(new byte[(100 + 7) / 8]);
-        vector1.markSecondsAsPlayed(new int[]{1, 2, 3, 10, 11});
+        vector1.setPlaybackData(new int[100]);
+        // Set some playback counts in vector1
+        vector1.getPlaybackData()[1] = 2;  // Second 1 played twice
+        vector1.getPlaybackData()[2] = 1;  // Second 2 played once
+        vector1.getPlaybackData()[3] = 3;  // Second 3 played three times
+        vector1.getPlaybackData()[10] = 1; // Second 10 played once
+        vector1.getPlaybackData()[11] = 2; // Second 11 played twice
 
         PlaybackVector vector2 = new PlaybackVector();
         vector2.setVideoDuration(100);
-        vector2.setPlaybackData(new byte[(100 + 7) / 8]);
-        vector2.markSecondsAsPlayed(new int[]{1, 3, 5, 11, 12});
+        vector2.setPlaybackData(new int[100]);
+        // Set some playback counts in vector2
+        vector2.getPlaybackData()[1] = 1;  // Second 1 played once
+        vector2.getPlaybackData()[3] = 2;  // Second 3 played twice
+        vector2.getPlaybackData()[5] = 3;  // Second 5 played three times
+        vector2.getPlaybackData()[11] = 1; // Second 11 played once
+        vector2.getPlaybackData()[12] = 2; // Second 12 played twice
 
         List<PlaybackVector> vectors = Arrays.asList(vector1, vector2);
         when(playbackVectorMapper.findByResourceId(resourceId)).thenReturn(vectors);
@@ -157,14 +167,14 @@ class PlaybackVectorServiceTest {
         // Then
         assertNotNull(heatmap);
         assertEquals(100, heatmap.length);
-        assertEquals(2, heatmap[1]); // Both watched second 1
-        assertEquals(1, heatmap[2]); // Only vector1 watched second 2
-        assertEquals(2, heatmap[3]); // Both watched second 3
-        assertEquals(1, heatmap[5]); // Only vector2 watched second 5
-        assertEquals(0, heatmap[6]); // Nobody watched second 6
-        assertEquals(1, heatmap[10]); // Only vector1 watched second 10
-        assertEquals(2, heatmap[11]); // Both watched second 11
-        assertEquals(1, heatmap[12]); // Only vector2 watched second 12
+        assertEquals(3, heatmap[1]);  // Total: 2+1=3 times for second 1
+        assertEquals(1, heatmap[2]);  // Total: 1 time for second 2
+        assertEquals(5, heatmap[3]);  // Total: 3+2=5 times for second 3
+        assertEquals(3, heatmap[5]);  // Total: 3 times for second 5
+        assertEquals(0, heatmap[6]);  // Total: 0 times for second 6
+        assertEquals(1, heatmap[10]); // Total: 1 time for second 10
+        assertEquals(3, heatmap[11]); // Total: 2+1=3 times for second 11
+        assertEquals(2, heatmap[12]); // Total: 2 times for second 12
     }
 
     @Test
@@ -172,8 +182,8 @@ class PlaybackVectorServiceTest {
         // Given
         PlaybackVector vector = new PlaybackVector();
         vector.setVideoDuration(100);
-        vector.setPlaybackData(new byte[(100 + 7) / 8]);
-        vector.markSecondsAsPlayed(new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}); // 10 seconds watched
+        vector.setPlaybackData(new int[(100 + 7) / 8]);
+        vector.incrementPlayCounts(new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}); // 10 seconds watched
 
         when(playbackVectorMapper.findByStudentAndResource(studentId, resourceId)).thenReturn(vector);
 
@@ -194,5 +204,40 @@ class PlaybackVectorServiceTest {
 
         // Then
         assertEquals(0.0, percentage);
+    }
+
+    @Test
+    void updatePlaybackVectorWithCounts_shouldUpdateCounts() {
+        // Given
+        int[] existingCounts = new int[120];
+        existingCounts[5] = 2;  // Second 5 already played twice
+        existingCounts[10] = 1; // Second 10 already played once
+
+        testVector.setPlaybackData(existingCounts);
+
+        int[] newCountVector = new int[120];
+        newCountVector[5] = 1;  // Second 5 played once more
+        newCountVector[10] = 2; // Second 10 played twice more
+        newCountVector[15] = 3; // Second 15 played three times
+
+        when(playbackVectorMapper.findByStudentAndResource(studentId, resourceId)).thenReturn(testVector);
+
+        // When
+        PlaybackVector result = playbackVectorService.updatePlaybackVectorWithCounts(studentId, resourceId, newCountVector);
+
+        // Then
+        assertNotNull(result);
+        verify(playbackVectorMapper).update(any(PlaybackVector.class));
+
+        // Verify counts were accumulated correctly
+        int[] finalCounts = result.getPlaybackDataAsIntArray();
+        assertEquals(3, finalCounts[5], "Second 5 should have accumulated count of 3");
+        assertEquals(3, finalCounts[10], "Second 10 should have accumulated count of 3");
+        assertEquals(3, finalCounts[15], "Second 15 should have count of 3");
+        assertEquals(0, finalCounts[20], "Second 20 should have count of 0");
+
+        // Verify other helper methods
+        assertEquals(9, result.getTotalPlayCount(), "Total play count should be 9");
+        assertEquals(3, result.getMaxPlayCount(), "Max play count should be 3");
     }
 }

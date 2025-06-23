@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -45,18 +46,18 @@ class PlaybackVectorControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
         objectMapper = new ObjectMapper();
 
-        // Set up test playback vector
+        // Set up a test playback vector
         testVector = new PlaybackVector();
         testVector.setId(1L);
         testVector.setStudentId(studentId);
         testVector.setResourceId(resourceId);
         testVector.setVideoDuration(120); // 2 minutes
-        testVector.setPlaybackData(new byte[15]); // Initialize with empty data
+        testVector.setPlaybackData(new int[15]); // Initialize with empty data
         testVector.setLastUpdated(LocalDateTime.now());
 
         // Mark 20 seconds as played (approx 16.7%)
         for (int i = 0; i < 20; i++) {
-            testVector.markSecondAsPlayed(i);
+            testVector.incrementSecondPlayCount(i);
         }
     }
 
@@ -129,5 +130,39 @@ class PlaybackVectorControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.error").exists());
+    }
+
+    @Test
+    void recordPlaybackCounts_shouldReturnSuccess() throws Exception {
+        // Given
+        int[] playbackCountVector = {1, 2, 2, 2, 1, 0, 0, 3, 1}; // Example count vector
+
+        // Mock vector with some statistics
+        testVector.setPlaybackData(playbackCountVector);
+        double expectedPercentage = 77.8; // 7 out of 9 seconds have non-zero count
+        int expectedTotalCount = 12; // Sum of all counts
+        int expectedMaxCount = 3; // Maximum count
+
+        // Create a stub for the PlaybackVector that will be returned by the service
+        PlaybackVector mockedVector = mock(PlaybackVector.class);
+        when(mockedVector.calculatePlaybackPercentage()).thenReturn(expectedPercentage);
+        when(mockedVector.getTotalPlayCount()).thenReturn(expectedTotalCount);
+        when(mockedVector.getMaxPlayCount()).thenReturn(expectedMaxCount);
+
+        // Mock the service call to return our mocked vector
+        when(playbackVectorService.updatePlaybackVectorWithCounts(eq(studentId), eq(resourceId), any(int[].class)))
+                .thenReturn(mockedVector);
+
+        // When & Then
+        mockMvc.perform(post("/api/playback/record-counts")
+                .param("studentId", studentId.toString())
+                .param("resourceId", resourceId.toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(playbackCountVector)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.watchPercentage", is(expectedPercentage)))
+                .andExpect(jsonPath("$.totalPlayCount", is(expectedTotalCount)))
+                .andExpect(jsonPath("$.maxPlayCount", is(expectedMaxCount)));
     }
 }

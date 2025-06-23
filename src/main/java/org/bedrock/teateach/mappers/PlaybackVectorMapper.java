@@ -9,11 +9,11 @@ import java.util.List;
 public interface PlaybackVectorMapper {
 
     @Insert("INSERT INTO playback_vectors (student_id, resource_id, playback_data, video_duration, last_updated) " +
-           "VALUES (#{studentId}, #{resourceId}, #{playbackData}, #{videoDuration}, #{lastUpdated})")
+           "VALUES (#{studentId}, #{resourceId}, COALESCE(#{playbackData, typeHandler=org.bedrock.teateach.typehandler.IntArrayJsonTypeHandler}, CAST('[]' AS JSON)), #{videoDuration}, #{lastUpdated})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     void insert(PlaybackVector playbackVector);
 
-    @Update("UPDATE playback_vectors SET playback_data = #{playbackData}, last_updated = #{lastUpdated} " +
+           @Update("UPDATE playback_vectors SET playback_data = #{playbackData, typeHandler=org.bedrock.teateach.typehandler.IntArrayJsonTypeHandler}, last_updated = #{lastUpdated} " +
            "WHERE id = #{id}")
     void update(PlaybackVector playbackVector);
 

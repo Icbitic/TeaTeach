@@ -72,7 +72,9 @@ public class PlaybackVectorService {
         playbackVector.setStudentId(studentId);
         playbackVector.setResourceId(resourceId);
         playbackVector.setVideoDuration(getVideoDuration(resource)); // Implement this method based on resource metadata
-        playbackVector.setPlaybackData(new byte[(playbackVector.getVideoDuration() + 7) / 8]); // Initialize empty vector
+        // Initialize with empty array that has proper length
+        int[] emptyData = new int[playbackVector.getVideoDuration()];
+        playbackVector.setPlaybackData(emptyData); // Initialize empty vector with zeros
         playbackVector.setLastUpdated(LocalDateTime.now());
 
         playbackVectorMapper.insert(playbackVector);
@@ -80,7 +82,7 @@ public class PlaybackVectorService {
     }
 
     /**
-     * Update playback vector with played seconds
+     * Update playback vector with seconds that were played once
      */
     @Transactional
     @CacheEvict(value = {"playbackVectors", "resourcePlaybackVectors", "studentPlaybackVectors"}, allEntries = true)
@@ -92,7 +94,33 @@ public class PlaybackVectorService {
         }
 
         // Update the playback data with the played seconds
-        playbackVector.markSecondsAsPlayed(playedSeconds);
+        playbackVector.incrementPlayCounts(playedSeconds);
+        playbackVector.setLastUpdated(LocalDateTime.now());
+
+        // Save the updated playback vector
+        playbackVectorMapper.update(playbackVector);
+
+        return playbackVector;
+    }
+
+    /**
+     * Update playback vector with a playback count vector
+     * @param studentId The student ID
+     * @param resourceId The resource ID
+     * @param playbackCountVector Array where each index represents a second and the value represents how many times it was played
+     * @return The updated PlaybackVector
+     */
+    @Transactional
+    @CacheEvict(value = {"playbackVectors", "resourcePlaybackVectors", "studentPlaybackVectors"}, allEntries = true)
+    public PlaybackVector updatePlaybackVectorWithCounts(Long studentId, Long resourceId, int[] playbackCountVector) {
+        // Get existing playback vector or create new one
+        PlaybackVector playbackVector = playbackVectorMapper.findByStudentAndResource(studentId, resourceId);
+        if (playbackVector == null) {
+            playbackVector = createPlaybackVector(studentId, resourceId);
+        }
+
+        // Update the playback data with the count vector
+        playbackVector.updatePlayCountVector(playbackCountVector);
         playbackVector.setLastUpdated(LocalDateTime.now());
 
         // Save the updated playback vector
@@ -103,6 +131,7 @@ public class PlaybackVectorService {
 
     /**
      * Generate a heatmap for a resource showing which seconds are most watched
+     * The heatmap represents the total count of plays for each second across all students
      */
     public int[] generateHeatmap(Long resourceId) {
         // Get all playback vectors for this resource
@@ -120,13 +149,11 @@ public class PlaybackVectorService {
         // Initialize heatmap array
         int[] heatmap = new int[maxDuration];
 
-        // Aggregate data from all playback vectors
+        // Aggregate data from all playback vectors by adding play counts for each second
         for (PlaybackVector vector : playbackVectors) {
-            boolean[] playback = vector.getPlaybackAsBooleanArray();
-            for (int i = 0; i < playback.length && i < maxDuration; i++) {
-                if (playback[i]) {
-                    heatmap[i]++;
-                }
+            int[] playbackData = vector.getPlaybackDataAsIntArray();
+            for (int i = 0; i < playbackData.length && i < maxDuration; i++) {
+                heatmap[i] += playbackData[i];
             }
         }
 

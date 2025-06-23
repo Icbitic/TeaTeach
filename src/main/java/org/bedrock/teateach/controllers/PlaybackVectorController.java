@@ -23,7 +23,7 @@ public class PlaybackVectorController {
     }
 
     /**
-     * Record played seconds for a student's video
+     * Record played seconds for a student's video (increment count by 1 for each second)
      */
     @PostMapping("/record")
     public ResponseEntity<?> recordPlayedSeconds(
@@ -41,10 +41,43 @@ public class PlaybackVectorController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("watchPercentage", updatedVector.calculatePlaybackPercentage());
+            response.put("totalPlayCount", updatedVector.getTotalPlayCount());
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("Error recording playback data", e);
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Record playback count vector where each index represents a second and the value is how many times it was played
+     */
+    @PostMapping("/record-counts")
+    public ResponseEntity<?> recordPlaybackCounts(
+            @RequestParam Long studentId, 
+            @RequestParam Long resourceId,
+            @RequestBody int[] playbackCountVector) {
+
+        log.info("Recording playback count vector of length {} for student {} and resource {}", 
+                playbackCountVector.length, studentId, resourceId);
+
+        try {
+            PlaybackVector updatedVector = playbackVectorService.updatePlaybackVectorWithCounts(
+                    studentId, resourceId, playbackCountVector);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("watchPercentage", updatedVector.calculatePlaybackPercentage());
+            response.put("totalPlayCount", updatedVector.getTotalPlayCount());
+            response.put("maxPlayCount", updatedVector.getMaxPlayCount());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error recording playback count data", e);
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
                     "error", e.getMessage()
