@@ -1,8 +1,9 @@
 package org.bedrock.teateach.llm;
 
-import org.bedrock.teateach.beans.AbilityPoint;
-import org.bedrock.teateach.beans.KnowledgePoint;
-import org.bedrock.teateach.beans.StudentTaskSubmission;
+import io.lettuce.core.json.JsonObject;
+import org.bedrock.teateach.beans.*;
+import org.bedrock.teateach.services.KnowledgePointService;
+import org.json.JSONObject;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -10,10 +11,12 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.template.st.StTemplateRenderer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +36,13 @@ public class LLMService {
         System.out.println("LLMService initialized with API Key: " + (apiKey != null && !apiKey.isEmpty() ? "******" : "NONE"));
     }
 
+    public JSONObject simplePrompt(String input) {
+        Prompt prompt = new Prompt(input);
+        var req = chatClient.prompt(prompt);
+        return req.call().entity(new ParameterizedTypeReference<>() {
+        });
+    }
+
     /**
      * Intelligently extracts and structures knowledge points from course content.
      *
@@ -40,23 +50,34 @@ public class LLMService {
      * @param courseId      The ID of the course.
      * @return A list of KnowledgePoint objects with hierarchical and logical relationships.
      */
-    public List<KnowledgePoint> extractKnowledgePoints(String courseContent, Long courseId) {
+    public List<KnowledgePoint> extractKnowledgePoints(String courseContent,
+                                                       Long courseId,
+                                                       List<KnowledgePoint> existingKPs,
+                                                       List<Course> existingCourses) {
         System.out.println("LLM: Extracting knowledge points from course content...");
 
         // Create prompt with template variables
         Map<String, Object> promptParams = new HashMap<>();
         promptParams.put("courseContent", courseContent);
         promptParams.put("courseId", courseId);
+        promptParams.put("existingKPs", existingKPs);
+        promptParams.put("existingCourses", existingCourses);
 
         String promptTemplate = """
-                Extract key knowledge points from the following course content. 
+                Extract key knowledge points from the following course content.
                 Identify important concepts, their relationships, and organize them hierarchically.
                 
                 Course ID: {courseId}
                 Course Content: {courseContent}
                 
-                Return a JSON array of knowledge points with the following format for each point:
-                [{
+                Existing knowledge points are listed as the follows:
+                {existingKPs}
+                Existing courses ids are listed as the follows, you can only select course ids from here:
+                {existingCourses}
+                
+                Return a JSON array of knowledge points with the following format for each point, note that you can only select course ids from the existing course ids:
+                [
+                (left curly bracket sign)
                   "id": [incrementing number starting from 101],
                   "name": [concept name],
                   "briefDescription": [short description],
@@ -64,16 +85,28 @@ public class LLMService {
                   "prerequisiteKnowledgePointIds": [array of ids of prerequisite concepts or null],
                   "relatedKnowledgePointIds": [array of ids of related concepts or null],
                   "difficultyLevel": ["BEGINNER", "INTERMEDIATE", or "ADVANCED"],
-                  "courseId": {courseId}
-                }]
+                  "courseId": [courseId relevant to this knowledge point, can only be selected from the existing courses]
+                (left curly bracket sign),
+                (left curly bracket sign)
+                  "id": [incrementing number starting from 101],
+                  "name": [concept name],
+                  "briefDescription": [short description],
+                  "detailedContent": [more detailed explanation],
+                  "prerequisiteKnowledgePointIds": [array of ids of prerequisite concepts or null],
+                  "relatedKnowledgePointIds": [array of ids of related concepts or null],
+                  "difficultyLevel": ["BEGINNER", "INTERMEDIATE", or "ADVANCED"],
+                  "courseId": [courseId relevant to this knowledge point, can only be selected from the existing courses]
+                (left curly bracket sign),
+                ...
+                ]
                 
                 Provide at least 3-5 knowledge points with proper relationships between them.
                 """;
 
         // Create prompt
         PromptTemplate template = PromptTemplate.builder()
-                .renderer(StTemplateRenderer.builder().startDelimiterToken('{').endDelimiterToken('}').build())
                 .template(promptTemplate)
+                .renderer(StTemplateRenderer.builder().startDelimiterToken('{').endDelimiterToken('}').build())
                 .build();
         UserMessage userMessage = template.create(promptParams).getUserMessage();
         SystemMessage systemMessage = new SystemMessage("You are an educational content analyst AI that extracts structured knowledge points from educational content.");
@@ -83,7 +116,7 @@ public class LLMService {
         try {
             return chatClient.prompt(prompt)
                     .call()
-                    .entity(new ParameterizedTypeReference<List<KnowledgePoint>>() {
+                    .entity(new ParameterizedTypeReference<>() {
                     });
         } catch (Exception e) {
             System.err.println("Error extracting knowledge points: " + e.getMessage());

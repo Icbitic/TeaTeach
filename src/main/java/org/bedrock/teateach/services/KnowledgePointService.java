@@ -8,6 +8,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,12 +19,18 @@ import java.util.Optional;
 public class KnowledgePointService {
 
     private final KnowledgePointMapper knowledgePointMapper;
+    private final CourseService courseService;
     private final LLMService llmService; // Inject the LLM service
+    private final KnowledgePointService selfProxy;
 
     @Autowired
-    public KnowledgePointService(KnowledgePointMapper knowledgePointMapper, LLMService llmService) {
+    public KnowledgePointService(KnowledgePointMapper knowledgePointMapper, CourseService courseService,
+                                 LLMService llmService,
+                                 @Lazy KnowledgePointService selfProxy) {
         this.knowledgePointMapper = knowledgePointMapper;
+        this.courseService = courseService;
         this.llmService = llmService;
+        this.selfProxy = selfProxy;
     }
 
     /**
@@ -107,7 +114,7 @@ public class KnowledgePointService {
     @Transactional
     public List<KnowledgePoint> generateKnowledgeGraphFromContent(String courseContent, Long courseId) {
         // Use LLMService to extract knowledge points and their relationships
-        List<KnowledgePoint> extractedKPs = llmService.extractKnowledgePoints(courseContent, courseId);
+        List<KnowledgePoint> extractedKPs = llmService.extractKnowledgePoints(courseContent, courseId, selfProxy.getAllKnowledgePoints(), courseService.getAllCourses());
 
         // Persist the extracted knowledge points
         extractedKPs.forEach(kp -> {

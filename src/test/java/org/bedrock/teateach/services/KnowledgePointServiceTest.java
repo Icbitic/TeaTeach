@@ -156,7 +156,7 @@ class KnowledgePointServiceTest {
 
         List<KnowledgePoint> extractedKPs = Arrays.asList(extractedKp1, extractedKp2);
 
-        when(llmService.extractKnowledgePoints(courseContent, courseId)).thenReturn(extractedKPs);
+        when(llmService.extractKnowledgePoints(courseContent, courseId, List.of(), List.of())).thenReturn(extractedKPs);
         doNothing().when(knowledgePointMapper).insert(any(KnowledgePoint.class)); // Mock insert for any KP
 
         // When
@@ -170,6 +170,6 @@ class KnowledgePointServiceTest {
         // Verify insert was called for each extracted knowledge point
         verify(knowledgePointMapper, times(1)).insert(extractedKp1);
         verify(knowledgePointMapper, times(1)).insert(extractedKp2);
-        verify(llmService, times(1)).extractKnowledgePoints(courseContent, courseId);
+        verify(llmService, times(1)).extractKnowledgePoints(courseContent, courseId, List.of(), List.of());
     }
 }

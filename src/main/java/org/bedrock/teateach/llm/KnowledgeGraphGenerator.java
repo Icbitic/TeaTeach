@@ -1,6 +1,7 @@
 package org.bedrock.teateach.llm;
 
 import org.bedrock.teateach.beans.KnowledgePoint;
+import org.bedrock.teateach.services.CourseService;
 import org.bedrock.teateach.services.KnowledgePointService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,10 +15,12 @@ import java.util.List;
 @Component
 public class KnowledgeGraphGenerator {
 
+    private final CourseService courseService;
     private final LLMService llmService;
     private final KnowledgePointService knowledgePointService;
 
-    public KnowledgeGraphGenerator(LLMService llmService, KnowledgePointService knowledgePointService) {
+    public KnowledgeGraphGenerator(CourseService courseService, LLMService llmService, KnowledgePointService knowledgePointService) {
+        this.courseService = courseService;
         this.llmService = llmService;
         this.knowledgePointService = knowledgePointService;
     }
@@ -29,7 +32,7 @@ public class KnowledgeGraphGenerator {
      */
     public void generateKnowledgeGraphForCourse(String courseContent, Long courseId) {
         System.out.println("Initiating knowledge graph generation for course " + courseId);
-        List<KnowledgePoint> knowledgePoints = llmService.extractKnowledgePoints(courseContent, courseId);
+        List<KnowledgePoint> knowledgePoints = llmService.extractKnowledgePoints(courseContent, courseId, knowledgePointService.getAllKnowledgePoints(), courseService.getAllCourses());
 
         // Persist the extracted knowledge points to the database
         knowledgePoints.forEach(kp -> {
