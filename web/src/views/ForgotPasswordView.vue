@@ -1,5 +1,6 @@
 <template>
   <div class="forgot-password-container">
+    <GitHubButton />
     <div class="forgot-password-box">
       <div class="forgot-password-header">
         <h1>TeaTeach</h1>
@@ -39,9 +40,13 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { authService } from '../services/api'
+import GitHubButton from '@/components/GitHubButton.vue'
 
 export default {
   name: 'ForgotPasswordView',
+  components: {
+    GitHubButton
+  },
   setup() {
     const router = useRouter()
     const resetFormRef = ref(null)
