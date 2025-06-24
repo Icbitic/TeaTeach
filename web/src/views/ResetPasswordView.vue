@@ -1,5 +1,6 @@
 <template>
   <div class="reset-password-container">
+    <GitHubButton />
     <div class="reset-password-box">
       <div class="reset-password-header">
         <h1>TeaTeach</h1>
@@ -64,9 +65,13 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { authService } from '../services/api'
+import GitHubButton from '@/components/GitHubButton.vue'
 
 export default {
   name: 'ResetPasswordView',
+  components: {
+    GitHubButton
+  },
   setup() {
     const router = useRouter()
     const route = useRoute()

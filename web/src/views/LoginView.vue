@@ -1,5 +1,6 @@
 <template>
   <div class="login-container">
+    <GitHubButton />
     <div class="login-box">
       <div class="login-header">
         <h1>TeaTeach</h1>
@@ -50,9 +51,13 @@ import { ref, reactive } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import GitHubButton from '@/components/GitHubButton.vue'
 
 export default {
   name: 'LoginView',
+  components: {
+    GitHubButton
+  },
   setup() {
     const store = useStore()
     const router = useRouter()

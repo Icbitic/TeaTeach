@@ -1,5 +1,6 @@
 <template>
   <div class="register-container">
+    <GitHubButton />
     <div class="register-box">
       <div class="register-header">
         <h1>TeaTeach</h1>
@@ -116,9 +117,13 @@ import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { authService } from '../services/api'
+import GitHubButton from '@/components/GitHubButton.vue'
 
 export default {
   name: 'RegisterView',
+  components: {
+    GitHubButton
+  },
   setup() {
     // We'll keep the store import for future use but disable the lint warning
     // eslint-disable-next-line no-unused-vars
