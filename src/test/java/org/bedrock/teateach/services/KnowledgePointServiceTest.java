@@ -26,13 +26,19 @@ class KnowledgePointServiceTest {
     @Mock
     private LLMService llmService;
 
-    @InjectMocks
+    @Mock
+    private KnowledgePointService selfProxy;
+
+    @Mock
+    private CourseService courseService;
+
     private KnowledgePointService knowledgePointService;
 
     private KnowledgePoint testKnowledgePoint;
 
     @BeforeEach
     void setUp() {
+        knowledgePointService = new KnowledgePointService(knowledgePointMapper, courseService, llmService, selfProxy);
         testKnowledgePoint = new KnowledgePoint();
         testKnowledgePoint.setId(1L);
         testKnowledgePoint.setName("Test KP");
@@ -147,17 +153,21 @@ class KnowledgePointServiceTest {
         // Given
         String courseContent = "Content about algorithms.";
         Long courseId = 200L;
+
         KnowledgePoint extractedKp1 = new KnowledgePoint();
         extractedKp1.setName("Extracted KP 1");
         extractedKp1.setCourseId(null); // Simulate LLM not setting courseId
+
         KnowledgePoint extractedKp2 = new KnowledgePoint();
         extractedKp2.setName("Extracted KP 2");
-        extractedKp2.setCourseId(courseId); // Simulate LLM setting courseId
+        extractedKp2.setCourseId(courseId); // Already set
 
-        List<KnowledgePoint> extractedKPs = Arrays.asList(extractedKp1, extractedKp2);
+        List<KnowledgePoint> existingKPs = List.of(); // Mocked getAllKnowledgePoints result
+        List<KnowledgePoint> extractedKPs = List.of(extractedKp1, extractedKp2);
 
-        when(llmService.extractKnowledgePoints(courseContent, courseId, List.of(), List.of())).thenReturn(extractedKPs);
-        doNothing().when(knowledgePointMapper).insert(any(KnowledgePoint.class)); // Mock insert for any KP
+        when(selfProxy.getAllKnowledgePoints()).thenReturn(existingKPs);
+        when(llmService.extractKnowledgePoints(courseContent, courseId, existingKPs, List.of())).thenReturn(extractedKPs);
+        doNothing().when(knowledgePointMapper).insert(any(KnowledgePoint.class));
 
         // When
         List<KnowledgePoint> result = knowledgePointService.generateKnowledgeGraphFromContent(courseContent, courseId);
@@ -165,11 +175,10 @@ class KnowledgePointServiceTest {
         // Then
         assertNotNull(result);
         assertEquals(2, result.size());
-        // Verify that courseId was set for extractedKp1
-        assertEquals(courseId, extractedKp1.getCourseId());
-        // Verify insert was called for each extracted knowledge point
+        assertEquals(courseId, extractedKp1.getCourseId()); // Should have been set
         verify(knowledgePointMapper, times(1)).insert(extractedKp1);
         verify(knowledgePointMapper, times(1)).insert(extractedKp2);
-        verify(llmService, times(1)).extractKnowledgePoints(courseContent, courseId, List.of(), List.of());
+        verify(llmService, times(1)).extractKnowledgePoints(courseContent, courseId, existingKPs, List.of());
+        verify(selfProxy, times(1)).getAllKnowledgePoints();
     }
 }

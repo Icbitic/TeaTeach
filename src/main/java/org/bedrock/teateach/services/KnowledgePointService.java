@@ -24,7 +24,8 @@ public class KnowledgePointService {
     private final KnowledgePointService selfProxy;
 
     @Autowired
-    public KnowledgePointService(KnowledgePointMapper knowledgePointMapper, CourseService courseService,
+    public KnowledgePointService(KnowledgePointMapper knowledgePointMapper,
+                                 CourseService courseService,
                                  LLMService llmService,
                                  @Lazy KnowledgePointService selfProxy) {
         this.knowledgePointMapper = knowledgePointMapper;
@@ -35,6 +36,7 @@ public class KnowledgePointService {
 
     /**
      * Creates a new knowledge point.
+     *
      * @param knowledgePoint The knowledge point to create.
      * @return The created knowledge point with its generated ID.
      */
@@ -47,15 +49,16 @@ public class KnowledgePointService {
 
     /**
      * Updates an existing knowledge point.
+     *
      * @param knowledgePoint The knowledge point to update.
      * @return The updated knowledge point.
      */
     @Transactional
-    @Caching(put = { @CachePut(value = "knowledgePoints", key = "#knowledgePoint.id") },
-             evict = { 
-                 @CacheEvict(value = "allKnowledgePoints", allEntries = true),
-                 @CacheEvict(value = "courseKnowledgePoints", key = "#knowledgePoint.courseId")
-             })
+    @Caching(put = {@CachePut(value = "knowledgePoints", key = "#knowledgePoint.id")},
+            evict = {
+                    @CacheEvict(value = "allKnowledgePoints", allEntries = true),
+                    @CacheEvict(value = "courseKnowledgePoints", key = "#knowledgePoint.courseId")
+            })
     public KnowledgePoint updateKnowledgePoint(KnowledgePoint knowledgePoint) {
         knowledgePointMapper.update(knowledgePoint);
         return knowledgePoint;
@@ -63,17 +66,19 @@ public class KnowledgePointService {
 
     /**
      * Deletes a knowledge point by its ID.
+     *
      * @param id The ID of the knowledge point to delete.
      */
     @Transactional
-    @CacheEvict(value = {"knowledgePoints", "allKnowledgePoints", "courseKnowledgePoints"}, 
-               allEntries = true)
+    @CacheEvict(value = {"knowledgePoints", "allKnowledgePoints", "courseKnowledgePoints"},
+            allEntries = true)
     public void deleteKnowledgePoint(Long id) {
         knowledgePointMapper.delete(id);
     }
 
     /**
      * Retrieves a knowledge point by its ID.
+     *
      * @param id The ID of the knowledge point.
      * @return An Optional containing the knowledge point if found, or empty otherwise.
      */
@@ -84,6 +89,7 @@ public class KnowledgePointService {
 
     /**
      * Retrieves all knowledge points associated with a specific course.
+     *
      * @param courseId The ID of the course.
      * @return A list of knowledge points for the given course.
      */
@@ -94,6 +100,7 @@ public class KnowledgePointService {
 
     /**
      * Retrieves all knowledge points in the system.
+     *
      * @return A list of all knowledge points.
      */
     @Cacheable(value = "allKnowledgePoints")
@@ -107,7 +114,7 @@ public class KnowledgePointService {
      * This method would typically be called by an admin or course creation process.
      *
      * @param courseContent The raw text content (e.g., lecture notes, textbook chapters)
-     * from which to extract knowledge points.
+     *                      from which to extract knowledge points.
      * @param courseId      The ID of the course to associate these knowledge points with.
      * @return A list of the newly created KnowledgePoint objects.
      */
