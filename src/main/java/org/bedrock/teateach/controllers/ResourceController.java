@@ -42,8 +42,6 @@ public class ResourceController {
      * Uploads a file and creates a corresponding resource entry.
      * POST /api/resources/upload
      * @param file The file to upload.
-     * @param courseId The course ID associated with the resource.
-     * @param taskId Optional: The task ID associated with the resource.
      * @param resourceName The name of the resource.
      * @param description Optional: Description of the resource.
      * @return The created Resource object.
@@ -51,12 +49,10 @@ public class ResourceController {
     @PostMapping("/upload")
     public ResponseEntity<Resource> uploadResource(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("courseId") Long courseId,
-            @RequestParam(value = "taskId", required = false) Long taskId,
             @RequestParam("resourceName") String resourceName,
-            @RequestParam(value = "description", required = false) String description) {
+            @RequestParam(value = "description", defaultValue = "the resource has no description") String description) {
         try {
-            Resource createdResource = resourceService.uploadFile(file, courseId, taskId, resourceName, description);
+            Resource createdResource = resourceService.uploadFile(file, resourceName, description);
             return new ResponseEntity<>(createdResource, HttpStatus.CREATED);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -84,7 +80,7 @@ public class ResourceController {
             }
 
             HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getResourceName() + "." + resource.getFileType() + "\"");
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getResourceName() + "\"");
             headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
             headers.add(HttpHeaders.PRAGMA, "no-cache");
             headers.add(HttpHeaders.EXPIRES, "0");
@@ -129,17 +125,7 @@ public class ResourceController {
         return resource.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    /**
-     * Retrieves all resources for a specific course.
-     * GET /api/resources/course/{courseId}
-     * @param courseId The ID of the course.
-     * @return A list of resources for the specified course.
-     */
-    @GetMapping("/course/{courseId}")
-    public ResponseEntity<List<Resource>> getResourcesByCourseId(@PathVariable Long courseId) {
-        List<Resource> resources = resourceService.getResourcesByCourseId(courseId);
-        return ResponseEntity.ok(resources);
-    }
+
 
     /**
      * Updates an existing resource.
@@ -175,5 +161,40 @@ public class ResourceController {
         }
         resourceService.deleteResource(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Gets all resources uploaded by the current authenticated user.
+     *
+     * @return A list of resources uploaded by the current user.
+     */
+    @GetMapping("/my")
+    public ResponseEntity<List<Resource>> getMyResources() {
+        List<Resource> resources = resourceService.getMyResources();
+        return ResponseEntity.ok(resources);
+    }
+
+    /**
+     * Gets resources uploaded by the current authenticated user for a specific task.
+     *
+     * @param taskId The ID of the task.
+     * @return A list of resources uploaded by the current user for the specified task.
+     */
+    @GetMapping("/my/task/{taskId}")
+    public ResponseEntity<List<Resource>> getMyResourcesForTask(@PathVariable Long taskId) {
+        List<Resource> resources = resourceService.getMyResourcesForTask(taskId);
+        return ResponseEntity.ok(resources);
+    }
+
+    /**
+     * Gets resources associated with a specific task.
+     *
+     * @param taskId The ID of the task.
+     * @return A list of resources associated with the specified task.
+     */
+    @GetMapping("/task/{taskId}")
+    public ResponseEntity<List<Resource>> getResourcesByTaskId(@PathVariable Long taskId) {
+        List<Resource> resources = resourceService.getResourcesByTaskId(taskId);
+        return ResponseEntity.ok(resources);
     }
 }

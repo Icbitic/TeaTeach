@@ -16,8 +16,8 @@ public interface ResourceMapper {
      *
      * @param resource The Resource object to insert.
      */
-    @Insert("INSERT INTO resources (resource_name, file_path, file_type, file_size, course_id, task_id, description, uploaded_by, created_at, updated_at) " +
-            "VALUES (#{resourceName}, #{filePath}, #{fileType}, #{fileSize}, #{courseId}, #{taskId}, #{description}, #{uploadedBy}, #{createdAt}, #{updatedAt})")
+    @Insert("INSERT INTO resources (resource_name, file_path, file_type, file_size, description, uploaded_by, created_at, updated_at) " +
+            "VALUES (#{resourceName}, #{filePath}, #{fileType}, #{fileSize}, #{description}, #{uploadedBy}, #{createdAt}, #{updatedAt})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     void insert(Resource resource);
 
@@ -27,7 +27,7 @@ public interface ResourceMapper {
      * @param id The ID of the resource.
      * @return The Resource object if found, otherwise null.
      */
-    @Select("SELECT id, resource_name, file_path, file_type, file_size, course_id, task_id, description, uploaded_by, created_at, updated_at " +
+    @Select("SELECT id, resource_name, file_path, file_type, file_size, description, uploaded_by, created_at, updated_at " +
             "FROM resources WHERE id = #{id}")
     @Results({
             @Result(property = "id", column = "id"),
@@ -35,8 +35,6 @@ public interface ResourceMapper {
             @Result(property = "filePath", column = "file_path"),
             @Result(property = "fileType", column = "file_type"),
             @Result(property = "fileSize", column = "file_size"),
-            @Result(property = "courseId", column = "course_id"),
-            @Result(property = "taskId", column = "task_id"),
             @Result(property = "description", column = "description"),
             @Result(property = "uploadedBy", column = "uploaded_by"),
             @Result(property = "createdAt", column = "created_at"),
@@ -50,7 +48,7 @@ public interface ResourceMapper {
      * @param resource The Resource object with updated fields.
      */
     @Update("UPDATE resources SET resource_name = #{resourceName}, file_path = #{filePath}, file_type = #{fileType}, " +
-            "file_size = #{fileSize}, course_id = #{courseId}, task_id = #{taskId}, description = #{description}, " +
+            "file_size = #{fileSize}, description = #{description}, " +
             "uploaded_by = #{uploadedBy}, updated_at = #{updatedAt} WHERE id = #{id}")
     void update(Resource resource);
 
@@ -62,58 +60,16 @@ public interface ResourceMapper {
     @Delete("DELETE FROM resources WHERE id = #{id}")
     void delete(Long id);
 
-    /**
-     * Retrieves all resources associated with a specific course.
-     *
-     * @param courseId The ID of the course.
-     * @return A list of Resource objects for the specified course.
-     */
-    @Select("SELECT id, resource_name, file_path, file_type, file_size, course_id, task_id, description, uploaded_by, created_at, updated_at " +
-            "FROM resources WHERE course_id = #{courseId}")
-    @Results({
-            @Result(property = "id", column = "id"),
-            @Result(property = "resourceName", column = "resource_name"),
-            @Result(property = "filePath", column = "file_path"),
-            @Result(property = "fileType", column = "file_type"),
-            @Result(property = "fileSize", column = "file_size"),
-            @Result(property = "courseId", column = "course_id"),
-            @Result(property = "taskId", column = "task_id"),
-            @Result(property = "description", column = "description"),
-            @Result(property = "uploadedBy", column = "uploaded_by"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at")
-    })
-    List<Resource> findByCourseId(Long courseId);
 
-    /**
-     * Retrieves all resources associated with a specific task.
-     *
-     * @param taskId The ID of the task.
-     * @return A list of Resource objects for the specified task.
-     */
-    @Select("SELECT id, resource_name, file_path, file_type, file_size, course_id, task_id, description, uploaded_by, created_at, updated_at " +
-            "FROM resources WHERE task_id = #{taskId}")
-    @Results({
-            @Result(property = "id", column = "id"),
-            @Result(property = "resourceName", column = "resource_name"),
-            @Result(property = "filePath", column = "file_path"),
-            @Result(property = "fileType", column = "file_type"),
-            @Result(property = "fileSize", column = "file_size"),
-            @Result(property = "courseId", column = "course_id"),
-            @Result(property = "taskId", column = "task_id"),
-            @Result(property = "description", column = "description"),
-            @Result(property = "uploadedBy", column = "uploaded_by"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at")
-    })
-    List<Resource> findByTaskId(Long taskId);
+
+
 
     /**
      * Retrieves all resources from the database.
      *
      * @return A list of all Resource objects.
      */
-    @Select("SELECT id, resource_name, file_path, file_type, file_size, course_id, task_id, description, uploaded_by, created_at, updated_at " +
+    @Select("SELECT id, resource_name, file_path, file_type, file_size, description, uploaded_by, created_at, updated_at " +
             "FROM resources")
     @Results({
             @Result(property = "id", column = "id"),
@@ -121,8 +77,6 @@ public interface ResourceMapper {
             @Result(property = "filePath", column = "file_path"),
             @Result(property = "fileType", column = "file_type"),
             @Result(property = "fileSize", column = "file_size"),
-            @Result(property = "courseId", column = "course_id"),
-            @Result(property = "taskId", column = "task_id"),
             @Result(property = "description", column = "description"),
             @Result(property = "uploadedBy", column = "uploaded_by"),
             @Result(property = "createdAt", column = "created_at"),
@@ -130,6 +84,71 @@ public interface ResourceMapper {
     })
     List<Resource> findAll();
 
+    /**
+     * Finds all resources uploaded by a specific user.
+     *
+     * @param uploadedBy The ID of the user who uploaded the resources.
+     * @return A list of Resource objects uploaded by the specified user.
+     */
+    @Select("SELECT id, resource_name, file_path, file_type, file_size, description, uploaded_by, created_at, updated_at " +
+            "FROM resources WHERE uploaded_by = #{uploadedBy} ORDER BY created_at DESC")
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "resourceName", column = "resource_name"),
+            @Result(property = "filePath", column = "file_path"),
+            @Result(property = "fileType", column = "file_type"),
+            @Result(property = "fileSize", column = "file_size"),
+            @Result(property = "description", column = "description"),
+            @Result(property = "uploadedBy", column = "uploaded_by"),
+            @Result(property = "createdAt", column = "created_at"),
+            @Result(property = "updatedAt", column = "updated_at")
+    })
+    List<Resource> findByUploadedBy(@Param("uploadedBy") Long uploadedBy);
+
+    /**
+     * Finds resources associated with a specific task.
+     * This joins with learning_tasks table to find resources linked to a task.
+     *
+     * @param taskId The ID of the task.
+     * @return A list of Resource objects associated with the specified task.
+     */
+    @Select("SELECT r.id, r.resource_name, r.file_path, r.file_type, r.file_size, r.description, r.uploaded_by, r.created_at, r.updated_at " +
+            "FROM resources r INNER JOIN learning_tasks lt ON r.id = lt.resource_id WHERE lt.id = #{taskId}")
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "resourceName", column = "resource_name"),
+            @Result(property = "filePath", column = "file_path"),
+            @Result(property = "fileType", column = "file_type"),
+            @Result(property = "fileSize", column = "file_size"),
+            @Result(property = "description", column = "description"),
+            @Result(property = "uploadedBy", column = "uploaded_by"),
+            @Result(property = "createdAt", column = "created_at"),
+            @Result(property = "updatedAt", column = "updated_at")
+    })
+    List<Resource> findByTaskId(@Param("taskId") Long taskId);
+
+    /**
+     * Finds resources uploaded by a specific user for a specific task.
+     *
+     * @param uploadedBy The ID of the user who uploaded the resources.
+     * @param taskId The ID of the task.
+     * @return A list of Resource objects uploaded by the user for the specified task.
+     */
+    @Select("SELECT r.id, r.resource_name, r.file_path, r.file_type, r.file_size, r.description, r.uploaded_by, r.created_at, r.updated_at " +
+            "FROM resources r INNER JOIN learning_tasks lt ON r.id = lt.resource_id " +
+            "WHERE r.uploaded_by = #{uploadedBy} AND lt.id = #{taskId} ORDER BY r.created_at DESC")
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "resourceName", column = "resource_name"),
+            @Result(property = "filePath", column = "file_path"),
+            @Result(property = "fileType", column = "file_type"),
+            @Result(property = "fileSize", column = "file_size"),
+            @Result(property = "description", column = "description"),
+            @Result(property = "uploadedBy", column = "uploaded_by"),
+            @Result(property = "createdAt", column = "created_at"),
+            @Result(property = "updatedAt", column = "updated_at")
+    })
+    List<Resource> findByUploadedByAndTaskId(@Param("uploadedBy") Long uploadedBy, @Param("taskId") Long taskId);
 
     /**
      * Defines the result mapping for Resource objects.
@@ -143,8 +162,6 @@ public interface ResourceMapper {
             @Result(property = "filePath", column = "file_path"),
             @Result(property = "fileType", column = "file_type"),
             @Result(property = "fileSize", column = "file_size"),
-            @Result(property = "courseId", column = "course_id"),
-            @Result(property = "taskId", column = "task_id"),
             @Result(property = "description", column = "description"),
             @Result(property = "uploadedBy", column = "uploaded_by"),
             @Result(property = "createdAt", column = "created_at"),

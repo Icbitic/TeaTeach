@@ -61,9 +61,11 @@ CREATE TABLE learning_tasks (
                                 task_description TEXT,
                                 deadline DATETIME,
                                 submission_method VARCHAR(100) COMMENT 'e.g., upload, online_quiz, text_input',
+                                resource_id BIGINT COMMENT 'Optional: Reference to associated resource (video, PDF, etc.)',
                                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                                FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+                                FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+                                FOREIGN KEY (resource_id) REFERENCES resources(id) ON DELETE SET NULL
 );
 
 -- -----------------------------------------------------
@@ -110,7 +112,6 @@ CREATE TABLE grade_analysis (
 -- -----------------------------------------------------
 CREATE TABLE resources (
                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                           course_id BIGINT NOT NULL,
                            task_id BIGINT COMMENT 'Optional: if resource is tied to a specific task',
                            resource_name VARCHAR(255) NOT NULL,
                            file_path VARCHAR(512) NOT NULL COMMENT 'Path to stored file or external URL',
@@ -120,7 +121,6 @@ CREATE TABLE resources (
                            description TEXT,
                            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                           FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
                            FOREIGN KEY (task_id) REFERENCES learning_tasks(id) ON DELETE SET NULL
     -- ON DELETE SET NULL: if task is deleted, resource remains but its task_id is set to NULL
 );

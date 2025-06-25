@@ -90,7 +90,7 @@ export default {
                 message: 'Login successful',
                 type: 'success'
               })
-              router.push('/home')
+              router.push('/')
             })
             .catch(error => {
               console.error('Login error:', error)

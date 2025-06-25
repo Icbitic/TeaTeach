@@ -29,7 +29,7 @@ public class CorsConfig {
         configuration.setAllowCredentials(true);
         
         // Expose headers that the client can access
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type", "Content-Disposition"));
         
         // Cache preflight response for 1 hour
         configuration.setMaxAge(3600L);

@@ -2,7 +2,9 @@
 package org.bedrock.teateach.services;
 
 import org.bedrock.teateach.beans.Resource;
+import org.bedrock.teateach.beans.User;
 import org.bedrock.teateach.mappers.ResourceMapper;
+import org.bedrock.teateach.mappers.UserMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,6 +27,12 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import java.time.LocalDateTime;
+import java.util.Collections;
 
 @ExtendWith(MockitoExtension.class)
 class ResourceServiceTest {
@@ -32,10 +40,14 @@ class ResourceServiceTest {
     @Mock
     private ResourceMapper resourceMapper;
 
+    @Mock
+    private UserMapper userMapper;
+
     @InjectMocks
     private ResourceService resourceService;
 
     private Resource testResource;
+    private User testUser;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -45,8 +57,17 @@ class ResourceServiceTest {
         testResource.setFilePath("test_doc.pdf");
         testResource.setFileType("pdf");
         testResource.setFileSize(1024L);
-        testResource.setCourseId(10L);
+
         testResource.setDescription("A test document.");
+        testResource.setCreatedAt(LocalDateTime.now());
+        testResource.setUpdatedAt(LocalDateTime.now());
+
+        // Set up test user
+        testUser = new User();
+        testUser.setId(1L);
+        testUser.setUsername("testuser");
+        testUser.setEmail("test@example.com");
+        testUser.setUserType("student");
 
         // Mock the file storage location creation in the constructor
         // This static mock needs to be inside a try-with-resources block or managed carefully
@@ -55,9 +76,11 @@ class ResourceServiceTest {
         try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
             mockedFiles.when(() -> Files.createDirectories(any(Path.class))).thenReturn(Paths.get(System.getProperty("user.home") + "/teateach_uploads"));
             // Re-initialize service to ensure constructor runs with mocked Files
-            resourceService = new ResourceService(resourceMapper);
+            resourceService = new ResourceService(resourceMapper, userMapper);
         }
     }
+
+
 
     @Test
     void testCreateResource() {
@@ -91,18 +114,7 @@ class ResourceServiceTest {
         verify(resourceMapper, times(1)).findById(999L);
     }
 
-    @Test
-    void testGetResourcesByCourseId() {
-        List<Resource> resources = Arrays.asList(testResource, new Resource());
-        when(resourceMapper.findByCourseId(10L)).thenReturn(resources);
 
-        List<Resource> result = resourceService.getResourcesByCourseId(10L);
-
-        assertNotNull(result);
-        assertFalse(result.isEmpty());
-        assertEquals(2, result.size());
-        verify(resourceMapper, times(1)).findByCourseId(10L);
-    }
 
     @Test
     void testUpdateResource() {
@@ -174,8 +186,6 @@ class ResourceServiceTest {
 
             Resource result = resourceService.uploadFile(
                     mockFile,
-                    10L,
-                    20L,
                     "Uploaded Test Document",
                     "This is a test upload."
             );
@@ -183,8 +193,6 @@ class ResourceServiceTest {
             assertNotNull(result);
             assertEquals("pdf", result.getFileType());
             assertEquals(expectedFileName, result.getFilePath());
-            assertEquals(10L, result.getCourseId());
-            assertEquals(20L, result.getTaskId());
             assertEquals("Uploaded Test Document", result.getResourceName());
             assertEquals("This is a test upload.", result.getDescription());
 
@@ -193,6 +201,63 @@ class ResourceServiceTest {
         }
     }
 
+    @Test
+    void testUploadFileWithAuthenticatedUser() throws IOException {
+        // Set up authentication context
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                "testuser", null, Collections.singletonList(new SimpleGrantedAuthority("STUDENT"))
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // Mock user lookup
+        User mockUser = new User();
+        mockUser.setId(1L);
+        mockUser.setUsername("testuser");
+        when(userMapper.findByUsername("testuser")).thenReturn(Optional.of(mockUser));
+
+        try {
+            // Prepare a mock file
+            byte[] fileContent = "Test file content".getBytes();
+            MultipartFile mockFile = new MockMultipartFile(
+                    "file",
+                    "test_document.pdf",
+                    "application/pdf",
+                    fileContent
+            );
+
+            // Mock UUID to ensure predictable file name
+            UUID fixedUUID = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+            String expectedFileName = fixedUUID + ".pdf";
+
+            // Mock static UUID class
+            try (MockedStatic<UUID> mockedUUID = mockStatic(UUID.class);
+                 MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
+
+                mockedUUID.when(UUID::randomUUID).thenReturn(fixedUUID);
+
+                Path targetPath = Paths.get(System.getProperty("user.home") + "/teateach_uploads").resolve(expectedFileName);
+                mockedFiles.when(() -> Files.copy(any(InputStream.class), eq(targetPath))).thenReturn((long) fileContent.length);
+
+                doNothing().when(resourceMapper).insert(any(Resource.class));
+
+                Resource result = resourceService.uploadFile(
+                        mockFile,
+                        "Uploaded Test Document",
+                        "This is a test upload."
+                );
+
+                assertNotNull(result);
+                assertEquals(1L, result.getUploadedBy());
+                assertNotNull(result.getCreatedAt());
+                assertNotNull(result.getUpdatedAt());
+
+                verify(resourceMapper, times(1)).insert(any(Resource.class));
+            }
+        } finally {
+            // Clean up security context
+            SecurityContextHolder.clearContext();
+        }
+    }
 
     @Test
     void testDownloadFileSuccess() throws IOException {
@@ -236,5 +301,102 @@ class ResourceServiceTest {
             mockedFiles.verify(() -> Files.exists(any(Path.class)), times(1));
             mockedFiles.verify(() -> Files.readAllBytes(any(Path.class)), never()); // Should not attempt to read
         }
+    }
+
+    @Test
+    void testGetResourcesByUploadedBy() {
+        List<Resource> expectedResources = Arrays.asList(testResource);
+        when(resourceMapper.findByUploadedBy(1L)).thenReturn(expectedResources);
+
+        List<Resource> result = resourceService.getResourcesByUploadedBy(1L);
+
+        assertEquals(expectedResources, result);
+        verify(resourceMapper, times(1)).findByUploadedBy(1L);
+    }
+
+    @Test
+    void testGetMyResourcesWithAuthenticatedUser() {
+        List<Resource> expectedResources = Arrays.asList(testResource);
+        when(resourceMapper.findByUploadedBy(1L)).thenReturn(expectedResources);
+        when(userMapper.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+
+        // Set up authentication context
+        Authentication authentication = new UsernamePasswordAuthenticationToken("testuser", null, null);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        try {
+            List<Resource> result = resourceService.getMyResources();
+
+            assertEquals(expectedResources, result);
+            verify(resourceMapper, times(1)).findByUploadedBy(1L);
+            verify(userMapper, times(1)).findByUsername("testuser");
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
+    }
+
+    @Test
+    void testGetMyResourcesWithUnauthenticatedUser() {
+        SecurityContextHolder.clearContext(); // Ensure no authentication
+
+        List<Resource> result = resourceService.getMyResources();
+
+        assertTrue(result.isEmpty());
+        verify(resourceMapper, never()).findByUploadedBy(any());
+        verify(userMapper, never()).findByUsername(any());
+    }
+
+    @Test
+    void testGetResourcesByTaskId() {
+        List<Resource> expectedResources = Arrays.asList(testResource);
+        when(resourceMapper.findByTaskId(1L)).thenReturn(expectedResources);
+
+        List<Resource> result = resourceService.getResourcesByTaskId(1L);
+
+        assertEquals(expectedResources, result);
+        verify(resourceMapper, times(1)).findByTaskId(1L);
+    }
+
+    @Test
+    void testGetResourcesByUploadedByAndTaskId() {
+        List<Resource> expectedResources = Arrays.asList(testResource);
+        when(resourceMapper.findByUploadedByAndTaskId(1L, 1L)).thenReturn(expectedResources);
+
+        List<Resource> result = resourceService.getResourcesByUploadedByAndTaskId(1L, 1L);
+
+        assertEquals(expectedResources, result);
+        verify(resourceMapper, times(1)).findByUploadedByAndTaskId(1L, 1L);
+    }
+
+    @Test
+    void testGetMyResourcesForTaskWithAuthenticatedUser() {
+        List<Resource> expectedResources = Arrays.asList(testResource);
+        when(resourceMapper.findByUploadedByAndTaskId(1L, 1L)).thenReturn(expectedResources);
+        when(userMapper.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+
+        // Set up authentication context
+        Authentication authentication = new UsernamePasswordAuthenticationToken("testuser", null, null);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        try {
+            List<Resource> result = resourceService.getMyResourcesForTask(1L);
+
+            assertEquals(expectedResources, result);
+            verify(resourceMapper, times(1)).findByUploadedByAndTaskId(1L, 1L);
+            verify(userMapper, times(1)).findByUsername("testuser");
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
+    }
+
+    @Test
+    void testGetMyResourcesForTaskWithUnauthenticatedUser() {
+        SecurityContextHolder.clearContext(); // Ensure no authentication
+
+        List<Resource> result = resourceService.getMyResourcesForTask(1L);
+
+        assertTrue(result.isEmpty());
+        verify(resourceMapper, never()).findByUploadedByAndTaskId(any(), any());
+        verify(userMapper, never()).findByUsername(any());
     }
 }
