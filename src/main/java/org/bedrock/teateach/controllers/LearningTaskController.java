@@ -45,6 +45,17 @@ public class LearningTaskController {
     }
 
     /**
+     * Retrieves all learning tasks.
+     * GET /api/learning-tasks
+     * @return A list of all learning tasks.
+     */
+    @GetMapping
+    public ResponseEntity<List<LearningTask>> getAllTasks() {
+        List<LearningTask> tasks = learningTaskService.getAllTasks();
+        return ResponseEntity.ok(tasks);
+    }
+
+    /**
      * Retrieves all learning tasks for a specific course.
      * GET /api/learning-tasks/course/{courseId}
      * @param courseId The ID of the course.
