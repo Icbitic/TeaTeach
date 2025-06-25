@@ -19,26 +19,51 @@
           active-text-color="#3498db"
           @select="handleMenuSelect"
         >
-          <el-menu-item index="dashboard">
-            <el-icon><el-icon-data-board /></el-icon>
-            <span><TypewriterText :text="'Dashboard'" :show="!isCollapse" :speed="50" /></span>
-          </el-menu-item>
-          <el-menu-item index="students">
-            <el-icon><el-icon-user /></el-icon>
-            <span><TypewriterText :text="'Students'" :show="!isCollapse" :speed="50" /></span>
-          </el-menu-item>
-          <el-menu-item index="courses">
-            <el-icon><el-icon-reading /></el-icon>
-            <span><TypewriterText :text="'Courses'" :show="!isCollapse" :speed="50" /></span>
-          </el-menu-item>
-          <el-menu-item index="tasks">
-            <el-icon><el-icon-document /></el-icon>
-            <span><TypewriterText :text="'Tasks'" :show="!isCollapse" :speed="50" /></span>
-          </el-menu-item>
-          <el-menu-item index="analytics">
-            <el-icon><el-icon-data-analysis /></el-icon>
-            <span><TypewriterText :text="'Analytics'" :show="!isCollapse" :speed="50" /></span>
-          </el-menu-item>
+          <!-- Teacher Menu -->
+          <template v-if="user.userType === 'TEACHER'">
+            <el-menu-item index="dashboard">
+              <el-icon><el-icon-data-board /></el-icon>
+              <span><TypewriterText :text="'Dashboard'" :show="!isCollapse" :speed="50" /></span>
+            </el-menu-item>
+            <el-menu-item index="students">
+              <el-icon><el-icon-user /></el-icon>
+              <span><TypewriterText :text="'Students'" :show="!isCollapse" :speed="50" /></span>
+            </el-menu-item>
+            <el-menu-item index="courses">
+              <el-icon><el-icon-reading /></el-icon>
+              <span><TypewriterText :text="'Courses'" :show="!isCollapse" :speed="50" /></span>
+            </el-menu-item>
+            <el-menu-item index="tasks">
+              <el-icon><el-icon-document /></el-icon>
+              <span><TypewriterText :text="'Tasks'" :show="!isCollapse" :speed="50" /></span>
+            </el-menu-item>
+            <el-menu-item index="analytics">
+              <el-icon><el-icon-data-analysis /></el-icon>
+              <span><TypewriterText :text="'Analytics'" :show="!isCollapse" :speed="50" /></span>
+            </el-menu-item>
+          </template>
+          
+          <!-- Student Menu -->
+          <template v-else-if="user.userType === 'STUDENT'">
+            <el-menu-item index="student-dashboard">
+              <el-icon><el-icon-data-board /></el-icon>
+              <span><TypewriterText :text="'Dashboard'" :show="!isCollapse" :speed="50" /></span>
+            </el-menu-item>
+            <el-menu-item index="my-courses">
+              <el-icon><el-icon-reading /></el-icon>
+              <span><TypewriterText :text="'My Courses'" :show="!isCollapse" :speed="50" /></span>
+            </el-menu-item>
+            <el-menu-item index="my-tasks">
+              <el-icon><el-icon-document /></el-icon>
+              <span><TypewriterText :text="'My Tasks'" :show="!isCollapse" :speed="50" /></span>
+            </el-menu-item>
+            <el-menu-item index="my-grades">
+              <el-icon><el-icon-data-analysis /></el-icon>
+              <span><TypewriterText :text="'My Grades'" :show="!isCollapse" :speed="50" /></span>
+            </el-menu-item>
+          </template>
+          
+          <!-- Common Menu Items -->
           <el-menu-item index="settings">
             <el-icon><el-icon-setting /></el-icon>
             <span><TypewriterText :text="'Settings'" :show="!isCollapse" :speed="50" /></span>
@@ -129,10 +154,14 @@ export default {
     const handleMenuSelect = (key) => {
       const routeMap = {
         'dashboard': '/',
+        'student-dashboard': '/student-dashboard',
         'students': '/students', 
         'courses': '/courses',
+        'my-courses': '/my-courses',
         'tasks': '/tasks',
+        'my-tasks': '/student-dashboard', // For now, redirect to student dashboard
         'analytics': '/analytics',
+        'my-grades': '/student-dashboard', // For now, redirect to student dashboard
         'settings': '/settings'
       }
       
@@ -144,13 +173,15 @@ export default {
     const currentMenuKey = computed(() => {
       const routeToKey = {
         '/': 'dashboard',
+        '/student-dashboard': 'student-dashboard',
+        '/my-courses': 'my-courses',
         '/students': 'students',
         '/courses': 'courses', 
         '/tasks': 'tasks',
         '/analytics': 'analytics',
         '/settings': 'settings'
       }
-      return routeToKey[route.path] || 'dashboard'
+      return routeToKey[route.path] || (user.value.userType === 'STUDENT' ? 'student-dashboard' : 'dashboard')
     })
 
     return {

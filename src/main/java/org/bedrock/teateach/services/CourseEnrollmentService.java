@@ -96,6 +96,14 @@ public class CourseEnrollmentService {
         return courseEnrollmentMapper.findCoursesByStudentId(studentId);
     }
     
+    public List<Course> getCoursesByStudentStringId(String studentId) {
+        Student student = studentMapper.findByStudentId(studentId);
+        if (student == null) {
+            throw new RuntimeException("Student not found with studentId: " + studentId);
+        }
+        return courseEnrollmentMapper.findCoursesByStudentId(student.getId());
+    }
+    
     public List<CourseEnrollment> getEnrollmentsByCourseId(Long courseId) {
         return courseEnrollmentMapper.findByCourseId(courseId);
     }

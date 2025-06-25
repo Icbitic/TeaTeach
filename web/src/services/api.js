@@ -41,6 +41,8 @@ apiClient.interceptors.response.use(
   }
 )
 
+export { apiClient }
+
 export const authService = {
   login(credentials) {
     return apiClient.post('/auth/login', credentials)

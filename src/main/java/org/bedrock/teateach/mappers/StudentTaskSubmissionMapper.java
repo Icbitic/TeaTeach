@@ -52,6 +52,16 @@ public interface StudentTaskSubmissionMapper {
      */
     @Select("SELECT id, task_id, student_id, submission_content, submission_time, score, feedback, completion_status " +
             "FROM student_task_submissions WHERE id = #{id}")
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "taskId", column = "task_id"),
+            @Result(property = "studentId", column = "student_id"),
+            @Result(property = "submissionContent", column = "submission_content"),
+            @Result(property = "submissionTime", column = "submission_time"),
+            @Result(property = "score", column = "score"),
+            @Result(property = "feedback", column = "feedback"),
+            @Result(property = "completionStatus", column = "completion_status")
+    })
     StudentTaskSubmission findById(@Param("id") Long id);
 
     /**
@@ -59,11 +69,21 @@ public interface StudentTaskSubmissionMapper {
      * Useful for checking if a student has submitted a specific task.
      *
      * @param studentId The ID of the student.
-     * @param taskId The ID of the task.
+     * @param taskId    The ID of the task.
      * @return The StudentTaskSubmission object if found, otherwise null (assuming one submission per student per task).
      */
     @Select("SELECT id, task_id, student_id, submission_content, submission_time, score, feedback, completion_status " +
             "FROM student_task_submissions WHERE student_id = #{studentId} AND task_id = #{taskId} LIMIT 1")
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "taskId", column = "task_id"),
+            @Result(property = "studentId", column = "student_id"),
+            @Result(property = "submissionContent", column = "submission_content"),
+            @Result(property = "submissionTime", column = "submission_time"),
+            @Result(property = "score", column = "score"),
+            @Result(property = "feedback", column = "feedback"),
+            @Result(property = "completionStatus", column = "completion_status")
+    })
     StudentTaskSubmission findByStudentAndTask(@Param("studentId") Long studentId, @Param("taskId") Long taskId);
 
     /**
@@ -71,7 +91,7 @@ public interface StudentTaskSubmissionMapper {
      * This query requires joining with the `learning_tasks` table to filter by course.
      *
      * @param studentId The ID of the student.
-     * @param courseId The ID of the course.
+     * @param courseId  The ID of the course.
      * @return A list of StudentTaskSubmission objects for the given student in the specified course.
      */
     @Select("SELECT sts.id, sts.task_id, sts.student_id, sts.submission_content, " +
@@ -79,6 +99,16 @@ public interface StudentTaskSubmissionMapper {
             "FROM student_task_submissions sts " +
             "JOIN learning_tasks lt ON sts.task_id = lt.id " +
             "WHERE sts.student_id = #{studentId} AND lt.course_id = #{courseId}")
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "taskId", column = "task_id"),
+            @Result(property = "studentId", column = "student_id"),
+            @Result(property = "submissionContent", column = "submission_content"),
+            @Result(property = "submissionTime", column = "submission_time"),
+            @Result(property = "score", column = "score"),
+            @Result(property = "feedback", column = "feedback"),
+            @Result(property = "completionStatus", column = "completion_status")
+    })
     List<StudentTaskSubmission> findByStudentAndCourse(@Param("studentId") Long studentId, @Param("courseId") Long courseId);
 
     /**
@@ -90,6 +120,16 @@ public interface StudentTaskSubmissionMapper {
      */
     @Select("SELECT id, task_id, student_id, submission_content, submission_time, score, feedback, completion_status " +
             "FROM student_task_submissions WHERE task_id = #{taskId}")
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "taskId", column = "task_id"),
+            @Result(property = "studentId", column = "student_id"),
+            @Result(property = "submissionContent", column = "submission_content"),
+            @Result(property = "submissionTime", column = "submission_time"),
+            @Result(property = "score", column = "score"),
+            @Result(property = "feedback", column = "feedback"),
+            @Result(property = "completionStatus", column = "completion_status")
+    })
     List<StudentTaskSubmission> findByTaskId(@Param("taskId") Long taskId);
 
 
@@ -102,7 +142,17 @@ public interface StudentTaskSubmissionMapper {
      */
     @Select("SELECT id, task_id, student_id, submission_content, submission_time, score, feedback, completion_status " +
             "FROM student_task_submissions WHERE student_id = #{studentId}")
-    List<StudentTaskSubmission> findByStudentId(@Param("taskId")Long studentId);
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "taskId", column = "task_id"),
+            @Result(property = "studentId", column = "student_id"),
+            @Result(property = "submissionContent", column = "submission_content"),
+            @Result(property = "submissionTime", column = "submission_time"),
+            @Result(property = "score", column = "score"),
+            @Result(property = "feedback", column = "feedback"),
+            @Result(property = "completionStatus", column = "completion_status")
+    })
+    List<StudentTaskSubmission> findByStudentId(@Param("studentId") Long studentId);
 
     /**
      * Finds all StudentTaskSubmission records in the database.
@@ -111,6 +161,16 @@ public interface StudentTaskSubmissionMapper {
      */
     @Select("SELECT id, task_id, student_id, submission_content, submission_time, score, feedback, completion_status " +
             "FROM student_task_submissions")
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "taskId", column = "task_id"),
+            @Result(property = "studentId", column = "student_id"),
+            @Result(property = "submissionContent", column = "submission_content"),
+            @Result(property = "submissionTime", column = "submission_time"),
+            @Result(property = "score", column = "score"),
+            @Result(property = "feedback", column = "feedback"),
+            @Result(property = "completionStatus", column = "completion_status")
+    })
     List<StudentTaskSubmission> findAll();
 
 }
