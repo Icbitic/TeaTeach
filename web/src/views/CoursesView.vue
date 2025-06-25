@@ -64,7 +64,7 @@
         <el-table-column prop="hours" label="Hours" width="80" sortable/>
         <el-table-column prop="description" label="Description" min-width="200" show-overflow-tooltip/>
 
-        <el-table-column label="Actions" fixed="right" width="120">
+        <el-table-column label="Actions" fixed="right" width="180">
           <template #default="scope">
             <el-button
                 type="primary"
@@ -74,6 +74,17 @@
                 plain>
               <el-icon>
                 <el-icon-edit/>
+              </el-icon>
+            </el-button>
+            <el-button
+                type="success"
+                size="small"
+                @click="manageStudents(scope.row)"
+                circle
+                plain
+                title="Manage Students">
+              <el-icon>
+                <el-icon-user/>
               </el-icon>
             </el-button>
             <el-button
@@ -142,13 +153,118 @@
         </span>
       </template>
     </el-dialog>
+
+    <!-- Student Enrollment Dialog -->
+    <el-dialog
+        v-model="enrollmentDialog.visible"
+        title="Manage Course Students"
+        width="800px"
+        :close-on-click-modal="false">
+      <div class="enrollment-content">
+        <div class="course-info">
+          <h3>{{ enrollmentDialog.course.courseName }} ({{ enrollmentDialog.course.courseCode }})</h3>
+          <p>Instructor: {{ enrollmentDialog.course.instructor }}</p>
+        </div>
+        
+        <el-tabs v-model="enrollmentDialog.activeTab">
+          <!-- Enrolled Students Tab -->
+          <el-tab-pane label="Enrolled Students" name="enrolled">
+            <div class="tab-header">
+              <div class="tab-header-left">
+                <span>Total Enrolled: {{ enrolledStudents.length }}</span>
+              </div>
+              <div class="tab-header-right">
+                <el-button type="danger" size="small" @click="unenrollSelectedStudents" :disabled="selectedEnrolledStudents.length === 0">
+                  Remove Selected
+                </el-button>
+              </div>
+            </div>
+            <el-table
+                :data="enrolledStudents"
+                v-loading="enrollmentDialog.loading"
+                @selection-change="handleEnrolledStudentsSelectionChange"
+                height="300">
+              <el-table-column type="selection" width="55"/>
+              <el-table-column prop="studentId" label="Student ID" width="120"/>
+              <el-table-column prop="name" label="Name" min-width="150"/>
+              <el-table-column prop="email" label="Email" min-width="200"/>
+              <el-table-column prop="major" label="Major" min-width="150"/>
+              <el-table-column label="Actions" width="100">
+                <template #default="scope">
+                  <el-button
+                      type="danger"
+                      size="small"
+                      @click="unenrollStudent(scope.row)"
+                      plain>
+                    Remove
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </el-tab-pane>
+          
+          <!-- Add Students Tab -->
+          <el-tab-pane label="Add Students" name="add">
+            <div class="tab-header">
+              <div class="tab-header-left">
+                <el-input
+                    v-model="studentSearchKeyword"
+                    placeholder="Search students..."
+                    style="width: 300px"
+                    clearable>
+                  <template #append>
+                    <el-button @click="searchAvailableStudents">
+                      <el-icon><el-icon-search/></el-icon>
+                    </el-button>
+                  </template>
+                </el-input>
+              </div>
+              <div class="tab-header-right">
+                <el-button type="primary" @click="enrollSelectedStudents" :disabled="selectedAvailableStudents.length === 0">
+                  Enroll Selected ({{ selectedAvailableStudents.length }})
+                </el-button>
+              </div>
+            </div>
+            <el-table
+                :data="availableStudents"
+                v-loading="enrollmentDialog.loading"
+                @selection-change="handleAvailableStudentsSelectionChange"
+                height="300">
+              <el-table-column type="selection" width="55"/>
+              <el-table-column prop="studentId" label="Student ID" width="120"/>
+              <el-table-column prop="name" label="Name" min-width="150"/>
+              <el-table-column prop="email" label="Email" min-width="200"/>
+              <el-table-column prop="major" label="Major" min-width="150"/>
+              <el-table-column label="Actions" width="100">
+                <template #default="scope">
+                  <el-button
+                      type="primary"
+                      size="small"
+                      @click="enrollStudent(scope.row)"
+                      plain>
+                    Enroll
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </el-tab-pane>
+        </el-tabs>
+      </div>
+      
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="enrollmentDialog.visible = false">Close</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import courseService from '@/services/courseService'
+import courseEnrollmentService from '@/services/courseEnrollmentService'
 
 export default {
   name: 'CoursesView',
@@ -199,6 +315,20 @@ export default {
         ]
       }
     })
+
+    // Enrollment dialog and data
+    const enrollmentDialog = reactive({
+      visible: false,
+      loading: false,
+      activeTab: 'enrolled',
+      course: {}
+    })
+    
+    const enrolledStudents = ref([])
+    const availableStudents = ref([])
+    const selectedEnrolledStudents = ref([])
+    const selectedAvailableStudents = ref([])
+    const studentSearchKeyword = ref('')
 
     // Methods
     const fetchCourses = () => {
@@ -400,6 +530,153 @@ export default {
         })
     }
 
+    // Enrollment methods
+    const manageStudents = (course) => {
+      enrollmentDialog.course = course
+      enrollmentDialog.visible = true
+      enrollmentDialog.activeTab = 'enrolled'
+      fetchEnrolledStudents(course.id)
+      fetchAvailableStudents(course.id)
+    }
+
+    const fetchEnrolledStudents = async (courseId) => {
+      try {
+        const response = await courseEnrollmentService.getStudentsByCourse(courseId)
+        enrolledStudents.value = response.data
+      } catch (error) {
+        console.error('Error fetching enrolled students:', error)
+        ElMessage.error('Failed to fetch enrolled students')
+      }
+    }
+
+    const fetchAvailableStudents = async (courseId) => {
+      try {
+        const response = await courseEnrollmentService.getAvailableStudents(courseId)
+        availableStudents.value = response.data
+      } catch (error) {
+        console.error('Error fetching available students:', error)
+        ElMessage.error('Failed to fetch available students')
+      }
+    }
+
+    const removeSelectedStudents = async () => {
+      if (selectedEnrolledStudents.value.length === 0) {
+        ElMessage.warning('Please select students to remove')
+        return
+      }
+
+      try {
+        enrollmentDialog.loading = true
+        for (const student of selectedEnrolledStudents.value) {
+          await courseEnrollmentService.unenrollStudent(enrollmentDialog.course.id, student.id)
+        }
+        ElMessage.success('Students removed successfully')
+        selectedEnrolledStudents.value = []
+        await fetchEnrolledStudents(enrollmentDialog.course.id)
+        await fetchAvailableStudents(enrollmentDialog.course.id)
+      } catch (error) {
+        console.error('Error removing students:', error)
+        ElMessage.error('Failed to remove students')
+      } finally {
+        enrollmentDialog.loading = false
+      }
+    }
+
+    const unenrollStudent = async (student) => {
+      try {
+        enrollmentDialog.loading = true
+        await courseEnrollmentService.unenrollStudent(enrollmentDialog.course.id, student.id)
+        ElMessage.success(`${student.name} removed successfully`)
+        await fetchEnrolledStudents(enrollmentDialog.course.id)
+        await fetchAvailableStudents(enrollmentDialog.course.id)
+      } catch (error) {
+        console.error('Error removing student:', error)
+        ElMessage.error('Failed to remove student')
+      } finally {
+        enrollmentDialog.loading = false
+      }
+    }
+
+    const enrollStudent = async (student) => {
+      try {
+        enrollmentDialog.loading = true
+        await courseEnrollmentService.enrollStudent(enrollmentDialog.course.id, student.id)
+        ElMessage.success(`${student.name} enrolled successfully`)
+        await fetchEnrolledStudents(enrollmentDialog.course.id)
+        await fetchAvailableStudents(enrollmentDialog.course.id)
+      } catch (error) {
+        console.error('Error enrolling student:', error)
+        ElMessage.error('Failed to enroll student')
+      } finally {
+        enrollmentDialog.loading = false
+      }
+    }
+
+    const enrollSelectedStudents = async () => {
+      if (selectedAvailableStudents.value.length === 0) {
+        ElMessage.warning('Please select students to enroll')
+        return
+      }
+
+      try {
+        enrollmentDialog.loading = true
+        const studentIds = selectedAvailableStudents.value.map(student => student.id)
+        await courseEnrollmentService.enrollMultipleStudents(enrollmentDialog.course.id, studentIds)
+        ElMessage.success('Students enrolled successfully')
+        selectedAvailableStudents.value = []
+        await fetchEnrolledStudents(enrollmentDialog.course.id)
+        await fetchAvailableStudents(enrollmentDialog.course.id)
+      } catch (error) {
+        console.error('Error enrolling students:', error)
+        ElMessage.error('Failed to enroll students')
+      } finally {
+        enrollmentDialog.loading = false
+      }
+    }
+
+    const handleEnrolledStudentsSelectionChange = (selection) => {
+      selectedEnrolledStudents.value = selection
+    }
+
+    const handleAvailableStudentsSelectionChange = (selection) => {
+      selectedAvailableStudents.value = selection
+    }
+
+    const unenrollSelectedStudents = async () => {
+      if (selectedEnrolledStudents.value.length === 0) {
+        ElMessage.warning('Please select students to unenroll')
+        return
+      }
+
+      try {
+        enrollmentDialog.loading = true
+        for (const student of selectedEnrolledStudents.value) {
+          await courseEnrollmentService.unenrollStudent(enrollmentDialog.course.id, student.id)
+        }
+        ElMessage.success(`${selectedEnrolledStudents.value.length} student(s) unenrolled successfully`)
+        selectedEnrolledStudents.value = []
+        await fetchEnrolledStudents(enrollmentDialog.course.id)
+        await fetchAvailableStudents(enrollmentDialog.course.id)
+      } catch (error) {
+        console.error('Error unenrolling students:', error)
+        ElMessage.error('Failed to unenroll students')
+      } finally {
+        enrollmentDialog.loading = false
+      }
+    }
+
+    const filteredAvailableStudents = computed(() => {
+      if (!studentSearchKeyword.value) {
+        return availableStudents.value
+      }
+      const keyword = studentSearchKeyword.value.toLowerCase()
+      return availableStudents.value.filter(student => 
+        student.name.toLowerCase().includes(keyword) ||
+        student.email.toLowerCase().includes(keyword) ||
+        student.studentId.toLowerCase().includes(keyword)
+      )
+    })
+
     onMounted(() => {
       fetchCourses()
     })
@@ -414,6 +691,13 @@ export default {
       selectedCourses,
       courseSearchForm,
       courseDialog,
+      enrollmentDialog,
+      enrolledStudents,
+      availableStudents,
+      selectedEnrolledStudents,
+      selectedAvailableStudents,
+      studentSearchKeyword,
+      filteredAvailableStudents,
       fetchCourses,
       searchCourses,
       resetCourseSearch,
@@ -424,7 +708,17 @@ export default {
       editCourse,
       submitCourseForm,
       confirmDeleteCourse,
-      exportCourses
+      exportCourses,
+      manageStudents,
+      fetchEnrolledStudents,
+      fetchAvailableStudents,
+      removeSelectedStudents,
+      unenrollStudent,
+      enrollStudent,
+      enrollSelectedStudents,
+      unenrollSelectedStudents,
+      handleEnrolledStudentsSelectionChange,
+      handleAvailableStudentsSelectionChange
     }
   }
 }
@@ -488,5 +782,12 @@ export default {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
 }
 </style>
