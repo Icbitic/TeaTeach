@@ -41,7 +41,7 @@ export const courseEnrollmentService = {
 
   // Get courses a student is enrolled in
   getCoursesByStudent(studentId) {
-    return apiClient.get(`/course-enrollments/student/${studentId}/courses`)
+    return apiClient.get(`/course-enrollments/student/by-string-id/${studentId}/courses`)
   },
 
   // Get all enrollments for a course

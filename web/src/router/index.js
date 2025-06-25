@@ -5,6 +5,8 @@ import ForgotPasswordView from '../views/ForgotPasswordView.vue'
 import ResetPasswordView from '../views/ResetPasswordView.vue'
 import AppLayout from '../components/AppLayout.vue'
 import DashboardView from '../views/DashboardView.vue'
+import StudentDashboardView from '../views/StudentDashboardView.vue'
+import MyCoursesView from '../views/MyCoursesView.vue'
 import StudentsView from '../views/StudentsView.vue'
 import CoursesView from '../views/CoursesView.vue'
 import TasksView from '../views/TasksView.vue'
@@ -39,27 +41,44 @@ const routes = [
       {
         path: '',
         name: 'dashboard',
-        component: DashboardView
+        component: DashboardView,
+        meta: { requiresTeacher: true }
+      },
+      {
+        path: 'student-dashboard',
+        name: 'student-dashboard',
+        component: StudentDashboardView,
+        meta: { requiresStudent: true }
+      },
+      {
+        path: 'my-courses',
+        name: 'my-courses',
+        component: MyCoursesView,
+        meta: { requiresStudent: true }
       },
       {
         path: 'students',
         name: 'students',
-        component: StudentsView
+        component: StudentsView,
+        meta: { requiresTeacher: true }
       },
       {
         path: 'courses',
         name: 'courses',
-        component: CoursesView
+        component: CoursesView,
+        meta: { requiresTeacher: true }
       },
       {
         path: 'tasks',
         name: 'tasks',
-        component: TasksView
+        component: TasksView,
+        meta: { requiresTeacher: true }
       },
       {
         path: 'analytics',
         name: 'analytics',
-        component: AnalyticsView
+        component: AnalyticsView,
+        meta: { requiresTeacher: true }
       },
       {
         path: 'settings',
@@ -75,11 +94,11 @@ const router = createRouter({
   routes
 })
 
-// Navigation guard to check for authentication
+// Navigation guard to check for authentication and user type
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
-  const user = localStorage.getItem('user')
-  const isAuthenticated = token && user
+  const userStr = localStorage.getItem('user')
+  const isAuthenticated = token && userStr
   
   // Public routes that don't require authentication
   const publicRoutes = ['/login', '/register', '/forgot-password', '/reset-password']
@@ -89,8 +108,33 @@ router.beforeEach((to, from, next) => {
     // Redirect to login if not authenticated and trying to access protected route
     next('/login')
   } else if (isAuthenticated && isPublicRoute) {
-    // Redirect to dashboard if authenticated and trying to access public route
-    next('/')
+    // Redirect to appropriate dashboard based on user type
+    const user = JSON.parse(userStr)
+    if (user.userType === 'STUDENT') {
+      next('/student-dashboard')
+    } else {
+      next('/')
+    }
+  } else if (isAuthenticated) {
+    // Check user type permissions
+    const user = JSON.parse(userStr)
+    
+    // Redirect to appropriate dashboard if accessing root
+    if (to.path === '/') {
+      if (user.userType === 'STUDENT') {
+        next('/student-dashboard')
+        return
+      }
+    }
+    
+    // Check route permissions
+    if (to.meta.requiresTeacher && user.userType === 'STUDENT') {
+      next('/student-dashboard')
+    } else if (to.meta.requiresStudent && user.userType === 'TEACHER') {
+      next('/')
+    } else {
+      next()
+    }
   } else {
     // Allow navigation
     next()

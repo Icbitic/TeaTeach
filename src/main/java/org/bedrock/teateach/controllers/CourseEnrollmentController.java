@@ -99,6 +99,12 @@ public class CourseEnrollmentController {
         List<Course> courses = courseEnrollmentService.getCoursesByStudentId(studentId);
         return ResponseEntity.ok(courses);
     }
+    
+    @GetMapping("/student/by-string-id/{studentId}/courses")
+    public ResponseEntity<List<Course>> getCoursesByStudentStringId(@PathVariable String studentId) {
+        List<Course> courses = courseEnrollmentService.getCoursesByStudentStringId(studentId);
+        return ResponseEntity.ok(courses);
+    }
 
     @GetMapping("/course/{courseId}/enrollments")
     public ResponseEntity<List<CourseEnrollment>> getEnrollmentsByCourse(@PathVariable Long courseId) {
