@@ -2,6 +2,7 @@ package org.bedrock.teateach.mappers;
 
 import org.apache.ibatis.annotations.*;
 import org.bedrock.teateach.beans.LearningTask;
+import org.bedrock.teateach.enums.TaskType;
 
 import java.util.List;
 
@@ -50,6 +51,15 @@ public interface LearningTaskMapper {
      */
     @Select("SELECT id, course_id, task_name, task_type, task_description, deadline, submission_method " +
             "FROM learning_tasks WHERE id = #{id}")
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "courseId", column = "course_id"),
+            @Result(property = "taskName", column = "task_name"),
+            @Result(property = "taskType", column = "task_type", javaType = TaskType.class),
+            @Result(property = "taskDescription", column = "task_description"),
+            @Result(property = "deadline", column = "deadline"),
+            @Result(property = "submissionMethod", column = "submission_method")
+    })
     LearningTask findById(@Param("id") Long id);
 
     /**
@@ -60,6 +70,15 @@ public interface LearningTaskMapper {
      */
     @Select("SELECT id, course_id, task_name, task_type, task_description, deadline, submission_method " +
             "FROM learning_tasks WHERE course_id = #{courseId}")
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "courseId", column = "course_id"),
+            @Result(property = "taskName", column = "task_name"),
+            @Result(property = "taskType", column = "task_type", javaType = TaskType.class),
+            @Result(property = "taskDescription", column = "task_description"),
+            @Result(property = "deadline", column = "deadline"),
+            @Result(property = "submissionMethod", column = "submission_method")
+    })
     List<LearningTask> findByCourseId(@Param("courseId") Long courseId);
 
     /**
@@ -69,6 +88,15 @@ public interface LearningTaskMapper {
      */
     @Select("SELECT id, course_id, task_name, task_type, task_description, deadline, submission_method " +
             "FROM learning_tasks")
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "courseId", column = "course_id"),
+            @Result(property = "taskName", column = "task_name"),
+            @Result(property = "taskType", column = "task_type", javaType = TaskType.class),
+            @Result(property = "taskDescription", column = "task_description"),
+            @Result(property = "deadline", column = "deadline"),
+            @Result(property = "submissionMethod", column = "submission_method")
+    })
     List<LearningTask> findAll();
 
     // You might add more specific queries here based on your needs, e.g.:

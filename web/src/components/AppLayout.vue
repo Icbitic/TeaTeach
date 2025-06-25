@@ -80,7 +80,7 @@
         </el-main>
 
         <el-footer>
-          <p>© 2023 TeaTeach Learning Management System</p>
+          <p>© 2025 TeaTeach Learning Management System</p>
         </el-footer>
       </el-container>
     </el-container>

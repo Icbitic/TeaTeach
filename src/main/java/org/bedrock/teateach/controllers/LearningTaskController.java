@@ -1,6 +1,8 @@
 package org.bedrock.teateach.controllers;
 
 import org.bedrock.teateach.beans.LearningTask;
+import org.bedrock.teateach.beans.TaskResource;
+import org.bedrock.teateach.beans.Resource;
 import org.bedrock.teateach.services.LearningTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -101,6 +103,78 @@ public class LearningTaskController {
             return ResponseEntity.notFound().build();
         }
         learningTaskService.deleteTask(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Task Resource Management Endpoints
+
+    /**
+     * Gets all resources associated with a task.
+     * GET /api/learning-tasks/{taskId}/resources
+     * @param taskId The ID of the task.
+     * @return List of resources associated with the task.
+     */
+    @GetMapping("/{taskId}/resources")
+    public ResponseEntity<List<Resource>> getTaskResources(@PathVariable Long taskId) {
+        LearningTask task = learningTaskService.getTaskById(taskId);
+        if (task == null) {
+            return ResponseEntity.notFound().build();
+        }
+        List<Resource> resources = learningTaskService.getTaskResources(taskId);
+        return ResponseEntity.ok(resources);
+    }
+
+    /**
+     * Associates a resource with a task.
+     * POST /api/learning-tasks/{taskId}/resources/{resourceId}
+     * @param taskId The ID of the task.
+     * @param resourceId The ID of the resource.
+     * @return The created TaskResource relationship.
+     */
+    @PostMapping("/{taskId}/resources/{resourceId}")
+    public ResponseEntity<TaskResource> addResourceToTask(@PathVariable Long taskId, @PathVariable Long resourceId) {
+        try {
+            LearningTask task = learningTaskService.getTaskById(taskId);
+            if (task == null) {
+                return ResponseEntity.notFound().build();
+            }
+            TaskResource taskResource = learningTaskService.addResourceToTask(taskId, resourceId);
+            return new ResponseEntity<>(taskResource, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * Removes a resource from a task.
+     * DELETE /api/learning-tasks/{taskId}/resources/{resourceId}
+     * @param taskId The ID of the task.
+     * @param resourceId The ID of the resource.
+     * @return 204 No Content if successful.
+     */
+    @DeleteMapping("/{taskId}/resources/{resourceId}")
+    public ResponseEntity<Void> removeResourceFromTask(@PathVariable Long taskId, @PathVariable Long resourceId) {
+        LearningTask task = learningTaskService.getTaskById(taskId);
+        if (task == null) {
+            return ResponseEntity.notFound().build();
+        }
+        learningTaskService.removeResourceFromTask(taskId, resourceId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Removes all resources from a task.
+     * DELETE /api/learning-tasks/{taskId}/resources
+     * @param taskId The ID of the task.
+     * @return 204 No Content if successful.
+     */
+    @DeleteMapping("/{taskId}/resources")
+    public ResponseEntity<Void> removeAllResourcesFromTask(@PathVariable Long taskId) {
+        LearningTask task = learningTaskService.getTaskById(taskId);
+        if (task == null) {
+            return ResponseEntity.notFound().build();
+        }
+        learningTaskService.removeAllResourcesFromTask(taskId);
         return ResponseEntity.noContent().build();
     }
 }
