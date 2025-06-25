@@ -1,15 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
-import HomeView from '../views/HomeView.vue'
 import ForgotPasswordView from '../views/ForgotPasswordView.vue'
 import ResetPasswordView from '../views/ResetPasswordView.vue'
+import AppLayout from '../components/AppLayout.vue'
+import DashboardView from '../views/DashboardView.vue'
+import StudentsView from '../views/StudentsView.vue'
+import CoursesView from '../views/CoursesView.vue'
+import TasksView from '../views/TasksView.vue'
+import AnalyticsView from '../views/AnalyticsView.vue'
+import SettingsView from '../views/SettingsView.vue'
 
 const routes = [
-  {
-    path: '/',
-    redirect: '/login'
-  },
   {
     path: '/login',
     name: 'login',
@@ -31,10 +33,40 @@ const routes = [
     component: ResetPasswordView
   },
   {
-    path: '/home',
-    name: 'home',
-    component: HomeView,
-    meta: { requiresAuth: true }
+    path: '/',
+    component: AppLayout,
+    children: [
+      {
+        path: '',
+        name: 'dashboard',
+        component: DashboardView
+      },
+      {
+        path: 'students',
+        name: 'students',
+        component: StudentsView
+      },
+      {
+        path: 'courses',
+        name: 'courses',
+        component: CoursesView
+      },
+      {
+        path: 'tasks',
+        name: 'tasks',
+        component: TasksView
+      },
+      {
+        path: 'analytics',
+        name: 'analytics',
+        component: AnalyticsView
+      },
+      {
+        path: 'settings',
+        name: 'settings',
+        component: SettingsView
+      }
+    ]
   }
 ]
 
@@ -45,18 +77,22 @@ const router = createRouter({
 
 // Navigation guard to check for authentication
 router.beforeEach((to, from, next) => {
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const token = localStorage.getItem('token')
   const user = localStorage.getItem('user')
-
-  // Check both token and user existence for authentication
   const isAuthenticated = token && user
-
-  if (requiresAuth && !isAuthenticated) {
+  
+  // Public routes that don't require authentication
+  const publicRoutes = ['/login', '/register', '/forgot-password', '/reset-password']
+  const isPublicRoute = publicRoutes.includes(to.path)
+  
+  if (!isAuthenticated && !isPublicRoute) {
+    // Redirect to login if not authenticated and trying to access protected route
     next('/login')
-  } else if (to.path === '/login' && isAuthenticated) {
-    next('/home')
+  } else if (isAuthenticated && isPublicRoute) {
+    // Redirect to dashboard if authenticated and trying to access public route
+    next('/')
   } else {
+    // Allow navigation
     next()
   }
 })

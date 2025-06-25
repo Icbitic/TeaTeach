@@ -57,4 +57,9 @@ public class LearningTaskService {
     public List<LearningTask> getTasksByCourseId(Long courseId) {
         return learningTaskMapper.findByCourseId(courseId);
     }
+
+    @Cacheable(value = "allTasks")
+    public List<LearningTask> getAllTasks() {
+        return learningTaskMapper.findAll();
+    }
 }
