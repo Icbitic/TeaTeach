@@ -97,7 +97,7 @@
                     </el-icon>
                   </div>
                   <div class="stat-info">
-                    <div class="stat-value">128</div>
+                    <div class="stat-value">{{ totalStudents }}</div>
                     <div class="stat-label">Total Students</div>
                   </div>
                 </el-card>
@@ -110,7 +110,7 @@
                     </el-icon>
                   </div>
                   <div class="stat-info">
-                    <div class="stat-value">12</div>
+                    <div class="stat-value">{{ totalCourses }}</div>
                     <div class="stat-label">Active Courses</div>
                   </div>
                 </el-card>
@@ -123,7 +123,7 @@
                     </el-icon>
                   </div>
                   <div class="stat-info">
-                    <div class="stat-value">24</div>
+                    <div class="stat-value">{{ upcomingDeadlines }}</div>
                     <div class="stat-label">Pending Tasks</div>
                   </div>
                 </el-card>
@@ -136,8 +136,8 @@
                     </el-icon>
                   </div>
                   <div class="stat-info">
-                    <div class="stat-value">85%</div>
-                    <div class="stat-label">Avg. Grade</div>
+                    <div class="stat-value">{{ activeStudents }}</div>
+                    <div class="stat-label">Active Students</div>
                   </div>
                 </el-card>
               </el-col>
