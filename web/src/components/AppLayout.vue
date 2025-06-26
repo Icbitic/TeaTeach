@@ -41,6 +41,14 @@
               <el-icon><el-icon-data-analysis /></el-icon>
               <span><TypewriterText :text="'Analytics'" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
+            <el-menu-item index="video-heatmap">
+              <el-icon><i class="el-icon-video-camera"></i></el-icon>
+              <span><TypewriterText :text="'Video Heatmap'" :show="!isCollapse" :speed="50" /></span>
+            </el-menu-item>
+            <el-menu-item index="submissions">
+              <el-icon><el-icon-files /></el-icon>
+              <span><TypewriterText :text="'Submissions'" :show="!isCollapse" :speed="50" /></span>
+            </el-menu-item>
           </template>
           
           <!-- Student Menu -->
@@ -52,6 +60,10 @@
             <el-menu-item index="my-courses">
               <el-icon><el-icon-reading /></el-icon>
               <span><TypewriterText :text="'My Courses'" :show="!isCollapse" :speed="50" /></span>
+            </el-menu-item>
+            <el-menu-item index="course-materials">
+              <el-icon><el-icon-folder /></el-icon>
+              <span><TypewriterText :text="'Course Materials'" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
             <el-menu-item index="my-tasks">
               <el-icon><el-icon-document /></el-icon>
@@ -158,9 +170,12 @@ export default {
         'students': '/students', 
         'courses': '/courses',
         'my-courses': '/my-courses',
+        'course-materials': '/course-materials',
         'tasks': '/tasks',
-        'my-tasks': '/student-dashboard', // For now, redirect to student dashboard
+        'my-tasks': '/my-tasks',
         'analytics': '/analytics',
+        'video-heatmap': '/video-heatmap',
+        'submissions': '/submissions',
         'my-grades': '/student-dashboard', // For now, redirect to student dashboard
         'settings': '/settings'
       }
@@ -175,10 +190,14 @@ export default {
         '/': 'dashboard',
         '/student-dashboard': 'student-dashboard',
         '/my-courses': 'my-courses',
+        '/course-materials': 'course-materials',
         '/students': 'students',
         '/courses': 'courses', 
         '/tasks': 'tasks',
+        '/my-tasks': 'my-tasks',
         '/analytics': 'analytics',
+        '/video-heatmap': 'video-heatmap',
+        '/submissions': 'submissions',
         '/settings': 'settings'
       }
       return routeToKey[route.path] || (user.value.userType === 'STUDENT' ? 'student-dashboard' : 'dashboard')

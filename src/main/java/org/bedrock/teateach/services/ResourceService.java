@@ -59,6 +59,16 @@ public class ResourceService {
         return Optional.ofNullable(resourceMapper.findById(id));
     }
 
+    /**
+     * Gets all resources.
+     *
+     * @return A list of all resources.
+     */
+//    @Cacheable(value = "allResources")
+    public List<Resource> getAllResources() {
+        return resourceMapper.findAll();
+    }
+
 
 
     @Transactional

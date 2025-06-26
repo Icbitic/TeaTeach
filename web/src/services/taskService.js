@@ -29,6 +29,25 @@ export const taskService = {
   // Delete task
   deleteTask(id) {
     return apiClient.delete(`/learning-tasks/${id}`)
+  },
+
+  // Submit task
+  submitTask(submissionData) {
+    return apiClient.post('/submissions', submissionData, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  },
+
+  // Get submission by student and task
+  getSubmissionByStudentAndTask(studentId, taskId) {
+    return apiClient.get(`/submissions/student/${studentId}/task/${taskId}`)
+  },
+
+  // Update task status
+  updateTaskStatus(id, status) {
+    return apiClient.patch(`/learning-tasks/${id}/status`, { status })
   }
 }
 

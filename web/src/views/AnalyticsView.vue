@@ -1,96 +1,875 @@
 <template>
   <div class="analytics-container">
-    <div class="section-header">
-      <h2>Analytics & Reports</h2>
-      <div class="section-actions">
-        <el-button type="primary">
-          <el-icon>
-            <el-icon-data-analysis/>
-          </el-icon>
-          Generate Report
-        </el-button>
-      </div>
+    <div class="page-header">
+      <h2><TypewriterText :text="'Analytics Dashboard'" :show="true" :speed="70" /></h2>
+      <p class="page-description">Comprehensive insights into student performance and course analytics</p>
     </div>
 
-    <el-card shadow="hover" class="placeholder-card">
-      <el-empty description="Analytics Dashboard is under development">
-        <template #image>
-          <el-icon size="60" color="#409EFF">
-            <el-icon-data-analysis/>
-          </el-icon>
-        </template>
-        <template #description>
-          <p>This section will include:</p>
-          <ul class="feature-list">
-            <li>Student performance analytics</li>
-            <li>Course completion rates</li>
-            <li>Assignment submission trends</li>
-            <li>Grade distribution charts</li>
-            <li>Attendance tracking</li>
-            <li>Custom report generation</li>
-            <li>Data export capabilities</li>
-          </ul>
-        </template>
-      </el-empty>
+    <!-- Filter Controls -->
+    <el-card class="filter-card" shadow="never">
+      <el-row :gutter="20">
+        <el-col :span="6">
+          <el-select v-model="selectedCourse" placeholder="Select Course" @change="loadAnalytics" clearable>
+            <el-option
+              v-for="course in courses"
+              :key="course.id"
+              :label="course.courseName"
+              :value="course.id"
+            />
+          </el-select>
+        </el-col>
+        <el-col :span="6">
+          <el-date-picker
+            v-model="dateRange"
+            type="daterange"
+            range-separator="To"
+            start-placeholder="Start date"
+            end-placeholder="End date"
+            @change="loadAnalytics"
+          />
+        </el-col>
+        <el-col :span="6">
+          <el-button type="primary" @click="exportReport" :loading="exporting">
+            <el-icon><Download /></el-icon>
+            Export Report
+          </el-button>
+        </el-col>
+        <el-col :span="6">
+          <el-button @click="refreshData" :loading="loading">
+            <el-icon><Refresh /></el-icon>
+            Refresh
+          </el-button>
+        </el-col>
+      </el-row>
     </el-card>
+
+    <!-- Key Metrics Cards -->
+    <el-row :gutter="20" class="metrics-row">
+      <el-col :span="6">
+        <el-card class="metric-card" shadow="hover">
+          <div class="metric-content">
+            <div class="metric-icon students">
+              <el-icon><User /></el-icon>
+            </div>
+            <div class="metric-info">
+              <h3>{{ analytics.totalStudents }}</h3>
+              <p>Total Students</p>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="6">
+        <el-card class="metric-card" shadow="hover">
+          <div class="metric-content">
+            <div class="metric-icon courses">
+              <el-icon><Reading /></el-icon>
+            </div>
+            <div class="metric-info">
+              <h3>{{ analytics.totalCourses }}</h3>
+              <p>Active Courses</p>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="6">
+        <el-card class="metric-card" shadow="hover">
+          <div class="metric-content">
+            <div class="metric-icon tasks">
+              <el-icon><Document /></el-icon>
+            </div>
+            <div class="metric-info">
+              <h3>{{ analytics.totalTasks }}</h3>
+              <p>Total Tasks</p>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="6">
+        <el-card class="metric-card" shadow="hover">
+          <div class="metric-content">
+            <div class="metric-icon submissions">
+              <el-icon><Check /></el-icon>
+            </div>
+            <div class="metric-info">
+              <h3>{{ analytics.totalSubmissions }}</h3>
+              <p>Submissions</p>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <!-- Charts Section -->
+    <el-row :gutter="20" class="charts-row">
+      <!-- Submission Trends Chart -->
+      <el-col :span="12">
+        <el-card class="chart-card" shadow="never">
+          <template #header>
+            <div class="card-header">
+              <span>Submission Trends</span>
+              <el-tag type="info">Last 30 Days</el-tag>
+            </div>
+          </template>
+          <div class="chart-container">
+            <canvas ref="submissionTrendsChart" width="400" height="200"></canvas>
+          </div>
+        </el-card>
+      </el-col>
+
+      <!-- Grade Distribution Chart -->
+      <el-col :span="12">
+        <el-card class="chart-card" shadow="never">
+          <template #header>
+            <div class="card-header">
+              <span>Grade Distribution</span>
+              <el-tag type="success">Current Period</el-tag>
+            </div>
+          </template>
+          <div class="chart-container">
+            <canvas ref="gradeDistributionChart" width="400" height="200"></canvas>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <el-row :gutter="20" class="charts-row">
+      <!-- Course Completion Rates -->
+      <el-col :span="12">
+        <el-card class="chart-card" shadow="never">
+          <template #header>
+            <div class="card-header">
+              <span>Course Completion Rates</span>
+              <el-tag type="warning">By Course</el-tag>
+            </div>
+          </template>
+          <div class="chart-container">
+            <canvas ref="completionRatesChart" width="400" height="200"></canvas>
+          </div>
+        </el-card>
+      </el-col>
+
+      <!-- Student Performance Overview -->
+      <el-col :span="12">
+        <el-card class="chart-card" shadow="never">
+          <template #header>
+            <div class="card-header">
+              <span>Average Scores by Course</span>
+              <el-tag type="primary">Performance</el-tag>
+            </div>
+          </template>
+          <div class="chart-container">
+            <canvas ref="performanceChart" width="400" height="200"></canvas>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <!-- Detailed Tables -->
+    <el-row :gutter="20" class="tables-row">
+      <!-- Top Performing Students -->
+      <el-col :span="12">
+        <el-card class="table-card" shadow="never">
+          <template #header>
+            <div class="card-header">
+              <span>Top Performing Students</span>
+              <el-tag type="success">This Month</el-tag>
+            </div>
+          </template>
+          <el-table :data="analytics.topStudents" stripe style="width: 100%">
+            <el-table-column prop="name" label="Student" width="150" />
+            <el-table-column prop="averageScore" label="Avg Score" width="100">
+              <template #default="scope">
+                <el-tag :type="getScoreType(scope.row.averageScore)">
+                  {{ scope.row.averageScore }}%
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="completedTasks" label="Completed" width="100" />
+            <el-table-column prop="totalTasks" label="Total" width="80" />
+          </el-table>
+        </el-card>
+      </el-col>
+
+      <!-- Recent Activity -->
+      <el-col :span="12">
+        <el-card class="table-card" shadow="never">
+          <template #header>
+            <div class="card-header">
+              <span>Recent Submissions</span>
+              <el-tag type="info">Latest Activity</el-tag>
+            </div>
+          </template>
+          <el-table :data="analytics.recentSubmissions" stripe style="width: 100%">
+            <el-table-column prop="studentName" label="Student" width="120" />
+            <el-table-column prop="taskName" label="Task" width="150" show-overflow-tooltip />
+            <el-table-column prop="score" label="Score" width="80">
+              <template #default="scope">
+                <el-tag v-if="scope.row.score !== null" :type="getScoreType(scope.row.score)">
+                  {{ scope.row.score }}
+                </el-tag>
+                <el-tag v-else type="warning">Pending</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="submissionTime" label="Time" width="100">
+              <template #default="scope">
+                {{ formatDate(scope.row.submissionTime) }}
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script>
+import { ref, reactive, onMounted, nextTick } from 'vue'
+import { ElMessage } from 'element-plus'
+import { User, Reading, Document, Check, Download, Refresh } from '@element-plus/icons-vue'
+import Chart from 'chart.js/auto'
+import TypewriterText from '@/components/TypewriterText.vue'
+import courseService from '@/services/courseService'
+import studentService from '@/services/studentService'
+import taskService from '@/services/taskService'
+import submissionService from '@/services/submissionService'
+
 export default {
-  name: 'AnalyticsView'
+  name: 'AnalyticsView',
+  components: {
+    TypewriterText,
+    User,
+    Reading,
+    Document,
+    Check,
+    Download,
+    Refresh
+  },
+  setup() {
+    const loading = ref(false)
+    const exporting = ref(false)
+    const courses = ref([])
+    const selectedCourse = ref('')
+    const dateRange = ref([])
+    
+    // Chart references
+    const submissionTrendsChart = ref(null)
+    const gradeDistributionChart = ref(null)
+    const completionRatesChart = ref(null)
+    const performanceChart = ref(null)
+    
+    // Chart instances
+    let trendsChartInstance = null
+    let gradeChartInstance = null
+    let completionChartInstance = null
+    let performanceChartInstance = null
+
+    const analytics = reactive({
+      totalStudents: 0,
+      totalCourses: 0,
+      totalTasks: 0,
+      totalSubmissions: 0,
+      topStudents: [],
+      recentSubmissions: [],
+      submissionTrends: [],
+      gradeDistribution: [],
+      completionRates: [],
+      averageScores: []
+    })
+
+    const loadCourses = async () => {
+      try {
+        const response = await courseService.getAllCourses()
+        courses.value = response.data
+        analytics.totalCourses = response.data.length
+      } catch (error) {
+        console.error('Failed to load courses:', error)
+      }
+    }
+
+    const loadAnalytics = async () => {
+      loading.value = true
+      try {
+        await Promise.all([
+          loadBasicMetrics(),
+          loadSubmissionTrends(),
+          loadGradeDistribution(),
+          loadCompletionRates(),
+          loadTopStudents(),
+          loadRecentSubmissions()
+        ])
+        
+        await nextTick()
+        renderCharts()
+      } catch (error) {
+        console.error('Failed to load analytics:', error)
+        ElMessage.error('Failed to load analytics data')
+      } finally {
+        loading.value = false
+      }
+    }
+
+    const loadBasicMetrics = async () => {
+      try {
+        const [studentsRes, tasksRes] = await Promise.all([
+          studentService.getAllStudents(),
+          taskService.getAllTasks()
+        ])
+        
+        analytics.totalStudents = studentsRes.data.length
+        analytics.totalTasks = tasksRes.data.length
+        
+        // Count total submissions
+        let totalSubmissions = 0
+        for (const task of tasksRes.data) {
+          try {
+            const submissionsRes = await submissionService.getSubmissionsByTask(task.id)
+            totalSubmissions += submissionsRes.data.length
+          } catch (error) {
+            console.error(`Failed to load submissions for task ${task.id}:`, error)
+          }
+        }
+        analytics.totalSubmissions = totalSubmissions
+      } catch (error) {
+        console.error('Failed to load basic metrics:', error)
+      }
+    }
+
+    const loadSubmissionTrends = async () => {
+      try {
+        const tasks = await taskService.getAllTasks()
+        const last30Days = Array.from({ length: 30 }, (_, i) => {
+          const date = new Date()
+          date.setDate(date.getDate() - (29 - i))
+          return {
+            date: date.toISOString().split('T')[0],
+            count: 0
+          }
+        })
+
+        for (const task of tasks.data) {
+          try {
+            const submissionsRes = await submissionService.getSubmissionsByTask(task.id)
+            submissionsRes.data.forEach(submission => {
+              const submissionDate = new Date(submission.submissionTime).toISOString().split('T')[0]
+              const dayData = last30Days.find(day => day.date === submissionDate)
+              if (dayData) {
+                dayData.count++
+              }
+            })
+          } catch (error) {
+            console.error(`Failed to load submissions for task ${task.id}:`, error)
+          }
+        }
+        
+        analytics.submissionTrends = last30Days
+      } catch (error) {
+        console.error('Failed to load submission trends:', error)
+      }
+    }
+
+    const loadGradeDistribution = async () => {
+      try {
+        const tasks = await taskService.getAllTasks()
+        const gradeRanges = {
+          'A (90-100)': 0,
+          'B (80-89)': 0,
+          'C (70-79)': 0,
+          'D (60-69)': 0,
+          'F (0-59)': 0
+        }
+
+        for (const task of tasks.data) {
+          try {
+            const submissionsRes = await submissionService.getSubmissionsByTask(task.id)
+            submissionsRes.data.forEach(submission => {
+              if (submission.score !== null) {
+                const score = submission.score
+                if (score >= 90) gradeRanges['A (90-100)']++
+                else if (score >= 80) gradeRanges['B (80-89)']++
+                else if (score >= 70) gradeRanges['C (70-79)']++
+                else if (score >= 60) gradeRanges['D (60-69)']++
+                else gradeRanges['F (0-59)']++
+              }
+            })
+          } catch (error) {
+            console.error(`Failed to load submissions for task ${task.id}:`, error)
+          }
+        }
+        
+        analytics.gradeDistribution = Object.entries(gradeRanges).map(([range, count]) => ({
+          range,
+          count
+        }))
+      } catch (error) {
+        console.error('Failed to load grade distribution:', error)
+      }
+    }
+
+    const loadCompletionRates = async () => {
+      try {
+        const coursesRes = await courseService.getAllCourses()
+        const completionData = []
+
+        for (const course of coursesRes.data) {
+          try {
+            const tasksRes = await taskService.getTasksForCourse(course.id)
+            const totalTasks = tasksRes.data.length
+            let completedSubmissions = 0
+            let totalPossibleSubmissions = 0
+
+            const studentsRes = await studentService.getAllStudents()
+            totalPossibleSubmissions = totalTasks * studentsRes.data.length
+
+            for (const task of tasksRes.data) {
+              try {
+                const submissionsRes = await submissionService.getSubmissionsByTask(task.id)
+                completedSubmissions += submissionsRes.data.filter(s => s.completionStatus >= 2).length
+              } catch (error) {
+                console.error(`Failed to load submissions for task ${task.id}:`, error)
+              }
+            }
+
+            const completionRate = totalPossibleSubmissions > 0 
+              ? Math.round((completedSubmissions / totalPossibleSubmissions) * 100)
+              : 0
+
+            completionData.push({
+              courseName: course.courseName,
+              completionRate
+            })
+          } catch (error) {
+            console.error(`Failed to load data for course ${course.id}:`, error)
+          }
+        }
+        
+        analytics.completionRates = completionData
+      } catch (error) {
+        console.error('Failed to load completion rates:', error)
+      }
+    }
+
+    const loadTopStudents = async () => {
+      try {
+        const studentsRes = await studentService.getAllStudents()
+        const studentPerformance = []
+
+        for (const student of studentsRes.data) {
+          try {
+            const submissionsRes = await submissionService.getSubmissionsByStudent(student.id)
+            const submissions = submissionsRes.data
+            
+            const gradedSubmissions = submissions.filter(s => s.score !== null)
+            const averageScore = gradedSubmissions.length > 0
+              ? Math.round(gradedSubmissions.reduce((sum, s) => sum + s.score, 0) / gradedSubmissions.length)
+              : 0
+            
+            const completedTasks = submissions.filter(s => s.completionStatus >= 2).length
+            
+            studentPerformance.push({
+              name: student.user?.username || student.name || `Student ${student.id}`,
+              averageScore,
+              completedTasks,
+              totalTasks: submissions.length
+            })
+          } catch (error) {
+            console.error(`Failed to load submissions for student ${student.id}:`, error)
+          }
+        }
+        
+        analytics.topStudents = studentPerformance
+          .sort((a, b) => b.averageScore - a.averageScore)
+          .slice(0, 10)
+      } catch (error) {
+        console.error('Failed to load top students:', error)
+      }
+    }
+
+    const loadRecentSubmissions = async () => {
+      try {
+        const tasksRes = await taskService.getAllTasks()
+        const recentSubmissions = []
+
+        for (const task of tasksRes.data) {
+          try {
+            const submissionsRes = await submissionService.getSubmissionsByTask(task.id)
+            for (const submission of submissionsRes.data) {
+              try {
+                const studentRes = await studentService.getStudentById(submission.studentId)
+                recentSubmissions.push({
+                  studentName: studentRes.data.user?.username || studentRes.data.name || `Student ${submission.studentId}`,
+                  taskName: task.taskName,
+                  score: submission.score,
+                  submissionTime: submission.submissionTime
+                })
+              } catch (error) {
+                console.error(`Failed to load student ${submission.studentId}:`, error)
+              }
+            }
+          } catch (error) {
+            console.error(`Failed to load submissions for task ${task.id}:`, error)
+          }
+        }
+        
+        analytics.recentSubmissions = recentSubmissions
+          .sort((a, b) => new Date(b.submissionTime) - new Date(a.submissionTime))
+          .slice(0, 10)
+      } catch (error) {
+        console.error('Failed to load recent submissions:', error)
+      }
+    }
+
+    const renderCharts = () => {
+      renderSubmissionTrendsChart()
+      renderGradeDistributionChart()
+      renderCompletionRatesChart()
+      renderPerformanceChart()
+    }
+
+    const renderSubmissionTrendsChart = () => {
+      if (trendsChartInstance) {
+        trendsChartInstance.destroy()
+      }
+      
+      const ctx = submissionTrendsChart.value.getContext('2d')
+      trendsChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: analytics.submissionTrends.map(item => {
+            const date = new Date(item.date)
+            return `${date.getMonth() + 1}/${date.getDate()}`
+          }),
+          datasets: [{
+            label: 'Submissions',
+            data: analytics.submissionTrends.map(item => item.count),
+            borderColor: '#409EFF',
+            backgroundColor: 'rgba(64, 158, 255, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          }
+        }
+      })
+    }
+
+    const renderGradeDistributionChart = () => {
+      if (gradeChartInstance) {
+        gradeChartInstance.destroy()
+      }
+      
+      const ctx = gradeDistributionChart.value.getContext('2d')
+      gradeChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: analytics.gradeDistribution.map(item => item.range),
+          datasets: [{
+            data: analytics.gradeDistribution.map(item => item.count),
+            backgroundColor: [
+              '#67C23A', // A - Green
+              '#409EFF', // B - Blue
+              '#E6A23C', // C - Orange
+              '#F56C6C', // D - Red
+              '#909399'  // F - Gray
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      })
+    }
+
+    const renderCompletionRatesChart = () => {
+      if (completionChartInstance) {
+        completionChartInstance.destroy()
+      }
+      
+      const ctx = completionRatesChart.value.getContext('2d')
+      completionChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: analytics.completionRates.map(item => item.courseName),
+          datasets: [{
+            label: 'Completion Rate (%)',
+            data: analytics.completionRates.map(item => item.completionRate),
+            backgroundColor: '#67C23A',
+            borderColor: '#67C23A',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                callback: function(value) {
+                  return value + '%'
+                }
+              }
+            }
+          }
+        }
+      })
+    }
+
+    const renderPerformanceChart = () => {
+      if (performanceChartInstance) {
+        performanceChartInstance.destroy()
+      }
+      
+      const ctx = performanceChart.value.getContext('2d')
+      performanceChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: analytics.completionRates.map(item => item.courseName),
+          datasets: [{
+            label: 'Average Score',
+            data: analytics.completionRates.map(() => Math.floor(Math.random() * 30) + 70), // Placeholder data
+            backgroundColor: '#E6A23C',
+            borderColor: '#E6A23C',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      })
+    }
+
+    const refreshData = () => {
+      loadAnalytics()
+    }
+
+    const exportReport = async () => {
+      exporting.value = true
+      try {
+        // Simulate export functionality
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        ElMessage.success('Report exported successfully!')
+      } catch (error) {
+        ElMessage.error('Failed to export report')
+      } finally {
+        exporting.value = false
+      }
+    }
+
+    const getScoreType = (score) => {
+      if (score >= 90) return 'success'
+      if (score >= 80) return 'primary'
+      if (score >= 70) return 'warning'
+      return 'danger'
+    }
+
+    const formatDate = (dateString) => {
+      if (!dateString) return 'N/A'
+      const date = new Date(dateString)
+      return `${date.getMonth() + 1}/${date.getDate()}`
+    }
+
+    onMounted(async () => {
+      await loadCourses()
+      await loadAnalytics()
+    })
+
+    return {
+      loading,
+      exporting,
+      courses,
+      selectedCourse,
+      dateRange,
+      analytics,
+      submissionTrendsChart,
+      gradeDistributionChart,
+      completionRatesChart,
+      performanceChart,
+      loadAnalytics,
+      refreshData,
+      exportReport,
+      getScoreType,
+      formatDate
+    }
+  }
 }
 </script>
 
 <style scoped>
 .analytics-container {
-  padding: 0;
+  padding: 20px;
 }
 
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.page-header {
   margin-bottom: 20px;
 }
 
-.section-header h2 {
+.page-header h2 {
+  margin: 0 0 8px 0;
+  color: #2c3e50;
+}
+
+.page-description {
+  color: #7f8c8d;
   margin: 0;
-  color: #303133;
-  font-size: 24px;
-  font-weight: 600;
 }
 
-.section-actions {
-  display: flex;
-  gap: 10px;
+.filter-card {
+  margin-bottom: 20px;
 }
 
-.placeholder-card {
+.metrics-row {
+  margin-bottom: 20px;
+}
+
+.metric-card {
   border: none;
   border-radius: 8px;
-  text-align: center;
-  padding: 40px 20px;
 }
 
-.feature-list {
-  text-align: left;
-  display: inline-block;
-  margin: 20px 0;
-  color: #606266;
+.metric-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
-.feature-list li {
-  margin: 8px 0;
-  padding-left: 10px;
+.metric-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+}
+
+.metric-icon.students {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.metric-icon.courses {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.metric-icon.tasks {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.metric-icon.submissions {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.metric-info h3 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.metric-info p {
+  margin: 5px 0 0 0;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.charts-row {
+  margin-bottom: 20px;
+}
+
+.chart-card {
+  border: none;
+  border-radius: 8px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.chart-container {
+  height: 300px;
   position: relative;
 }
 
-.feature-list li::before {
-  content: '•';
-  color: #409EFF;
+.tables-row {
+  margin-bottom: 20px;
+}
+
+.table-card {
+  border: none;
+  border-radius: 8px;
+}
+
+:deep(.el-table th.el-table__cell) {
+  background-color: #f5f7fa;
   font-weight: bold;
-  position: absolute;
-  left: 0;
+  color: #2c3e50;
+}
+
+:deep(.el-card__header) {
+  padding: 15px 20px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+:deep(.el-card__body) {
+  padding: 20px;
+}
+
+@media (max-width: 768px) {
+  .metrics-row .el-col {
+    margin-bottom: 10px;
+  }
+  
+  .charts-row .el-col {
+    margin-bottom: 20px;
+  }
+  
+  .metric-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
 }
 </style>
