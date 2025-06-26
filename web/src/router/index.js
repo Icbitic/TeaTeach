@@ -7,10 +7,13 @@ import AppLayout from '../components/AppLayout.vue'
 import DashboardView from '../views/DashboardView.vue'
 import StudentDashboardView from '../views/StudentDashboardView.vue'
 import MyCoursesView from '../views/MyCoursesView.vue'
+import StudentResourcesView from '../views/StudentResourcesView.vue'
+import MyTasksView from '../views/MyTasksView.vue'
 import StudentsView from '../views/StudentsView.vue'
 import CoursesView from '../views/CoursesView.vue'
 import TasksView from '../views/TasksView.vue'
 import AnalyticsView from '../views/AnalyticsView.vue'
+import SubmissionsView from '../views/SubmissionsView.vue'
 import SettingsView from '../views/SettingsView.vue'
 
 const routes = [
@@ -57,6 +60,18 @@ const routes = [
         meta: { requiresStudent: true }
       },
       {
+        path: 'course-materials',
+        name: 'course-materials',
+        component: StudentResourcesView,
+        meta: { requiresStudent: true }
+      },
+      {
+        path: 'my-tasks',
+        name: 'my-tasks',
+        component: MyTasksView,
+        meta: { requiresStudent: true }
+      },
+      {
         path: 'students',
         name: 'students',
         component: StudentsView,
@@ -78,6 +93,18 @@ const routes = [
         path: 'analytics',
         name: 'analytics',
         component: AnalyticsView,
+        meta: { requiresTeacher: true }
+      },
+      {
+        path: 'video-heatmap',
+        name: 'video-heatmap',
+        component: () => import('../views/VideoHeatmapView.vue'),
+        meta: { requiresTeacher: true }
+      },
+      {
+        path: 'submissions',
+        name: 'submissions',
+        component: SubmissionsView,
         meta: { requiresTeacher: true }
       },
       {

@@ -21,7 +21,8 @@ public interface StudentMapper {
     @Delete("DELETE FROM students WHERE id=#{id}")
     void delete(@Param("id") Long id);
 
-    @Select("SELECT * FROM students WHERE id=#{id}")
+    // guess which one is right?
+    @Select("SELECT * FROM students WHERE id=#{id} OR student_id=#{id}")
     @Results({
             @Result(property = "id", column = "id"),
             @Result(property = "studentId", column = "student_id"),

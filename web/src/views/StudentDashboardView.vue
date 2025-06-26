@@ -219,16 +219,55 @@
         
         <div v-if="taskResources.length > 0" class="task-resources">
           <h4>Resources</h4>
-          <el-list>
-            <el-list-item v-for="resource in taskResources" :key="resource.id">
-              <div class="resource-item">
-                <el-icon><Document /></el-icon>
-                <span>{{ resource.resourceName }}</span>
-                <el-button type="text" @click="downloadResource(resource)">Download</el-button>
+          <div class="resources-grid">
+            <div v-for="resource in taskResources" :key="resource.id" class="resource-item">
+              <div class="resource-info">
+                <div class="resource-icon">
+                  <el-icon v-if="isVideoFile(resource.fileName)"><VideoPlay /></el-icon>
+                  <el-icon v-else-if="isImageFile(resource.fileName)"><Picture /></el-icon>
+                  <el-icon v-else-if="isPdfFile(resource.fileName)"><Document /></el-icon>
+                  <el-icon v-else-if="isAudioFile(resource.fileName)"><Headphone /></el-icon>
+                  <el-icon v-else><Document /></el-icon>
+                </div>
+                <div class="resource-details">
+                  <h5>{{ resource.fileName || resource.resourceName }}</h5>
+                  <p v-if="resource.fileSize">{{ formatFileSize(resource.fileSize) }}</p>
+                </div>
               </div>
-            </el-list-item>
-          </el-list>
+              <div class="resource-actions">
+                <el-button type="primary" size="small" @click="viewResource(resource)">
+                  <el-icon><View /></el-icon>
+                  View
+                </el-button>
+                <el-button type="default" size="small" @click="downloadResource(resource)">
+                  <el-icon><Download /></el-icon>
+                  Download
+                </el-button>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+    </el-dialog>
+
+    <!-- Media Viewer Dialog -->
+    <el-dialog
+      v-model="mediaViewerVisible"
+      :title="selectedResource?.fileName || selectedResource?.resourceName"
+      width="90%"
+      top="5vh"
+      @close="closeMediaViewer"
+    >
+      <div class="media-viewer-container">
+        <MediaViewer
+          v-if="selectedResource"
+          :resource="selectedResource"
+          :student-id="currentStudentId"
+          :show-progress="true"
+          :auto-track="true"
+          @progress-update="handleProgressUpdate"
+          @playback-complete="handlePlaybackComplete"
+        />
       </div>
     </el-dialog>
 
@@ -246,7 +285,7 @@
         label-width="120px"
       >
         <el-form-item label="Task" prop="taskName">
-          <el-input v-model="selectedTask.taskName" disabled />
+          <el-input :value="selectedTask?.taskName || ''" disabled />
         </el-form-item>
         
         <el-form-item 
@@ -349,24 +388,35 @@ import {
   Files,
   Trophy,
   Tools,
-  Clock
+  Clock,
+  Picture,
+  Headphone,
+  View,
+  Download
 } from '@element-plus/icons-vue'
 import TypewriterText from '../components/TypewriterText.vue'
+import MediaViewer from '../components/MediaViewer.vue'
 import { taskService } from '../services/taskService'
 import { submissionService } from '../services/submissionService'
 import { courseEnrollmentService } from '../services/courseEnrollmentService'
+import { resourceService } from '../services/resourceService'
 
 export default {
   name: 'StudentDashboardView',
   components: {
     TypewriterText,
+    MediaViewer,
     Document,
     VideoPlay,
     Edit,
     Files,
     Trophy,
     Tools,
-    Clock
+    Clock,
+    Picture,
+    Headphone,
+    View,
+    Download
   },
   setup() {
     const store = useStore()
@@ -387,6 +437,11 @@ export default {
     const currentSubmission = ref(null)
     const taskResources = ref([])
     const fileList = ref([])
+    
+    // MediaViewer data
+    const mediaViewerVisible = ref(false)
+    const selectedResource = ref(null)
+    const currentStudentId = computed(() => user.value?.id)
     
     const submissionForm = reactive({
       taskId: null,
@@ -673,6 +728,75 @@ export default {
       return text.length > length ? text.substring(0, length) + '...' : text
     }
     
+    // Resource handling methods
+    const viewResource = (resource) => {
+      selectedResource.value = resource
+      mediaViewerVisible.value = true
+    }
+    
+    const closeMediaViewer = () => {
+      mediaViewerVisible.value = false
+      selectedResource.value = null
+    }
+    
+    const downloadResource = async (resource) => {
+      try {
+        const response = await resourceService.downloadResource(resource.id)
+        const url = window.URL.createObjectURL(new Blob([response.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', resource.fileName || resource.resourceName)
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        window.URL.revokeObjectURL(url)
+        ElMessage.success('Resource downloaded successfully')
+      } catch (error) {
+        console.error('Error downloading resource:', error)
+        ElMessage.error('Failed to download resource')
+      }
+    }
+    
+    const handleProgressUpdate = (progress) => {
+      console.log('Progress updated:', progress)
+    }
+    
+    const handlePlaybackComplete = () => {
+      ElMessage.success('Playback completed!')
+    }
+    
+    // File type checking methods
+    const isVideoFile = (fileName) => {
+      if (!fileName) return false
+      const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv']
+      return videoExtensions.some(ext => fileName.toLowerCase().endsWith(ext))
+    }
+    
+    const isImageFile = (fileName) => {
+      if (!fileName) return false
+      const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.webp']
+      return imageExtensions.some(ext => fileName.toLowerCase().endsWith(ext))
+    }
+    
+    const isPdfFile = (fileName) => {
+      if (!fileName) return false
+      return fileName.toLowerCase().endsWith('.pdf')
+    }
+    
+    const isAudioFile = (fileName) => {
+      if (!fileName) return false
+      const audioExtensions = ['.mp3', '.wav', '.ogg', '.aac', '.flac', '.m4a']
+      return audioExtensions.some(ext => fileName.toLowerCase().endsWith(ext))
+    }
+    
+    const formatFileSize = (bytes) => {
+      if (!bytes) return ''
+      const sizes = ['Bytes', 'KB', 'MB', 'GB']
+      if (bytes === 0) return '0 Bytes'
+      const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)))
+      return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i]
+    }
+    
     // Initialize data
     onMounted(async () => {
       await loadEnrolledCourses()
@@ -702,6 +826,9 @@ export default {
       fileList,
       submissionForm,
       submissionRules,
+      mediaViewerVisible,
+      selectedResource,
+      currentStudentId,
       onDashboardTitleComplete,
       handleCourseFilter,
       viewTask,
@@ -722,7 +849,17 @@ export default {
       formatDeadline,
       formatDateTime,
       getDeadlineClass,
-      truncateText
+      truncateText,
+      viewResource,
+      closeMediaViewer,
+      downloadResource,
+      handleProgressUpdate,
+      handlePlaybackComplete,
+      isVideoFile,
+      isImageFile,
+      isPdfFile,
+      isAudioFile,
+      formatFileSize
     }
   }
 }
@@ -951,6 +1088,73 @@ export default {
   
   .action-buttons {
     flex-direction: column;
+  }
+}
+
+/* Resource grid styles */
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.resource-item {
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fff;
+  transition: all 0.3s ease;
+}
+
+.resource-item:hover {
+  border-color: #409eff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.resource-info {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.resource-icon {
+  margin-right: 12px;
+  font-size: 24px;
+  color: #409eff;
+}
+
+.resource-details h5 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #303133;
+  word-break: break-word;
+}
+
+.resource-details p {
+  margin: 0;
+  font-size: 12px;
+  color: #909399;
+}
+
+.resource-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.media-viewer-container {
+  min-height: 400px;
+}
+
+@media (max-width: 768px) {
+  .resources-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .resource-actions {
+    justify-content: center;
   }
 }
 </style>

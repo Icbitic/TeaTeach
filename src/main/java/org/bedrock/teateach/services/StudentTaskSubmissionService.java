@@ -23,21 +23,21 @@ public class StudentTaskSubmissionService {
     }
 
     @Transactional
-    @CacheEvict(value = {"studentSubmissions", "taskSubmissions"}, allEntries = true)
+    @CacheEvict(value = {"studentSubmissions", "taskSubmissions", "studentTaskSubmissions"}, allEntries = true)
     public StudentTaskSubmission createSubmission(StudentTaskSubmission submission) {
         submissionMapper.insert(submission);
         return submission;
     }
 
     @Transactional
-    @CacheEvict(value = {"submissions", "studentSubmissions", "taskSubmissions"}, allEntries = true)
+    @CacheEvict(value = {"submissions", "studentSubmissions", "taskSubmissions", "studentTaskSubmissions"}, allEntries = true)
     public StudentTaskSubmission updateSubmission(StudentTaskSubmission submission) {
         submissionMapper.update(submission);
         return submission;
     }
 
     @Transactional
-    @CacheEvict(value = {"submissions", "studentSubmissions", "taskSubmissions"}, allEntries = true)
+    @CacheEvict(value = {"submissions", "studentSubmissions", "taskSubmissions", "studentTaskSubmissions"}, allEntries = true)
     public void deleteSubmission(Long id) {
         submissionMapper.delete(id);
     }
@@ -55,6 +55,12 @@ public class StudentTaskSubmissionService {
     @Cacheable(value = "taskSubmissions", key = "#taskId")
     public List<StudentTaskSubmission> getSubmissionsByTaskId(Long taskId) {
         return submissionMapper.findByTaskId(taskId);
+    }
+
+    @Cacheable(value = "studentTaskSubmissions", key = "#studentId + '_' + #taskId")
+    public Optional<StudentTaskSubmission> getSubmissionByStudentAndTask(Long studentId, Long taskId) {
+        StudentTaskSubmission submission = submissionMapper.findByStudentAndTask(studentId, taskId);
+        return Optional.ofNullable(submission);
     }
 
     // You might also add methods here for:

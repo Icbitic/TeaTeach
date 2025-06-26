@@ -140,6 +140,35 @@ create table teateach.students
         unique (student_id)
 );
 
+create table teateach.course_enrollments
+(
+    id              bigint auto_increment
+        primary key,
+    course_id       bigint                                                           not null,
+    student_id      bigint                                                           not null,
+    enrollment_date timestamp                              default CURRENT_TIMESTAMP null,
+    status          enum ('ACTIVE', 'INACTIVE', 'DROPPED') default 'ACTIVE'          null,
+    created_at      timestamp                              default CURRENT_TIMESTAMP null,
+    updated_at      timestamp                              default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP,
+    constraint unique_course_student
+        unique (course_id, student_id),
+    constraint course_enrollments_ibfk_1
+        foreign key (course_id) references teateach.courses (id)
+            on delete cascade,
+    constraint course_enrollments_ibfk_2
+        foreign key (student_id) references teateach.students (id)
+            on delete cascade
+);
+
+create index idx_course_id
+    on teateach.course_enrollments (course_id);
+
+create index idx_enrollment_date
+    on teateach.course_enrollments (enrollment_date);
+
+create index idx_student_id
+    on teateach.course_enrollments (student_id);
+
 create table teateach.grade_analysis
 (
     id            bigint auto_increment
@@ -172,7 +201,7 @@ create table teateach.student_task_submissions
     id                 bigint auto_increment
         primary key,
     task_id            bigint                             not null,
-    student_id         bigint                             not null,
+    student_id         varchar(50)                        not null,
     submission_content text                               null comment 'Path to file, text answer, or JSON data',
     submission_time    datetime                           not null,
     score              double                             null comment 'Nullable until graded',
@@ -185,9 +214,8 @@ create table teateach.student_task_submissions
     constraint student_task_submissions_ibfk_1
         foreign key (task_id) references teateach.learning_tasks (id)
             on delete cascade,
-    constraint student_task_submissions_ibfk_2
-        foreign key (student_id) references teateach.students (id)
-            on delete cascade
+    constraint student_task_submissions_students_student_id_fk
+        foreign key (student_id) references teateach.students (student_id)
 );
 
 create index idx_submissions_student_task
@@ -195,6 +223,27 @@ create index idx_submissions_student_task
 
 create index idx_students_email
     on teateach.students (email);
+
+create table teateach.submission_files
+(
+    id               bigint auto_increment
+        primary key,
+    submission_id    bigint                             not null,
+    file_name        varchar(255)                       not null comment 'Original file name',
+    stored_file_name varchar(255)                       not null comment 'UUID-based stored file name',
+    file_path        varchar(512)                       not null comment 'Path to stored file',
+    file_type        varchar(50)                        not null comment 'File extension (e.g., pdf, docx, jpg)',
+    file_size        bigint                             null comment 'Size of the file in bytes',
+    mime_type        varchar(100)                       null comment 'MIME type of the file',
+    created_at       datetime default CURRENT_TIMESTAMP null,
+    updated_at       datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP,
+    constraint fk_submission_files_submission_id
+        foreign key (submission_id) references teateach.student_task_submissions (id)
+            on delete cascade
+);
+
+create index idx_submission_files_submission_id
+    on teateach.submission_files (submission_id);
 
 create table teateach.task_resources
 (

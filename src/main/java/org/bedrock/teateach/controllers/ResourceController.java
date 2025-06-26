@@ -114,6 +114,17 @@ public class ResourceController {
     }
 
     /**
+     * Retrieves all resources.
+     * GET /api/resources
+     * @return A list of all resources.
+     */
+    @GetMapping
+    public ResponseEntity<List<Resource>> getAllResources() {
+        List<Resource> resources = resourceService.getAllResources();
+        return ResponseEntity.ok(resources);
+    }
+
+    /**
      * Retrieves a resource by its ID.
      * GET /api/resources/{id}
      * @param id The ID of the resource to retrieve.

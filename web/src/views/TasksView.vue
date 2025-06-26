@@ -88,7 +88,7 @@
             </el-tooltip>
           </template>
         </el-table-column>
-        
+
         <el-table-column label="Resources" width="200" align="center">
           <template #default="{ row }">
             <div class="resource-cell">
@@ -104,7 +104,7 @@
             </div>
           </template>
         </el-table-column>
-        
+
         <el-table-column label="Actions" width="220" align="center">
           <template #default="{ row }">
             <el-button
@@ -129,8 +129,8 @@
     <!-- Resources Management Dialog -->
     <el-dialog
       v-model="resourcesDialogVisible"
-      :title="`Manage Files - ${selectedTask?.title || ''}`"
-      width="800px"
+      :title="`Manage Files - ${selectedTask?.taskName || ''}`"
+      width="1000px"
       @close="closeResourcesDialog"
     >
       <div class="resources-dialog-content">
@@ -177,6 +177,14 @@
               </div>
               <div class="file-actions">
                 <el-button
+                  type="primary"
+                  size="small"
+                  @click="viewResource(resource)"
+                >
+                  <el-icon><View /></el-icon>
+                  View
+                </el-button>
+                <el-button
                   type="success"
                   size="small"
                   @click="downloadTaskResource(resource.id)"
@@ -198,6 +206,27 @@
             </div>
           </div>
         </div>
+      </div>
+    </el-dialog>
+
+    <!-- Media Viewer Dialog -->
+    <el-dialog
+      v-model="mediaViewerVisible"
+      :title="`Viewing: ${selectedResource?.resourceName || ''}`"
+      width="90%"
+      top="5vh"
+      @close="closeMediaViewer"
+    >
+      <div class="media-viewer-container">
+        <MediaViewer
+          v-if="selectedResource"
+          :resource="selectedResource"
+          :student-id="currentStudentId"
+          :show-progress="true"
+          :auto-track="true"
+          @progress-update="handleProgressUpdate"
+          @playback-complete="handlePlaybackComplete"
+        />
       </div>
     </el-dialog>
 
@@ -325,11 +354,13 @@ import {
   Trophy,
   Tools,
   Clock,
-  UploadFilled
+  UploadFilled,
+  View
 } from '@element-plus/icons-vue'
 import taskService from '@/services/taskService'
 import courseService from '@/services/courseService'
 import { resourceService } from '@/services/resourceService'
+import MediaViewer from '@/components/MediaViewer.vue'
 
 export default {
   name: 'TasksView',
@@ -343,7 +374,9 @@ export default {
     Trophy,
     Tools,
     UploadFilled,
-    Clock
+    Clock,
+    View,
+    MediaViewer
   },
   setup() {
     // Reactive data
@@ -366,8 +399,18 @@ export default {
     const uploading = ref(false)
     const uploadRef = ref(null)
     
+    // Media Viewer Dialog
+    const mediaViewerVisible = ref(false)
+    const selectedResource = ref(null)
+    
     const tasks = ref([])
     const courses = ref([])
+    
+    // Get current student ID from localStorage
+    const currentStudentId = computed(() => {
+      const user = JSON.parse(localStorage.getItem('user') || '{}')
+      return user.referenceId || null
+    })
     
     // Task form data
     const taskForm = reactive({
@@ -776,6 +819,27 @@ export default {
       return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i]
     }
     
+    // Media viewer methods
+    const viewResource = (resource) => {
+      selectedResource.value = resource
+      mediaViewerVisible.value = true
+    }
+    
+    const closeMediaViewer = () => {
+      mediaViewerVisible.value = false
+      selectedResource.value = null
+    }
+    
+    const handleProgressUpdate = (progressData) => {
+      console.log('Progress update:', progressData)
+      // You can emit this to parent component or handle as needed
+    }
+    
+    const handlePlaybackComplete = (completionData) => {
+      console.log('Playback complete:', completionData)
+      ElMessage.success(`Video completed! Watch percentage: ${completionData.watchPercentage}%`)
+    }
+    
     // Lifecycle
     onMounted(async () => {
       await loadCourses()
@@ -837,7 +901,16 @@ export default {
       uploading,
       deletingResources,
       loadingTaskResources,
-      taskResourcesMap
+      taskResourcesMap,
+      
+      // Media viewer data
+      mediaViewerVisible,
+      selectedResource,
+      currentStudentId,
+      viewResource,
+      closeMediaViewer,
+      handleProgressUpdate,
+      handlePlaybackComplete
     }
   }
 }
@@ -1145,6 +1218,17 @@ export default {
   margin-top: 15px;
   display: flex;
   gap: 10px;
+}
+
+/* Media viewer styles */
+.media-viewer-container {
+  width: 100%;
+  min-height: 400px;
+}
+
+.media-viewer-container .media-viewer {
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .existing-files-section {
