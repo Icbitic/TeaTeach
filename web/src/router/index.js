@@ -15,6 +15,8 @@ import TasksView from '../views/TasksView.vue'
 import AnalyticsView from '../views/AnalyticsView.vue'
 import SubmissionsView from '../views/SubmissionsView.vue'
 import SettingsView from '../views/SettingsView.vue'
+import QuestionBankView from '../views/QuestionBankView.vue'
+import TestPaperView from '../views/TestPaperView.vue'
 
 const routes = [
   {
@@ -105,6 +107,18 @@ const routes = [
         path: 'submissions',
         name: 'submissions',
         component: SubmissionsView,
+        meta: { requiresTeacher: true }
+      },
+      {
+        path: 'question-bank',
+        name: 'question-bank',
+        component: QuestionBankView,
+        meta: { requiresTeacher: true }
+      },
+      {
+        path: 'test-papers',
+        name: 'test-papers',
+        component: TestPaperView,
         meta: { requiresTeacher: true }
       },
       {

@@ -49,6 +49,14 @@
               <el-icon><el-icon-files /></el-icon>
               <span><TypewriterText :text="'Submissions'" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
+            <el-menu-item index="question-bank">
+              <el-icon><el-icon-collection /></el-icon>
+              <span><TypewriterText :text="'Question Bank'" :show="!isCollapse" :speed="50" /></span>
+            </el-menu-item>
+            <el-menu-item index="test-papers">
+              <el-icon><el-icon-document-copy /></el-icon>
+              <span><TypewriterText :text="'Test Papers'" :show="!isCollapse" :speed="50" /></span>
+            </el-menu-item>
           </template>
           
           <!-- Student Menu -->
@@ -176,6 +184,8 @@ export default {
         'analytics': '/analytics',
         'video-heatmap': '/video-heatmap',
         'submissions': '/submissions',
+        'question-bank': '/question-bank',
+        'test-papers': '/test-papers',
         'my-grades': '/student-dashboard', // For now, redirect to student dashboard
         'settings': '/settings'
       }
@@ -198,6 +208,8 @@ export default {
         '/analytics': 'analytics',
         '/video-heatmap': 'video-heatmap',
         '/submissions': 'submissions',
+        '/question-bank': 'question-bank',
+        '/test-papers': 'test-papers',
         '/settings': 'settings'
       }
       return routeToKey[route.path] || (user.value.userType === 'STUDENT' ? 'student-dashboard' : 'dashboard')

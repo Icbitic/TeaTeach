@@ -180,7 +180,7 @@
             <el-table-column prop="averageScore" label="Avg Score" width="100">
               <template #default="scope">
                 <el-tag :type="getScoreType(scope.row.averageScore)">
-                  {{ scope.row.averageScore }}%
+                  {{ scope.row.averageScore ? scope.row.averageScore : 'N/A' }}%
                 </el-tag>
               </template>
             </el-table-column>
@@ -477,7 +477,7 @@ export default {
         }
         
         analytics.topStudents = studentPerformance
-          .sort((a, b) => b.averageScore - a.averageScore)
+          .sort((a, b) => (b.averageScore || 0) - (a.averageScore || 0))
           .slice(0, 10)
       } catch (error) {
         console.error('Failed to load top students:', error)
@@ -695,6 +695,7 @@ export default {
     }
 
     const getScoreType = (score) => {
+      if (score === null || score === undefined) return 'info'
       if (score >= 90) return 'success'
       if (score >= 80) return 'primary'
       if (score >= 70) return 'warning'
