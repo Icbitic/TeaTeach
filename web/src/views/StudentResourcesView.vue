@@ -1,11 +1,11 @@
 <template>
   <div class="student-resources-container">
     <div class="section-header">
-      <h2>Course Materials</h2>
+      <h2>{{ $t('studentResources.courseMaterials') }}</h2>
       <div class="section-actions">
         <el-select
           v-model="selectedCourse"
-          placeholder="Filter by Course"
+          :placeholder="$t('studentCourseResources.filterByCourse')"
           clearable
           style="width: 200px; margin-right: 10px"
           @change="handleCourseFilter"
@@ -19,7 +19,7 @@
         </el-select>
         <el-select
           v-model="selectedTaskType"
-          placeholder="Filter by Type"
+          :placeholder="$t('studentCourseResources.filterByType')"
           clearable
           style="width: 150px"
           @change="handleTypeFilter"
@@ -78,7 +78,7 @@
               </div>
               <div class="resources-count">
                 <el-icon><Files /></el-icon>
-                <span>{{ getResourceCount(task.id) }} files</span>
+                <span>{{ $t('studentResources.filesCount', { count: getResourceCount(task.id) }) }}</span>
               </div>
             </div>
           </div>
@@ -86,7 +86,7 @@
           <!-- Progress Bar for Video Tasks -->
           <div v-if="task.taskType === 'VIDEO_WATCH' && taskProgress[task.id]" class="progress-section">
             <div class="progress-info">
-              <span class="progress-label">Watch Progress</span>
+              <span class="progress-label">{{ $t('studentResources.watchProgress') }}</span>
               <span class="progress-value">{{ taskProgress[task.id].watchPercentage || 0 }}%</span>
             </div>
             <el-progress
@@ -105,7 +105,7 @@
               :loading="loadingTaskResources[task.id]"
             >
               <el-icon><View /></el-icon>
-              View Materials
+              {{ $t('studentResources.viewMaterials') }}
             </el-button>
             <el-button
               v-if="task.taskType === 'VIDEO_WATCH'"
@@ -114,7 +114,7 @@
               :disabled="!hasVideoResources(task.id)"
             >
               <el-icon><VideoPlay /></el-icon>
-              {{ taskProgress[task.id]?.watchPercentage > 0 ? 'Continue' : 'Start' }} Watching
+              {{ taskProgress[task.id]?.watchPercentage > 0 ? $t('studentResources.continue') : $t('studentResources.start') }} {{ $t('studentResources.watching') }}
             </el-button>
           </div>
         </template>
@@ -123,21 +123,21 @@
 
     <!-- Empty State -->
     <div v-if="!loading && filteredTasks.length === 0" class="empty-state">
-      <el-empty description="No course materials found">
-        <el-button type="primary" @click="clearFilters">Clear Filters</el-button>
+      <el-empty :description="$t('studentResources.noMaterialsFound')">
+        <el-button type="primary" @click="clearFilters">{{ $t('studentResources.clearFilters') }}</el-button>
       </el-empty>
     </div>
 
     <!-- Task Resources Dialog -->
     <el-dialog
       v-model="resourcesDialogVisible"
-      :title="`${selectedTask?.taskName || ''} - Course Materials`"
+      :title="$t('studentResources.taskMaterialsTitle', { taskName: selectedTask?.taskName || '' })"
       width="1000px"
       @close="closeResourcesDialog"
     >
       <div class="resources-dialog-content">
         <div v-if="taskResources.length === 0" class="no-resources">
-          <el-empty description="No materials available for this task" />
+          <el-empty :description="$t('studentResources.noMaterialsAvailable')" />
         </div>
         <div v-else class="resources-grid">
           <div
@@ -162,11 +162,11 @@
             <div class="resource-actions">
               <el-button type="primary" size="small">
                 <el-icon><View /></el-icon>
-                View
+                {{ $t('studentResources.view') }}
               </el-button>
               <el-button type="success" size="small" @click.stop="downloadResource(resource.id)">
                 <el-icon><Download /></el-icon>
-                Download
+                {{ $t('studentResources.download') }}
               </el-button>
             </div>
           </div>
@@ -177,7 +177,7 @@
     <!-- Media Viewer Dialog -->
     <el-dialog
       v-model="mediaViewerVisible"
-      :title="`Viewing: ${selectedResource?.resourceName || ''}`"
+      :title="$t('studentResources.viewingTitle', { resourceName: selectedResource?.resourceName || '' })"
       width="90%"
       top="5vh"
       @close="closeMediaViewer"

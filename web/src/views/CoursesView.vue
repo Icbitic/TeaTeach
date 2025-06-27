@@ -1,19 +1,19 @@
 <template>
   <div class="courses-container">
     <div class="section-header">
-      <h2>Course Management</h2>
+      <h2>{{ $t('courses.management') }}</h2>
       <div class="section-actions">
         <el-button type="primary" @click="showAddCourseDialog">
           <el-icon>
             <el-icon-plus/>
           </el-icon>
-          Add Course
+          {{ $t('courses.addCourse') }}
         </el-button>
         <el-button type="info" @click="exportCourses">
           <el-icon>
             <el-icon-download/>
           </el-icon>
-          Export
+          {{ $t('courses.export') }}
         </el-button>
       </div>
     </div>
@@ -21,10 +21,10 @@
     <!-- Search and Filter -->
     <el-card shadow="hover" class="filter-card">
       <el-form :inline="true" :model="courseSearchForm" class="search-form">
-        <el-form-item label="Search">
+        <el-form-item :label="$t('common.search')">
           <el-input
               v-model="courseSearchForm.keyword"
-              placeholder="Course name, code or instructor"
+              :placeholder="$t('courses.searchPlaceholder')"
               clearable
               @keyup.enter="searchCourses"
           >
@@ -38,8 +38,8 @@
           </el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="searchCourses">Filter</el-button>
-          <el-button @click="resetCourseSearch">Reset</el-button>
+          <el-button type="primary" @click="searchCourses">{{ $t('courses.filter') }}</el-button>
+          <el-button @click="resetCourseSearch">{{ $t('courses.reset') }}</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -57,14 +57,14 @@
           table-layout="fixed"
       >
         <el-table-column type="selection" width="55" fixed="left"/>
-        <el-table-column prop="courseCode" label="Course Code" width="120" sortable/>
-        <el-table-column prop="courseName" label="Course Name" min-width="200" sortable/>
-        <el-table-column prop="instructor" label="Instructor" min-width="150" show-overflow-tooltip/>
-        <el-table-column prop="credits" label="Credits" width="80" sortable/>
-        <el-table-column prop="hours" label="Hours" width="80" sortable/>
-        <el-table-column prop="description" label="Description" min-width="200" show-overflow-tooltip/>
+        <el-table-column prop="courseCode" :label="$t('courses.courseCode')" width="120" sortable/>
+        <el-table-column prop="courseName" :label="$t('courses.courseName')" min-width="200" sortable/>
+        <el-table-column prop="instructor" :label="$t('courses.instructor')" min-width="150" show-overflow-tooltip/>
+        <el-table-column prop="credits" :label="$t('courses.credits')" width="80" sortable/>
+        <el-table-column prop="hours" :label="$t('courses.hours')" width="80" sortable/>
+        <el-table-column prop="description" :label="$t('courses.description')" min-width="200" show-overflow-tooltip/>
 
-        <el-table-column label="Actions" fixed="right" width="220">
+        <el-table-column :label="$t('courses.actions')" fixed="right" width="220">
           <template #default="scope">
             <el-button
                 type="primary"
@@ -82,7 +82,7 @@
                 @click="manageStudents(scope.row)"
                 circle
                 plain
-                title="Manage Students">
+                :title="$t('courses.manageStudents')">
               <el-icon>
                 <el-icon-user/>
               </el-icon>
@@ -93,7 +93,7 @@
                 @click="generateKnowledgePoints(scope.row)"
                 circle
                 plain
-                title="Generate Knowledge Points">
+                :title="$t('courses.generateKnowledgePoints')">
               <el-icon>
                 <el-icon-magic-stick/>
               </el-icon>
@@ -129,21 +129,21 @@
     <!-- Add/Edit Course Dialog -->
     <el-dialog
         v-model="courseDialog.visible"
-        :title="courseDialog.isEdit ? 'Edit Course' : 'Add New Course'"
+        :title="courseDialog.isEdit ? $t('courses.editCourse') : $t('courses.addNewCourse')"
         width="500px">
       <el-form
           :model="courseDialog.form"
           :rules="courseDialog.rules"
           ref="courseFormRef"
           label-width="120px">
-        <el-form-item label="Course Code" prop="courseCode">
-          <el-input v-model="courseDialog.form.courseCode" placeholder="Enter course code (e.g., CS101)"/>
+        <el-form-item :label="$t('courses.courseCode')" prop="courseCode">
+          <el-input v-model="courseDialog.form.courseCode" :placeholder="$t('courseManagement.courseCodePlaceholder')"/>
         </el-form-item>
         <el-form-item label="Course Name" prop="courseName">
-          <el-input v-model="courseDialog.form.courseName" placeholder="Enter course name"/>
+          <el-input v-model="courseDialog.form.courseName" :placeholder="$t('courseManagement.courseNamePlaceholder')"/>
         </el-form-item>
         <el-form-item label="Instructor" prop="instructor">
-          <el-input v-model="courseDialog.form.instructor" placeholder="Enter instructor name"/>
+          <el-input v-model="courseDialog.form.instructor" :placeholder="$t('courseManagement.instructorPlaceholder')"/>
         </el-form-item>
         <el-form-item label="Credits" prop="credits">
           <el-input-number v-model="courseDialog.form.credits" :min="1" :max="10" style="width: 100%"/>
@@ -152,7 +152,7 @@
           <el-input-number v-model="courseDialog.form.hours" :min="1" :max="200" style="width: 100%"/>
         </el-form-item>
         <el-form-item label="Description" prop="description">
-          <el-input v-model="courseDialog.form.description" type="textarea" :rows="3" placeholder="Enter course description"/>
+          <el-input v-model="courseDialog.form.description" type="textarea" :rows="3" :placeholder="$t('courseManagement.descriptionPlaceholder')"/>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -179,14 +179,14 @@
         
         <el-tabs v-model="enrollmentDialog.activeTab">
           <!-- Enrolled Students Tab -->
-          <el-tab-pane label="Enrolled Students" name="enrolled">
+          <el-tab-pane :label="$t('courses.enrolledStudents')" name="enrolled">
             <div class="tab-header">
               <div class="tab-header-left">
-                <span>Total Enrolled: {{ enrolledStudents.length }}</span>
+                <span>{{ $t('courses.totalEnrolled') }}: {{ enrolledStudents.length }}</span>
               </div>
               <div class="tab-header-right">
                 <el-button type="danger" size="small" @click="unenrollSelectedStudents" :disabled="selectedEnrolledStudents.length === 0">
-                  Remove Selected
+                  {{ $t('courses.removeSelected') }}
                 </el-button>
               </div>
             </div>
@@ -196,8 +196,8 @@
                 @selection-change="handleEnrolledStudentsSelectionChange"
                 height="300">
               <el-table-column type="selection" width="55"/>
-              <el-table-column prop="studentId" label="Student ID" width="120"/>
-              <el-table-column prop="name" label="Name" min-width="150"/>
+              <el-table-column prop="studentId" :label="$t('common.studentId')" width="120"/>
+              <el-table-column prop="name" :label="$t('common.name')" min-width="150"/>
               <el-table-column prop="email" label="Email" min-width="200"/>
               <el-table-column prop="major" label="Major" min-width="150"/>
               <el-table-column label="Actions" width="100">
@@ -215,12 +215,12 @@
           </el-tab-pane>
           
           <!-- Add Students Tab -->
-          <el-tab-pane label="Add Students" name="add">
+          <el-tab-pane :label="$t('courses.addStudents')" name="add">
             <div class="tab-header">
               <div class="tab-header-left">
                 <el-input
                     v-model="studentSearchKeyword"
-                    placeholder="Search students..."
+                    :placeholder="$t('courseManagement.searchStudentsPlaceholder')"
                     style="width: 300px"
                     clearable>
                   <template #append>
@@ -232,7 +232,7 @@
               </div>
               <div class="tab-header-right">
                 <el-button type="primary" @click="enrollSelectedStudents" :disabled="selectedAvailableStudents.length === 0">
-                  Enroll Selected ({{ selectedAvailableStudents.length }})
+                  {{ $t('courses.enrollSelected') }} ({{ selectedAvailableStudents.length }})
                 </el-button>
               </div>
             </div>
@@ -242,18 +242,18 @@
                 @selection-change="handleAvailableStudentsSelectionChange"
                 height="300">
               <el-table-column type="selection" width="55"/>
-              <el-table-column prop="studentId" label="Student ID" width="120"/>
-              <el-table-column prop="name" label="Name" min-width="150"/>
-              <el-table-column prop="email" label="Email" min-width="200"/>
-              <el-table-column prop="major" label="Major" min-width="150"/>
-              <el-table-column label="Actions" width="100">
+              <el-table-column prop="studentId" :label="$t('common.studentId')" width="120"/>
+              <el-table-column prop="name" :label="$t('common.name')" min-width="150"/>
+              <el-table-column prop="email" :label="$t('common.email')" min-width="200"/>
+              <el-table-column prop="major" :label="$t('common.major')" min-width="150"/>
+              <el-table-column :label="$t('common.actions')" width="100">
                 <template #default="scope">
                   <el-button
                       type="primary"
                       size="small"
                       @click="enrollStudent(scope.row)"
                       plain>
-                    Enroll
+                    {{ $t('courses.enroll') }}
                   </el-button>
                 </template>
               </el-table-column>
@@ -287,7 +287,7 @@
                 v-model="knowledgePointDialog.form.courseContent"
                 type="textarea"
                 :rows="8"
-                placeholder="Paste your course content here (lecture notes, textbook chapters, syllabus, etc.)\n\nThe AI will analyze this content and automatically generate relevant knowledge points with their relationships."
+                :placeholder="$t('courseManagement.contentPlaceholder')"
                 maxlength="10000"
                 show-word-limit
             />
@@ -329,6 +329,7 @@
 
 <script>
 import { ref, reactive, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import courseService from '@/services/courseService'
 import courseEnrollmentService from '@/services/courseEnrollmentService'
@@ -337,6 +338,7 @@ import knowledgePointService from '@/services/knowledgePointService'
 export default {
   name: 'CoursesView',
   setup() {
+    const { t } = useI18n()
     const courseFormRef = ref(null)
     const courseLoading = ref(false)
     const courseCurrentPage = ref(1)
@@ -795,6 +797,7 @@ export default {
     })
 
     return {
+      t,
       courseFormRef,
       courseLoading,
       courseCurrentPage,

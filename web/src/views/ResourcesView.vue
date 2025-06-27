@@ -1,11 +1,11 @@
 <template>
   <div class="resources-container">
     <div class="section-header">
-      <h2>Resource Management</h2>
+      <h2>{{ $t('resources.management') }}</h2>
       <div class="section-actions">
         <el-button type="primary" @click="showUploadDialog = true">
           <el-icon><Upload /></el-icon>
-          Upload Resource
+          {{ $t('resources.uploadResource') }}
         </el-button>
       </div>
     </div>
@@ -50,7 +50,7 @@
         
         <div class="resource-content">
           <div class="resource-info">
-            <p class="resource-description">{{ resource.description || 'No description provided' }}</p>
+            <p class="resource-description">{{ resource.description || $t('ui.noDescriptionProvided') }}</p>
             <div class="resource-meta">
               <div class="file-info">
                 <el-icon><Files /></el-icon>
@@ -69,9 +69,9 @@
 
     <!-- Empty State -->
     <div v-if="!loading && resources.length === 0" class="empty-state">
-      <el-empty description="No resources uploaded yet">
+      <el-empty :description="$t('resources.noResourcesUploaded')">
         <el-button type="primary" @click="showUploadDialog = true">
-          Upload Your First Resource
+          {{ $t('resources.uploadFirstResource') }}
         </el-button>
       </el-empty>
     </div>
@@ -92,7 +92,7 @@
         <el-form-item label="Resource Name" prop="resourceName">
           <el-input
             v-model="uploadForm.resourceName"
-            placeholder="Enter resource name"
+            :placeholder="$t('resourceManagement.resourceNamePlaceholder')"
           />
         </el-form-item>
         
@@ -101,7 +101,7 @@
             v-model="uploadForm.description"
             type="textarea"
             :rows="3"
-            placeholder="Enter resource description (optional)"
+            :placeholder="$t('resourceManagement.descriptionPlaceholder')"
           />
         </el-form-item>
         

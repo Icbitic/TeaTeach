@@ -56,7 +56,7 @@
             <el-form-item label="Search">
               <el-input
                 v-model="searchKeyword"
-                placeholder="Search courses..."
+                :placeholder="$t('myCourses.searchCoursesPlaceholder')"
                 clearable
                 @input="filterCourses"
                 style="width: 300px"
@@ -69,7 +69,7 @@
             <el-form-item label="Status">
               <el-select
                 v-model="statusFilter"
-                placeholder="All Status"
+                :placeholder="$t('myCourses.allStatus')"
                 clearable
                 @change="filterCourses"
                 style="width: 150px"

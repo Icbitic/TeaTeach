@@ -1,8 +1,8 @@
 <template>
   <div class="dashboard-container">
     <div class="dashboard-header">
-      <h2><TypewriterText :text="'Teacher Dashboard'" :show="true" :speed="70" @typing-complete="onDashboardTitleComplete" /></h2>
-      <p class="welcome-message"><TypewriterText :text="`Welcome back, ${user?.username || 'Teacher'}!`" :show="showWelcomeMessage" :speed="50" /></p>
+      <h2><TypewriterText :text="$t('dashboard.title')" :show="true" :speed="70" @typing-complete="onDashboardTitleComplete" /></h2>
+      <p class="welcome-message"><TypewriterText :text="$t('dashboard.welcome', { username: user?.username || 'Teacher' })" :show="showWelcomeMessage" :speed="50" /></p>
     </div>
 
     <el-row :gutter="20" class="dashboard-stats">
@@ -15,7 +15,7 @@
           </div>
           <div class="stat-info">
             <div class="stat-value">{{ totalStudents }}</div>
-            <div class="stat-label">Total Students</div>
+            <div class="stat-label">{{ $t('dashboard.totalStudents') }}</div>
           </div>
         </el-card>
       </el-col>
@@ -28,7 +28,7 @@
           </div>
           <div class="stat-info">
             <div class="stat-value">{{ totalCourses }}</div>
-            <div class="stat-label">Active Courses</div>
+            <div class="stat-label">{{ $t('dashboard.activeCourses') }}</div>
           </div>
         </el-card>
       </el-col>
@@ -41,7 +41,7 @@
           </div>
           <div class="stat-info">
             <div class="stat-value">{{ upcomingDeadlines }}</div>
-            <div class="stat-label">Pending Tasks</div>
+            <div class="stat-label">{{ $t('dashboard.pendingTasks') }}</div>
           </div>
         </el-card>
       </el-col>
@@ -54,7 +54,7 @@
           </div>
           <div class="stat-info">
             <div class="stat-value">{{ activeStudents }}</div>
-            <div class="stat-label">Active Students</div>
+            <div class="stat-label">{{ $t('dashboard.activeStudents') }}</div>
           </div>
         </el-card>
       </el-col>
@@ -65,32 +65,32 @@
         <el-card shadow="hover" class="chart-card">
           <template #header>
             <div class="card-header">
-              <h3>Recent Activity</h3>
+              <h3>{{ $t('dashboard.recentActivity') }}</h3>
             </div>
           </template>
           <div class="activity-timeline">
             <div class="timeline-item">
               <div class="timeline-icon submission-icon"></div>
               <div class="timeline-content">
-                <p class="timeline-title">New Submission</p>
-                <p class="timeline-desc">John Doe submitted Assignment #3</p>
-                <p class="timeline-time">2 hours ago</p>
+                <p class="timeline-title">{{ $t('dashboard.newSubmission') }}</p>
+                <p class="timeline-desc">{{ $t('dashboard.submissionDesc') }}</p>
+                <p class="timeline-time">{{ $t('dashboard.hoursAgo') }}</p>
               </div>
             </div>
             <div class="timeline-item">
               <div class="timeline-icon grade-icon"></div>
               <div class="timeline-content">
-                <p class="timeline-title">Grades Updated</p>
-                <p class="timeline-desc">You graded 15 submissions for Course CS101</p>
-                <p class="timeline-time">Yesterday</p>
+                <p class="timeline-title">{{ $t('dashboard.gradesUpdated') }}</p>
+                <p class="timeline-desc">{{ $t('dashboard.gradesDesc') }}</p>
+                <p class="timeline-time">{{ $t('dashboard.yesterday') }}</p>
               </div>
             </div>
             <div class="timeline-item">
               <div class="timeline-icon course-icon"></div>
               <div class="timeline-content">
-                <p class="timeline-title">New Course Material</p>
-                <p class="timeline-desc">You uploaded new materials for Data Structures</p>
-                <p class="timeline-time">2 days ago</p>
+                <p class="timeline-title">{{ $t('dashboard.newCourseMaterial') }}</p>
+                <p class="timeline-desc">{{ $t('dashboard.materialDesc') }}</p>
+                <p class="timeline-time">{{ $t('dashboard.daysAgo') }}</p>
               </div>
             </div>
           </div>
@@ -100,7 +100,7 @@
         <el-card shadow="hover" class="chart-card">
           <template #header>
             <div class="card-header">
-              <h3>Upcoming Deadlines</h3>
+              <h3>{{ $t('dashboard.upcomingDeadlines') }}</h3>
             </div>
           </template>
           <div class="deadline-list">
@@ -110,8 +110,8 @@
                 <span class="month">May</span>
               </div>
               <div class="deadline-content">
-                <p class="deadline-title">Final Project Submission</p>
-                <p class="deadline-course">Advanced Programming CS202</p>
+                <p class="deadline-title">{{ $t('dashboard.finalProject') }}</p>
+                <p class="deadline-course">{{ $t('dashboard.advancedProgramming') }}</p>
               </div>
             </div>
             <div class="deadline-item">
@@ -120,8 +120,8 @@
                 <span class="month">May</span>
               </div>
               <div class="deadline-content">
-                <p class="deadline-title">Midterm Exam</p>
-                <p class="deadline-course">Database Systems DB101</p>
+                <p class="deadline-title">{{ $t('dashboard.midtermExam') }}</p>
+                <p class="deadline-course">{{ $t('dashboard.databaseSystems') }}</p>
               </div>
             </div>
             <div class="deadline-item">

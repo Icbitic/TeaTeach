@@ -1,8 +1,8 @@
 <template>
   <div class="student-dashboard-container">
     <div class="dashboard-header">
-      <h2><TypewriterText :text="'Student Dashboard'" :show="true" :speed="70" @typing-complete="onDashboardTitleComplete" /></h2>
-      <p class="welcome-message"><TypewriterText :text="`Welcome back, ${user?.username || 'Student'}!`" :show="showWelcomeMessage" :speed="50" /></p>
+      <h2><TypewriterText :text="$t('studentDashboard.title')" :show="true" :speed="70" @typing-complete="onDashboardTitleComplete" /></h2>
+      <p class="welcome-message"><TypewriterText :text="$t('studentDashboard.welcomeMessage', { username: user?.username || $t('studentDashboard.defaultUser') })" :show="showWelcomeMessage" :speed="50" /></p>
     </div>
 
     <!-- Stats Cards -->
@@ -16,7 +16,7 @@
           </div>
           <div class="stat-info">
             <div class="stat-value">{{ enrolledCourses.length }}</div>
-            <div class="stat-label">Enrolled Courses</div>
+            <div class="stat-label">{{ $t('studentDashboard.enrolledCourses') }}</div>
           </div>
         </el-card>
       </el-col>
@@ -29,7 +29,7 @@
           </div>
           <div class="stat-info">
             <div class="stat-value">{{ totalTasks }}</div>
-            <div class="stat-label">Total Tasks</div>
+            <div class="stat-label">{{ $t('studentDashboard.totalTasks') }}</div>
           </div>
         </el-card>
       </el-col>
@@ -42,7 +42,7 @@
           </div>
           <div class="stat-info">
             <div class="stat-value">{{ pendingTasks }}</div>
-            <div class="stat-label">Pending Tasks</div>
+            <div class="stat-label">{{ $t('studentDashboard.pendingTasks') }}</div>
           </div>
         </el-card>
       </el-col>
@@ -55,7 +55,7 @@
           </div>
           <div class="stat-info">
             <div class="stat-value">{{ completedTasks }}</div>
-            <div class="stat-label">Completed Tasks</div>
+            <div class="stat-label">{{ $t('studentDashboard.completedTasks') }}</div>
           </div>
         </el-card>
       </el-col>
@@ -72,8 +72,8 @@
               </el-icon>
             </div>
             <div class="action-info">
-              <h4>My Learning Abilities</h4>
-              <p>Discover your strengths and get personalized recommendations</p>
+              <h4>{{ $t('studentDashboard.myLearningAbilities') }}</h4>
+              <p>{{ $t('studentDashboard.abilitiesDescription') }}</p>
             </div>
             <div class="action-arrow">
               <el-icon>
@@ -92,8 +92,8 @@
               </el-icon>
             </div>
             <div class="action-info">
-              <h4>My Grades</h4>
-              <p>View your academic performance and progress</p>
+              <h4>{{ $t('studentDashboard.myGrades') }}</h4>
+              <p>{{ $t('studentDashboard.gradesDescription') }}</p>
             </div>
             <div class="action-arrow">
               <el-icon>
@@ -112,8 +112,8 @@
               </el-icon>
             </div>
             <div class="action-info">
-              <h4>Learning Resources</h4>
-              <p>Access course materials and platform resources</p>
+              <h4>{{ $t('studentDashboard.learningResources') }}</h4>
+              <p>{{ $t('studentDashboard.resourcesDescription') }}</p>
             </div>
             <div class="action-arrow">
               <el-icon>
@@ -130,10 +130,10 @@
       <el-col :span="24">
         <el-card shadow="hover">
           <div class="filter-header">
-            <h3>My Learning Tasks</h3>
+            <h3>{{ $t('studentDashboard.myLearningTasks') }}</h3>
             <el-select
               v-model="selectedCourseId"
-              placeholder="Filter by Course"
+              :placeholder="$t('studentDashboard.filterByCourse')"
               clearable
               style="width: 250px"
               @change="handleCourseFilter"
@@ -159,9 +159,9 @@
             v-loading="loading"
             stripe
             style="width: 100%"
-            empty-text="No tasks found"
+            :empty-text="$t('studentDashboard.noTasksFound')"
           >
-            <el-table-column prop="taskName" label="Task Name" min-width="180">
+            <el-table-column prop="taskName" :label="$t('studentDashboard.taskName')" min-width="180">
               <template #default="{ row }">
                 <div class="task-name">
                   <el-icon class="task-icon">
@@ -178,9 +178,9 @@
               </template>
             </el-table-column>
             
-            <el-table-column prop="courseName" label="Course" width="150" />
+            <el-table-column prop="courseName" :label="$t('studentDashboard.course')" width="150" />
             
-            <el-table-column prop="taskType" label="Type" width="140">
+            <el-table-column prop="taskType" :label="$t('studentDashboard.type')" width="140">
               <template #default="{ row }">
                 <el-tag :type="getTaskTypeColor(row.taskType)" size="small">
                   {{ getTaskTypeLabel(row.taskType) }}
@@ -188,7 +188,7 @@
               </template>
             </el-table-column>
             
-            <el-table-column prop="deadline" label="Deadline" width="160">
+            <el-table-column prop="deadline" :label="$t('studentDashboard.deadline')" width="160">
               <template #default="{ row }">
                 <div class="deadline-cell">
                   <el-icon><Clock /></el-icon>
@@ -382,7 +382,7 @@
             v-model="submissionForm.submissionContent"
             type="textarea"
             :rows="6"
-            placeholder="Enter your submission content here..."
+            :placeholder="$t('studentDashboard.submissionPlaceholder')"
           />
         </el-form-item>
         
@@ -393,7 +393,7 @@
         >
           <el-input
             v-model="submissionForm.submissionContent"
-            placeholder="Enter the URL of your submission"
+            :placeholder="$t('studentDashboard.submissionUrlPlaceholder')"
           />
         </el-form-item>
       </el-form>

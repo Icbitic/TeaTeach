@@ -1,25 +1,25 @@
 <template>
   <div class="students-container">
     <div class="section-header">
-      <h2>Student Management</h2>
+      <h2>{{ $t('students.management') }}</h2>
       <div class="section-actions">
         <el-button type="primary" @click="showAddStudentDialog">
           <el-icon>
             <el-icon-plus/>
           </el-icon>
-          Add Student
+          {{ $t('students.addStudent') }}
         </el-button>
         <el-button type="success" @click="showImportDialog">
           <el-icon>
             <el-icon-upload/>
           </el-icon>
-          Import
+          {{ $t('students.import') }}
         </el-button>
         <el-button type="info" @click="exportStudents">
           <el-icon>
             <el-icon-download/>
           </el-icon>
-          Export
+          {{ $t('students.export') }}
         </el-button>
       </div>
     </div>
@@ -27,10 +27,10 @@
     <!-- Search and Filter -->
     <el-card shadow="hover" class="filter-card">
       <el-form :inline="true" :model="searchForm" class="search-form">
-        <el-form-item label="Search">
+        <el-form-item :label="$t('students.search')">
           <el-input
               v-model="searchForm.keyword"
-              placeholder="Name, ID or Email"
+              :placeholder="$t('students.searchPlaceholder')"
               clearable
               @keyup.enter="searchStudents"
           >
@@ -43,17 +43,17 @@
             </template>
           </el-input>
         </el-form-item>
-        <el-form-item label="Major">
-          <el-select v-model="searchForm.major" placeholder="All Majors" clearable style="width: 200px">
-            <el-option label="Computer Science" value="Computer Science"/>
-            <el-option label="Engineering" value="Engineering"/>
-            <el-option label="Mathematics" value="Mathematics"/>
-            <el-option label="Physics" value="Physics"/>
+        <el-form-item :label="$t('students.major')">
+          <el-select v-model="searchForm.major" :placeholder="$t('students.allMajors')" clearable style="width: 200px">
+            <el-option :label="$t('majors.computerScience')" value="Computer Science"/>
+            <el-option :label="$t('majors.engineering')" value="Engineering"/>
+            <el-option :label="$t('majors.mathematics')" value="Mathematics"/>
+            <el-option :label="$t('majors.physics')" value="Physics"/>
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="searchStudents">Filter</el-button>
-          <el-button @click="resetSearch">Reset</el-button>
+          <el-button type="primary" @click="searchStudents">{{ $t('students.filter') }}</el-button>
+          <el-button @click="resetSearch">{{ $t('students.reset') }}</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -71,13 +71,13 @@
           table-layout="fixed"
       >
         <el-table-column type="selection" width="55" fixed="left"/>
-        <el-table-column prop="studentId" label="Student ID" width="120" sortable/>
-        <el-table-column prop="name" label="Name" min-width="150" sortable/>
-        <el-table-column prop="email" label="Email" min-width="200" show-overflow-tooltip/>
-        <el-table-column prop="major" label="Major" min-width="150" show-overflow-tooltip/>
-        <el-table-column prop="dateOfBirth" label="Date of Birth" width="120" :formatter="formatDateColumn"/>
+        <el-table-column prop="studentId" :label="$t('students.studentId')" width="120" sortable/>
+        <el-table-column prop="name" :label="$t('students.name')" min-width="150" sortable/>
+        <el-table-column prop="email" :label="$t('students.email')" min-width="200" show-overflow-tooltip/>
+        <el-table-column prop="major" :label="$t('students.major')" min-width="150" show-overflow-tooltip/>
+        <el-table-column prop="dateOfBirth" :label="$t('students.dateOfBirth')" width="120" :formatter="formatDateColumn"/>
 
-        <el-table-column label="Actions" fixed="right" width="120">
+        <el-table-column :label="$t('students.actions')" fixed="right" width="120">
           <template #default="scope">
             <el-button
                 type="primary"
@@ -120,45 +120,45 @@
     <!-- Add/Edit Student Dialog -->
     <el-dialog
         v-model="studentDialog.visible"
-        :title="studentDialog.isEdit ? 'Edit Student' : 'Add New Student'"
+        :title="studentDialog.isEdit ? $t('students.editStudent') : $t('students.addNewStudent')"
         width="500px">
       <el-form
           :model="studentDialog.form"
           :rules="studentDialog.rules"
           ref="studentFormRef"
           label-width="120px">
-        <el-form-item label="Student ID" prop="studentId">
-          <el-input v-model="studentDialog.form.studentId" placeholder="Enter student ID"/>
+        <el-form-item :label="$t('students.studentId')" prop="studentId">
+          <el-input v-model="studentDialog.form.studentId" :placeholder="$t('studentManagement.studentIdPlaceholder')"/>
         </el-form-item>
-        <el-form-item label="Name" prop="name">
-          <el-input v-model="studentDialog.form.name" placeholder="Enter full name"/>
+        <el-form-item :label="$t('common.name')" prop="name">
+          <el-input v-model="studentDialog.form.name" :placeholder="$t('studentManagement.fullNamePlaceholder')"/>
         </el-form-item>
-        <el-form-item label="Email" prop="email">
-          <el-input v-model="studentDialog.form.email" placeholder="Enter email address"/>
+        <el-form-item :label="$t('common.email')" prop="email">
+          <el-input v-model="studentDialog.form.email" :placeholder="$t('studentManagement.emailPlaceholder')"/>
         </el-form-item>
-        <el-form-item label="Major" prop="major">
-          <el-select v-model="studentDialog.form.major" placeholder="Select major" style="width: 100%">
-            <el-option label="Computer Science" value="Computer Science"/>
-            <el-option label="Engineering" value="Engineering"/>
-            <el-option label="Mathematics" value="Mathematics"/>
-            <el-option label="Physics" value="Physics"/>
-            <el-option label="Chemistry" value="Chemistry"/>
-            <el-option label="Biology" value="Biology"/>
+        <el-form-item :label="$t('common.major')" prop="major">
+          <el-select v-model="studentDialog.form.major" :placeholder="$t('studentManagement.selectMajor')" style="width: 100%">
+            <el-option :label="$t('majors.computerScience')" value="Computer Science"/>
+            <el-option :label="$t('majors.engineering')" value="Engineering"/>
+            <el-option :label="$t('majors.mathematics')" value="Mathematics"/>
+            <el-option :label="$t('majors.physics')" value="Physics"/>
+            <el-option :label="$t('majors.chemistry')" value="Chemistry"/>
+            <el-option :label="$t('majors.biology')" value="Biology"/>
           </el-select>
         </el-form-item>
-        <el-form-item label="Date of Birth" prop="dateOfBirth">
+        <el-form-item :label="$t('students.dateOfBirth')" prop="dateOfBirth">
           <el-date-picker
               v-model="studentDialog.form.dateOfBirth"
               type="date"
-              placeholder="Select date"
+              :placeholder="$t('studentManagement.selectDate')"
               style="width: 100%"/>
         </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="studentDialog.visible = false">Cancel</el-button>
+          <el-button @click="studentDialog.visible = false">{{ $t('common.cancel') }}</el-button>
           <el-button type="primary" @click="submitStudentForm" :loading="studentDialog.loading">
-            {{ studentDialog.isEdit ? 'Update' : 'Create' }}
+            {{ studentDialog.isEdit ? $t('common.update') : $t('common.create') }}
           </el-button>
         </span>
       </template>
@@ -167,7 +167,7 @@
     <!-- Import Dialog -->
     <el-dialog
         v-model="importDialog.visible"
-        title="Import Students"
+        :title="$t('students.importStudents')"
         width="500px">
       <el-upload
           class="upload-demo"
@@ -202,12 +202,14 @@
 
 <script>
 import { ref, reactive, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import studentService from '@/services/studentService'
 
 export default {
   name: 'StudentsView',
   setup() {
+    const { t } = useI18n()
     const studentFormRef = ref(null)
     const loading = ref(false)
 
@@ -539,6 +541,7 @@ export default {
     })
 
     return {
+      t,
       studentFormRef,
       loading,
       currentPage,

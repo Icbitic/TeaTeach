@@ -1,13 +1,13 @@
 <template>
   <div class="test-paper-container">
     <div class="header">
-      <h1>Test Paper Management</h1>
+      <h1>{{ $t('testPaper.management') }}</h1>
       <div class="header-actions">
         <button @click="showGenerateModal = true" class="btn btn-primary">
-          <i class="fas fa-magic"></i> Generate Test Paper
+          <i class="fas fa-magic"></i> {{ $t('testPaper.generateTestPaper') }}
         </button>
         <button @click="showCreateModal = true" class="btn btn-outline">
-          <i class="fas fa-plus"></i> Create Manually
+          <i class="fas fa-plus"></i> {{ $t('testPaper.createManually') }}
         </button>
       </div>
     </div>
@@ -15,9 +15,9 @@
     <!-- Filters -->
     <div class="filters">
       <div class="filter-group">
-        <label>Course:</label>
+        <label>{{ $t('common.course') }}:</label>
         <select v-model="filters.courseId" @change="loadTestPapers">
-          <option value="">All Courses</option>
+          <option value="">{{ $t('ui.allCourses') }}</option>
           <option v-for="course in courses" :key="course.id" :value="course.id">
             {{ course.courseName }}
           </option>
@@ -25,24 +25,24 @@
       </div>
       
       <div class="filter-group">
-        <label>Generation Method:</label>
+        <label>{{ $t('testPaper.generationMethod') }}:</label>
         <select v-model="filters.generationMethod" @change="loadTestPapers">
-          <option value="">All Methods</option>
-          <option value="MANUAL">Manual</option>
-          <option value="RANDOM">Random</option>
-          <option value="BY_KNOWLEDGE_POINT">By Knowledge Point</option>
-          <option value="BY_DIFFICULTY">By Difficulty</option>
-          <option value="BALANCED">Balanced</option>
+          <option value="">{{ $t('ui.allMethods') }}</option>
+          <option value="MANUAL">{{ $t('testPaper.manual') }}</option>
+          <option value="RANDOM">{{ $t('testPaper.random') }}</option>
+          <option value="BY_KNOWLEDGE_POINT">{{ $t('testPaper.byKnowledgePoint') }}</option>
+          <option value="BY_DIFFICULTY">{{ $t('testPaper.byDifficulty') }}</option>
+          <option value="BALANCED">{{ $t('testPaper.balanced') }}</option>
         </select>
       </div>
       
       <div class="filter-group">
-        <label>Search:</label>
+        <label>{{ $t('common.search') }}:</label>
         <input 
           type="text" 
           v-model="searchQuery" 
           @input="debounceSearch"
-          placeholder="Search test papers..."
+          :placeholder="$t('testPaper.searchTestPapers')"
           class="search-input"
         />
       </div>
@@ -50,10 +50,10 @@
 
     <!-- Test Papers List -->
     <div class="test-papers-list">
-      <div v-if="loading" class="loading">Loading test papers...</div>
+      <div v-if="loading" class="loading">{{ $t('ui.loadingTestPapers') }}</div>
       
       <div v-else-if="testPapers.length === 0" class="no-papers">
-        No test papers found. Create your first test paper!
+        {{ $t('ui.noTestPapersFound') }}
       </div>
       
       <div v-else class="papers-grid">
@@ -72,19 +72,19 @@
           <div class="paper-info">
             <div class="info-item">
               <i class="fas fa-book"></i>
-              <span>Course: {{ getCourseNameById(paper.courseId) }}</span>
+              <span>{{ $t('testPaper.course') }}: {{ getCourseNameById(paper.courseId) }}</span>
             </div>
             <div class="info-item">
               <i class="fas fa-question-circle"></i>
-              <span>{{ paper.questionIds.length }} Questions</span>
+              <span>{{ $t('testPaper.questionsCount', { count: paper.questionIds.length }) }}</span>
             </div>
             <div class="info-item">
               <i class="fas fa-star"></i>
-              <span>{{ paper.totalScore }} Points</span>
+              <span>{{ $t('testPaper.pointsCount', { points: paper.totalScore }) }}</span>
             </div>
             <div class="info-item">
               <i class="fas fa-clock"></i>
-              <span>{{ paper.durationMinutes }} Minutes</span>
+              <span>{{ $t('testPaper.minutesCount', { minutes: paper.durationMinutes }) }}</span>
             </div>
             <div class="info-item">
               <i class="fas fa-calendar"></i>
@@ -94,10 +94,10 @@
           
           <div class="paper-actions">
             <button @click="previewPaper(paper)" class="btn btn-sm btn-outline">
-              <i class="fas fa-eye"></i> Preview
+              <i class="fas fa-eye"></i> {{ $t('testPaper.preview') }}
             </button>
             <button @click="deletePaper(paper.id)" class="btn btn-sm btn-danger">
-              <i class="fas fa-trash"></i> Delete
+              <i class="fas fa-trash"></i> {{ $t('testPaper.delete') }}
             </button>
           </div>
         </div>
@@ -111,11 +111,11 @@
         :disabled="currentPage === 1"
         class="btn btn-outline"
       >
-        Previous
+        {{ $t('ui.previous') }}
       </button>
       
       <span class="page-info">
-        Page {{ currentPage }} of {{ totalPages }}
+        {{ $t('ui.pageInfo', { current: currentPage, total: totalPages }) }}
       </span>
       
       <button 
@@ -123,7 +123,7 @@
         :disabled="currentPage === totalPages"
         class="btn btn-outline"
       >
-        Next
+        {{ $t('ui.next') }}
       </button>
     </div>
 
@@ -131,7 +131,7 @@
     <div v-if="showGenerateModal" class="modal-overlay" @click="closeGenerateModal">
       <div class="modal large" @click.stop>
         <div class="modal-header">
-          <h2>Generate Test Paper</h2>
+          <h2>{{ $t('testPaper.generateTestPaper') }}</h2>
           <button @click="closeGenerateModal" class="close-btn">&times;</button>
         </div>
         
@@ -139,19 +139,19 @@
           <form @submit.prevent="generateTestPaper">
             <div class="form-row">
               <div class="form-group">
-                <label>Paper Name *</label>
+                <label>{{ $t('testPaper.paperName') }} *</label>
                 <input 
                   type="text" 
                   v-model="generateForm.paperName" 
                   required 
-                  placeholder="Enter test paper name"
+                  :placeholder="$t('testPaper.paperNamePlaceholder')"
                 />
               </div>
               
               <div class="form-group">
-                <label>Course *</label>
+                <label>{{ $t('common.course') }} *</label>
                 <select v-model="generateForm.courseId" required>
-                  <option value="">Select Course</option>
+                  <option value="">{{ $t('testPaper.selectCourse') }}</option>
                   <option v-for="course in courses" :key="course.id" :value="course.id">
                     {{ course.courseName }}
                   </option>
@@ -161,56 +161,56 @@
             
             <div class="form-row">
               <div class="form-group">
-                <label>Generation Method *</label>
+                <label>{{ $t('testPaper.generationMethod') }} *</label>
                 <select v-model="generateForm.generationMethod" required @change="onGenerationMethodChange">
-                  <option value="">Select Method</option>
-                  <option value="RANDOM">Random Selection</option>
-                  <option value="BY_KNOWLEDGE_POINT">By Knowledge Points</option>
-                  <option value="BY_DIFFICULTY">By Difficulty</option>
-                  <option value="BALANCED">Balanced Distribution</option>
+                  <option value="">{{ $t('testPaper.selectMethod') }}</option>
+                  <option value="RANDOM">{{ $t('testPaper.randomSelection') }}</option>
+                  <option value="BY_KNOWLEDGE_POINT">{{ $t('testPaper.byKnowledgePoints') }}</option>
+                  <option value="BY_DIFFICULTY">{{ $t('testPaper.byDifficulty') }}</option>
+                  <option value="BALANCED">{{ $t('testPaper.balancedDistribution') }}</option>
                 </select>
               </div>
               
               <div class="form-group">
-                <label>Total Questions *</label>
+                <label>{{ $t('testPaper.totalQuestions') }} *</label>
                 <input 
                   type="number" 
                   v-model.number="generateForm.totalQuestions" 
                   required 
                   min="1" 
                   max="100"
-                  placeholder="20"
+                  :placeholder="$t('testPaper.totalQuestionsPlaceholder')"
                 />
               </div>
             </div>
             
             <div class="form-row">
               <div class="form-group">
-                <label>Duration (minutes)</label>
+                <label>{{ $t('testPaper.duration') }}</label>
                 <input 
                   type="number" 
                   v-model.number="generateForm.durationMinutes" 
                   min="5" 
                   max="300"
-                  placeholder="60"
+                  :placeholder="$t('testPaper.durationPlaceholder')"
                 />
               </div>
               
               <div class="form-group">
-                <label>Total Score</label>
+                <label>{{ $t('testPaper.totalScore') }}</label>
                 <input 
                   type="number" 
                   v-model.number="generateForm.totalScore" 
                   min="1" 
                   step="0.5"
-                  placeholder="Auto-calculate"
+                  :placeholder="$t('testPaper.totalScorePlaceholder')"
                 />
               </div>
             </div>
             
             <!-- Question Types Selection -->
             <div class="form-group">
-              <label>Question Types</label>
+              <label>{{ $t('testPaper.questionTypes') }}</label>
               <div class="checkbox-group">
                 <label class="checkbox-label" v-for="type in questionTypes" :key="type">
                   <input 
@@ -225,10 +225,10 @@
             
             <!-- Knowledge Points Selection (for BY_KNOWLEDGE_POINT method) -->
             <div v-if="generateForm.generationMethod === 'BY_KNOWLEDGE_POINT'" class="form-group">
-              <label>Knowledge Points *</label>
+              <label>{{ $t('testPaper.knowledgePoints') }} *</label>
               <div class="knowledge-points-section">
                 <div class="selected-knowledge-points" v-if="selectedKnowledgePoints.length > 0">
-                  <h4>Selected Knowledge Points ({{ selectedKnowledgePoints.length }})</h4>
+                  <h4>{{ $t('testPaper.selectedKnowledgePoints', { count: selectedKnowledgePoints.length }) }}</h4>
                   <div class="selected-kp-list">
                     <div 
                       v-for="kp in selectedKnowledgePoints" 
@@ -237,13 +237,13 @@
                     >
                       <span class="kp-name">{{ kp.name }}</span>
                       <span class="kp-difficulty" :class="kp.difficultyLevel ? kp.difficultyLevel.toLowerCase() : ''">
-                        {{ kp.difficultyLevel || 'Unknown' }}
+                        {{ kp.difficultyLevel || $t('testPaper.unknown') }}
                       </span>
                       <button 
                         type="button" 
                         @click="removeKnowledgePoint(kp.id)" 
                         class="remove-btn"
-                        title="Remove knowledge point"
+                        :title="$t('testPaper.removeKnowledgePoint')"
                       >
                         ×
                       </button>
@@ -257,40 +257,40 @@
                   class="knowledge-graph-btn"
                 >
                   <i class="fas fa-project-diagram"></i>
-                  Select from Knowledge Graph
+                  {{ $t('testPaper.selectFromKnowledgeGraph') }}
                 </button>
               </div>
             </div>
             
             <!-- Difficulty Distribution (for BY_DIFFICULTY method) -->
             <div v-if="generateForm.generationMethod === 'BY_DIFFICULTY'" class="form-group">
-              <label>Difficulty Distribution</label>
+              <label>{{ $t('testPaper.difficultyDistribution') }}</label>
               <div class="difficulty-distribution">
                 <div class="difficulty-item">
-                  <label>Easy Questions:</label>
+                  <label>{{ $t('testPaper.easyQuestions') }}:</label>
                   <input 
                     type="number" 
                     v-model.number="generateForm.difficultyQuestionCounts.EASY" 
                     min="0"
-                    placeholder="0"
+                    :placeholder="$t('testPaper.easyQuestionsPlaceholder')"
                   />
                 </div>
                 <div class="difficulty-item">
-                  <label>Medium Questions:</label>
+                  <label>{{ $t('testPaper.mediumQuestions') }}:</label>
                   <input 
                     type="number" 
                     v-model.number="generateForm.difficultyQuestionCounts.MEDIUM" 
                     min="0"
-                    placeholder="0"
+                    :placeholder="$t('testPaper.mediumQuestionsPlaceholder')"
                   />
                 </div>
                 <div class="difficulty-item">
-                  <label>Hard Questions:</label>
+                  <label>{{ $t('testPaper.hardQuestions') }}:</label>
                   <input 
                     type="number" 
                     v-model.number="generateForm.difficultyQuestionCounts.HARD" 
                     min="0"
-                    placeholder="0"
+                    :placeholder="$t('testPaper.hardQuestionsPlaceholder')"
                   />
                 </div>
               </div>
@@ -298,39 +298,39 @@
             
             <!-- Balanced Weights (for BALANCED method) -->
             <div v-if="generateForm.generationMethod === 'BALANCED'" class="form-group">
-              <label>Difficulty Weights</label>
+              <label>{{ $t('testPaper.difficultyWeights') }}</label>
               <div class="difficulty-weights">
                 <div class="weight-item">
-                  <label>Easy Weight:</label>
+                  <label>{{ $t('testPaper.easyWeight') }}:</label>
                   <input 
                     type="number" 
                     v-model.number="generateForm.difficultyWeights.EASY" 
                     min="0" 
                     max="1" 
                     step="0.1"
-                    placeholder="0.3"
+                    :placeholder="$t('testPaper.easyWeightPlaceholder')"
                   />
                 </div>
                 <div class="weight-item">
-                  <label>Medium Weight:</label>
+                  <label>{{ $t('testPaper.mediumWeight') }}:</label>
                   <input 
                     type="number" 
                     v-model.number="generateForm.difficultyWeights.MEDIUM" 
                     min="0" 
                     max="1" 
                     step="0.1"
-                    placeholder="0.5"
+                    :placeholder="$t('testPaper.mediumWeightPlaceholder')"
                   />
                 </div>
                 <div class="weight-item">
-                  <label>Hard Weight:</label>
+                  <label>{{ $t('testPaper.hardWeight') }}:</label>
                   <input 
                     type="number" 
                     v-model.number="generateForm.difficultyWeights.HARD" 
                     min="0" 
                     max="1" 
                     step="0.1"
-                    placeholder="0.2"
+                    :placeholder="$t('testPaper.hardWeightPlaceholder')"
                   />
                 </div>
               </div>
@@ -344,13 +344,13 @@
                 class="btn btn-outline"
                 :disabled="!canPreview"
               >
-                <i class="fas fa-eye"></i> Preview Questions
+                <i class="fas fa-eye"></i> {{ $t('testPaper.previewQuestions') }}
               </button>
             </div>
             
             <!-- Preview Results -->
             <div v-if="previewResults.length > 0" class="preview-section">
-              <h4>Preview Questions ({{ previewResults.length }} found)</h4>
+              <h4>{{ $t('testPaper.previewQuestionsFound', { count: previewResults.length }) }}</h4>
               <div class="preview-questions">
                 <div 
                   v-for="(question, index) in previewResults.slice(0, 5)" 
@@ -361,22 +361,22 @@
                     <span class="question-number">{{ index + 1 }}.</span>
                     <span class="question-type">{{ formatQuestionType(question.questionType) }}</span>
                     <span class="difficulty">{{ question.difficulty }}</span>
-                    <span class="points">{{ question.points }} pts</span>
+                    <span class="points">{{ $t('testPaper.pointsAbbr', { points: question.points }) }}</span>
                   </div>
                   <p class="question-text">{{ truncateText(question.questionText, 100) }}</p>
                 </div>
                 <div v-if="previewResults.length > 5" class="more-questions">
-                  ... and {{ previewResults.length - 5 }} more questions
+                  {{ $t('testPaper.moreQuestions', { count: previewResults.length - 5 }) }}
                 </div>
               </div>
             </div>
             
             <div class="modal-actions">
               <button type="button" @click="closeGenerateModal" class="btn btn-outline">
-                Cancel
+                {{ $t('ui.cancel') }}
               </button>
               <button type="submit" class="btn btn-primary" :disabled="generating">
-                {{ generating ? 'Generating...' : 'Generate Test Paper' }}
+                {{ generating ? $t('testPaper.generating') : $t('testPaper.generateTestPaper') }}
               </button>
             </div>
           </form>
@@ -388,27 +388,27 @@
     <div v-if="showCreateModal" class="modal-overlay" @click="closeCreateModal">
       <div class="modal" @click.stop>
         <div class="modal-header">
-          <h2>Create Test Paper Manually</h2>
+          <h2>{{ $t('testPaper.createManually') }}</h2>
           <button @click="closeCreateModal" class="close-btn">&times;</button>
         </div>
         
         <div class="modal-body">
           <form @submit.prevent="createTestPaper">
             <div class="form-group">
-              <label>Paper Name *</label>
+              <label>{{ $t('testPaper.paperName') }} *</label>
               <input 
                 type="text" 
                 v-model="createForm.paperName" 
                 required 
-                placeholder="Enter test paper name"
+                :placeholder="$t('testPaper.paperNamePlaceholder')"
               />
             </div>
             
             <div class="form-row">
               <div class="form-group">
-                <label>Course *</label>
+                <label>{{ $t('common.course') }} *</label>
                 <select v-model="createForm.courseId" required>
-                  <option value="">Select Course</option>
+                  <option value="">{{ $t('testPaper.selectCourse') }}</option>
                   <option v-for="course in courses" :key="course.id" :value="course.id">
                     {{ course.courseName }}
                   </option>
@@ -416,25 +416,25 @@
               </div>
               
               <div class="form-group">
-                <label>Duration (minutes)</label>
+                <label>{{ $t('testPaper.duration') }}</label>
                 <input 
                   type="number" 
                   v-model.number="createForm.durationMinutes" 
                   min="5" 
                   max="300"
-                  placeholder="60"
+                  :placeholder="$t('testPaper.durationPlaceholder')"
                 />
               </div>
             </div>
             
             <div class="form-group">
-              <label>Questions *</label>
+              <label>{{ $t('testPaper.questions') }} *</label>
               <div class="question-selection">
                 <div class="search-questions">
                   <input 
                     type="text" 
                     v-model="questionSearch" 
-                    placeholder="Search questions..."
+                    :placeholder="$t('testPaper.searchQuestionsPlaceholder')"
                     @input="searchQuestions"
                   />
                 </div>
@@ -449,7 +449,7 @@
                     <div class="question-info">
                       <span class="question-type">{{ formatQuestionType(question.questionType) }}</span>
                       <span class="difficulty">{{ question.difficulty }}</span>
-                      <span class="points">{{ question.points }} pts</span>
+                      <span class="points">{{ $t('testPaper.pointsAbbr', { points: question.points }) }}</span>
                     </div>
                     <p class="question-text">{{ truncateText(question.questionText, 80) }}</p>
                   </div>
@@ -458,7 +458,7 @@
             </div>
             
             <div class="selected-questions">
-              <h4>Selected Questions ({{ createForm.questionIds.length }})</h4>
+              <h4>{{ $t('testPaper.selectedQuestions', { count: createForm.questionIds.length }) }}</h4>
               <div class="selected-list">
                 <div 
                   v-for="(questionId, index) in createForm.questionIds" 
@@ -479,10 +479,10 @@
             
             <div class="modal-actions">
               <button type="button" @click="closeCreateModal" class="btn btn-outline">
-                Cancel
+                {{ $t('ui.cancel') }}
               </button>
               <button type="submit" class="btn btn-primary" :disabled="creating || createForm.questionIds.length === 0">
-                {{ creating ? 'Creating...' : 'Create Test Paper' }}
+                {{ creating ? $t('testPaper.creating') : $t('testPaper.createTestPaper') }}
               </button>
             </div>
           </form>
@@ -501,24 +501,24 @@
         <div class="modal-body">
           <div class="paper-details">
             <div class="detail-item">
-              <strong>Course:</strong> {{ getCourseNameById(previewPaperData.courseId) }}
+              <strong>{{ $t('testPaper.course') }}:</strong> {{ getCourseNameById(previewPaperData.courseId) }}
             </div>
             <div class="detail-item">
-              <strong>Questions:</strong> {{ previewPaperData.questionIds.length }}
+              <strong>{{ $t('testPaper.questions') }}:</strong> {{ previewPaperData.questionIds.length }}
             </div>
             <div class="detail-item">
-              <strong>Total Score:</strong> {{ previewPaperData.totalScore }} points
+              <strong>{{ $t('testPaper.totalScore') }}:</strong> {{ $t('testPaper.pointsCount', { points: previewPaperData.totalScore }) }}
             </div>
             <div class="detail-item">
-              <strong>Duration:</strong> {{ previewPaperData.durationMinutes }} minutes
+              <strong>{{ $t('testPaper.duration') }}:</strong> {{ $t('testPaper.minutesCount', { minutes: previewPaperData.durationMinutes }) }}
             </div>
             <div class="detail-item">
-              <strong>Generation Method:</strong> {{ formatGenerationMethod(previewPaperData.generationMethod) }}
+              <strong>{{ $t('testPaper.generationMethod') }}:</strong> {{ formatGenerationMethod(previewPaperData.generationMethod) }}
             </div>
           </div>
           
           <div class="questions-preview">
-            <h4>Questions</h4>
+            <h4>{{ $t('testPaper.questions') }}</h4>
             <div 
               v-for="(question, index) in previewQuestions" 
               :key="question.id" 
@@ -528,7 +528,7 @@
                 <span class="question-number">{{ index + 1 }}.</span>
                 <span class="question-type">{{ formatQuestionType(question.questionType) }}</span>
                 <span class="difficulty">{{ question.difficulty }}</span>
-                <span class="points">{{ question.points }} pts</span>
+                <span class="points">{{ $t('testPaper.pointsAbbr', { points: question.points }) }}</span>
               </div>
               <p class="question-text">{{ question.questionText }}</p>
               
@@ -551,7 +551,7 @@
     <div v-if="showKnowledgeGraphModal" class="modal-overlay" @click="closeKnowledgeGraphModal">
       <div class="modal knowledge-graph-modal" @click.stop>
         <div class="modal-header">
-          <h2>Select Knowledge Points</h2>
+          <h2>{{ $t('testPaper.selectKnowledgePoints') }}</h2>
           <button @click="closeKnowledgeGraphModal" class="close-btn">&times;</button>
         </div>
         
@@ -567,17 +567,17 @@
           </div>
           
           <div class="selection-info">
-            <p><strong>Instructions:</strong> Click on knowledge points in the graph to select/deselect them for test generation.</p>
-            <p><strong>Selected:</strong> {{ tempSelectedKnowledgePoints.length }} knowledge point(s)</p>
+            <p><strong>{{ $t('testPaper.instructions') }}:</strong> {{ $t('testPaper.knowledgeGraphInstructions') }}</p>
+            <p><strong>{{ $t('testPaper.selected') }}:</strong> {{ $t('testPaper.knowledgePointsSelected', { count: tempSelectedKnowledgePoints.length }) }}</p>
           </div>
         </div>
         
         <div class="modal-actions">
           <button type="button" @click="closeKnowledgeGraphModal" class="btn btn-outline">
-            Cancel
+            {{ $t('ui.cancel') }}
           </button>
           <button type="button" @click="confirmKnowledgePointSelection" class="btn btn-primary">
-            Confirm Selection ({{ tempSelectedKnowledgePoints.length }})
+            {{ $t('testPaper.confirmSelection', { count: tempSelectedKnowledgePoints.length }) }}
           </button>
         </div>
       </div>

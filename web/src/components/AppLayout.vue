@@ -4,7 +4,7 @@
       <el-aside :width="isCollapse ? '64px' : '250px'" class="sidebar">
         <div class="logo-container">
           <h1 class="logo" v-show="!isCollapse">
-            <TypewriterText :text="'TeaTeach'" :show="!isCollapse" :speed="100" />
+            <TypewriterText :text="$t('app.title')" :show="!isCollapse" :speed="100" />
           </h1>
           <h1 class="logo-collapsed" v-show="isCollapse">
             <TypewriterText :text="'T'" :show="isCollapse" :speed="130" />
@@ -23,47 +23,47 @@
           <template v-if="user.userType === 'TEACHER'">
             <el-menu-item index="dashboard">
               <el-icon><el-icon-data-board /></el-icon>
-              <span><TypewriterText :text="'Dashboard'" :show="!isCollapse" :speed="50" /></span>
+              <span><TypewriterText :text="$t('navigation.dashboard')" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
             <el-menu-item index="students">
               <el-icon><el-icon-user /></el-icon>
-              <span><TypewriterText :text="'Students'" :show="!isCollapse" :speed="50" /></span>
+              <span><TypewriterText :text="$t('navigation.students')" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
             <el-menu-item index="courses">
               <el-icon><el-icon-reading /></el-icon>
-              <span><TypewriterText :text="'Courses'" :show="!isCollapse" :speed="50" /></span>
+              <span><TypewriterText :text="$t('navigation.courses')" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
             <el-menu-item index="tasks">
               <el-icon><el-icon-document /></el-icon>
-              <span><TypewriterText :text="'Tasks'" :show="!isCollapse" :speed="50" /></span>
+              <span><TypewriterText :text="$t('navigation.tasks')" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
             <el-menu-item index="analytics">
               <el-icon><el-icon-data-analysis /></el-icon>
-              <span><TypewriterText :text="'Analytics'" :show="!isCollapse" :speed="50" /></span>
+              <span><TypewriterText :text="$t('navigation.analytics')" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
             <el-menu-item index="video-heatmap">
-              <el-icon><i class="el-icon-video-camera"></i></el-icon>
-              <span><TypewriterText :text="'Video Heatmap'" :show="!isCollapse" :speed="50" /></span>
+              <el-icon><el-icon-video-camera /></el-icon>
+              <span><TypewriterText :text="$t('navigation.videoHeatmap')" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
             <el-menu-item index="submissions">
               <el-icon><el-icon-files /></el-icon>
-              <span><TypewriterText :text="'Submissions'" :show="!isCollapse" :speed="50" /></span>
+              <span><TypewriterText :text="$t('navigation.submissions')" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
             <el-menu-item index="question-bank">
               <el-icon><el-icon-collection /></el-icon>
-              <span><TypewriterText :text="'Question Bank'" :show="!isCollapse" :speed="50" /></span>
+              <span><TypewriterText :text="$t('navigation.questionBank')" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
             <el-menu-item index="test-papers">
               <el-icon><el-icon-document-copy /></el-icon>
-              <span><TypewriterText :text="'Test Papers'" :show="!isCollapse" :speed="50" /></span>
+              <span><TypewriterText :text="$t('navigation.testPapers')" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
             <el-menu-item index="knowledge-points">
               <el-icon><el-icon-connection /></el-icon>
-              <span><TypewriterText :text="'Knowledge Points'" :show="!isCollapse" :speed="50" /></span>
+              <span><TypewriterText :text="$t('navigation.knowledgePoints')" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
             <el-menu-item index="resources">
               <el-icon><el-icon-folder /></el-icon>
-              <span><TypewriterText :text="'Resources'" :show="!isCollapse" :speed="50" /></span>
+              <span><TypewriterText :text="$t('navigation.resources')" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
           </template>
           
@@ -71,38 +71,38 @@
           <template v-else-if="user.userType === 'STUDENT'">
             <el-menu-item index="student-dashboard">
               <el-icon><el-icon-data-board /></el-icon>
-              <span><TypewriterText :text="'Dashboard'" :show="!isCollapse" :speed="50" /></span>
+              <span><TypewriterText :text="$t('navigation.dashboard')" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
             <el-menu-item index="my-courses">
               <el-icon><el-icon-reading /></el-icon>
-              <span><TypewriterText :text="'My Courses'" :show="!isCollapse" :speed="50" /></span>
+              <span><TypewriterText :text="$t('navigation.myCourses')" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
             <el-menu-item index="course-materials">
               <el-icon><el-icon-folder /></el-icon>
-              <span><TypewriterText :text="'Course Materials'" :show="!isCollapse" :speed="50" /></span>
+              <span><TypewriterText :text="$t('navigation.courseMaterials')" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
             <el-menu-item index="platform-resources">
               <el-icon><el-icon-files /></el-icon>
-              <span><TypewriterText :text="'Platform Resources'" :show="!isCollapse" :speed="50" /></span>
+              <span><TypewriterText :text="$t('navigation.platformResources')" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
             <el-menu-item index="my-tasks">
               <el-icon><el-icon-document /></el-icon>
-              <span><TypewriterText :text="'My Tasks'" :show="!isCollapse" :speed="50" /></span>
+              <span><TypewriterText :text="$t('navigation.myTasks')" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
             <el-menu-item index="my-abilities">
               <el-icon><el-icon-cpu /></el-icon>
-              <span><TypewriterText :text="'My Abilities'" :show="!isCollapse" :speed="50" /></span>
+              <span><TypewriterText :text="$t('navigation.myAbilities')" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
             <el-menu-item index="my-grades">
               <el-icon><el-icon-data-analysis /></el-icon>
-              <span><TypewriterText :text="'My Grades'" :show="!isCollapse" :speed="50" /></span>
+              <span><TypewriterText :text="$t('navigation.myGrades')" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
           </template>
           
           <!-- Common Menu Items -->
           <el-menu-item index="settings">
             <el-icon><el-icon-setting /></el-icon>
-            <span><TypewriterText :text="'Settings'" :show="!isCollapse" :speed="50" /></span>
+            <span><TypewriterText :text="$t('navigation.settings')" :show="!isCollapse" :speed="50" /></span>
           </el-menu-item>
         </el-menu>
       </el-aside>
@@ -127,8 +127,8 @@
                 </span>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item>Profile</el-dropdown-item>
-                    <el-dropdown-item divided @click="logout">Logout</el-dropdown-item>
+                    <el-dropdown-item>{{ $t('navigation.profile') }}</el-dropdown-item>
+                    <el-dropdown-item divided @click="logout">{{ $t('navigation.logout') }}</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -141,7 +141,7 @@
         </el-main>
 
         <el-footer>
-          <p>© 2025 TeaTeach Learning Management System</p>
+          <p>© 2025 {{ $t('app.title') }} {{ $t('app.subtitle') }}</p>
         </el-footer>
       </el-container>
     </el-container>
@@ -193,6 +193,7 @@ export default {
         'student-dashboard': '/student-dashboard',
         'students': '/students', 
         'courses': '/courses',
+        'tasks': '/tasks',
         'my-courses': '/my-courses',
         'course-materials': '/course-materials',
         'platform-resources': '/platform-resources',

@@ -1,10 +1,11 @@
 <template>
   <div class="register-container">
+    <LanguageSwitcher class="language-switcher-top" />
     <GitHubButton />
     <div class="register-box">
       <div class="register-header">
-        <h1>TeaTeach</h1>
-        <p>Create New Account</p>
+        <h1>{{ $t('app.title') }}</h1>
+        <p>{{ $t('auth.createNewAccount') }}</p>
       </div>
       
       <el-form :model="registerForm" :rules="rules" ref="registerFormRef" class="register-form">
@@ -12,7 +13,7 @@
         <el-form-item prop="username">
           <el-input 
             v-model="registerForm.username" 
-            placeholder="Username"
+            :placeholder="$t('auth.username')"
             prefix-icon="el-icon-user"
           />
         </el-form-item>
@@ -21,7 +22,7 @@
           <el-input 
             v-model="registerForm.password" 
             type="password" 
-            placeholder="Password"
+            :placeholder="$t('auth.password')"
             prefix-icon="el-icon-lock"
             show-password
           />
@@ -30,7 +31,7 @@
         <el-form-item prop="email">
           <el-input 
             v-model="registerForm.email" 
-            placeholder="Email"
+            :placeholder="$t('auth.email')"
             prefix-icon="el-icon-message"
           />
         </el-form-item>
@@ -38,7 +39,7 @@
         <el-form-item prop="name">
           <el-input 
             v-model="registerForm.name" 
-            placeholder="Full Name"
+            :placeholder="$t('common.fullName')"
             prefix-icon="el-icon-user"
           />
         </el-form-item>
@@ -46,11 +47,11 @@
         <el-form-item prop="userType">
           <el-select 
             v-model="registerForm.userType" 
-            placeholder="Select User Type"
+            :placeholder="$t('common.selectUserType')"
             style="width: 100%"
           >
-            <el-option label="Student" value="STUDENT" />
-            <el-option label="Teacher" value="TEACHER" />
+            <el-option :label="$t('common.student')" value="STUDENT" />
+            <el-option :label="$t('common.teacher')" value="TEACHER" />
           </el-select>
         </el-form-item>
         
@@ -59,7 +60,7 @@
           <el-form-item prop="studentId">
             <el-input 
               v-model="registerForm.studentId" 
-              placeholder="Student ID"
+              :placeholder="$t('common.studentId')"
               prefix-icon="el-icon-notebook-1"
             />
           </el-form-item>
@@ -67,7 +68,7 @@
           <el-form-item prop="major">
             <el-input 
               v-model="registerForm.major" 
-              placeholder="Major"
+              :placeholder="$t('common.major')"
               prefix-icon="el-icon-reading"
             />
           </el-form-item>
@@ -78,7 +79,7 @@
           <el-form-item prop="teacherId">
             <el-input 
               v-model="registerForm.teacherId" 
-              placeholder="Teacher ID"
+              :placeholder="$t('common.teacherId')"
               prefix-icon="el-icon-notebook-1"
             />
           </el-form-item>
@@ -86,7 +87,7 @@
           <el-form-item prop="department">
             <el-input 
               v-model="registerForm.department" 
-              placeholder="Department"
+              :placeholder="$t('common.department')"
               prefix-icon="el-icon-office-building"
             />
           </el-form-item>
@@ -99,36 +100,40 @@
             @click="submitForm"
             class="register-button"
           >
-            Register
+            {{ $t('auth.register') }}
           </el-button>
         </el-form-item>
       </el-form>
       
       <div class="register-footer">
-        <p>Already have an account? <router-link to="/login">Login</router-link></p>
+        <p>{{ $t('auth.alreadyHaveAccount') }} <router-link to="/login">{{ $t('auth.login') }}</router-link></p>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { authService } from '../services/api'
 import GitHubButton from '@/components/GitHubButton.vue'
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 
 export default {
   name: 'RegisterView',
   components: {
-    GitHubButton
+    GitHubButton,
+    LanguageSwitcher
   },
   setup() {
     // We'll keep the store import for future use but disable the lint warning
     // eslint-disable-next-line no-unused-vars
     const store = useStore()
     const router = useRouter()
+    const { t } = useI18n()
     const registerFormRef = ref(null)
     const loading = ref(false)
     
@@ -144,30 +149,30 @@ export default {
       department: ''
     })
     
-    const rules = {
+    const rules = computed(() => ({
       username: [
-        { required: true, message: 'Please enter your username', trigger: 'blur' },
-        { min: 3, message: 'Username must be at least 3 characters', trigger: 'blur' }
+        { required: true, message: t('auth.usernameRequired'), trigger: 'blur' },
+        { min: 3, message: t('auth.usernameMinLength'), trigger: 'blur' }
       ],
       password: [
-        { required: true, message: 'Please enter your password', trigger: 'blur' },
-        { min: 6, message: 'Password must be at least 6 characters', trigger: 'blur' }
+        { required: true, message: t('auth.passwordRequired'), trigger: 'blur' },
+        { min: 6, message: t('auth.passwordMinLength'), trigger: 'blur' }
       ],
       email: [
-        { required: true, message: 'Please enter your email', trigger: 'blur' },
-        { type: 'email', message: 'Please enter a valid email address', trigger: 'blur' }
+        { required: true, message: t('auth.emailRequired'), trigger: 'blur' },
+        { type: 'email', message: t('auth.emailInvalid'), trigger: 'blur' }
       ],
       name: [
-        { required: true, message: 'Please enter your full name', trigger: 'blur' }
+        { required: true, message: t('auth.nameRequired'), trigger: 'blur' }
       ],
       userType: [
-        { required: true, message: 'Please select user type', trigger: 'change' }
+        { required: true, message: t('auth.userTypeRequired'), trigger: 'change' }
       ],
       studentId: [
-        { required: true, message: 'Please enter your student ID', trigger: 'blur', 
+        { required: true, message: t('auth.studentIdRequired'), trigger: 'blur', 
           validator: (rule, value, callback) => {
             if (registerForm.userType === 'STUDENT' && !value) {
-              callback(new Error('Please enter your student ID'))
+              callback(new Error(t('auth.studentIdRequired')))
             } else {
               callback()
             }
@@ -175,10 +180,10 @@ export default {
         }
       ],
       major: [
-        { required: true, message: 'Please enter your major', trigger: 'blur',
+        { required: true, message: t('auth.majorRequired'), trigger: 'blur',
           validator: (rule, value, callback) => {
             if (registerForm.userType === 'STUDENT' && !value) {
-              callback(new Error('Please enter your major'))
+              callback(new Error(t('auth.majorRequired')))
             } else {
               callback()
             }
@@ -186,10 +191,10 @@ export default {
         }
       ],
       teacherId: [
-        { required: true, message: 'Please enter your teacher ID', trigger: 'blur',
+        { required: true, message: t('auth.teacherIdRequired'), trigger: 'blur',
           validator: (rule, value, callback) => {
             if (registerForm.userType === 'TEACHER' && !value) {
-              callback(new Error('Please enter your teacher ID'))
+              callback(new Error(t('auth.teacherIdRequired')))
             } else {
               callback()
             }
@@ -197,17 +202,17 @@ export default {
         }
       ],
       department: [
-        { required: true, message: 'Please enter your department', trigger: 'blur',
+        { required: true, message: t('auth.departmentRequired'), trigger: 'blur',
           validator: (rule, value, callback) => {
             if (registerForm.userType === 'TEACHER' && !value) {
-              callback(new Error('Please enter your department'))
+              callback(new Error(t('auth.departmentRequired')))
             } else {
               callback()
             }
           }
         }
       ]
-    }
+    }))
     
     const submitForm = () => {
       registerFormRef.value.validate(valid => {
@@ -216,7 +221,7 @@ export default {
           authService.register(registerForm)
             .then(() => {
               ElMessage({
-                message: 'Registration successful! You can now login.',
+                message: t('auth.registrationSuccess'),
                 type: 'success'
               })
               router.push('/login')
@@ -224,7 +229,7 @@ export default {
             .catch(error => {
               console.error('Registration error:', error)
               ElMessage({
-                message: error.response?.data?.message || 'Registration failed. Please try again.',
+                message: error.response?.data?.message || t('auth.registrationFailed'),
                 type: 'error'
               })
             })
@@ -248,6 +253,7 @@ export default {
 
 <style scoped>
 .register-container {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -304,5 +310,12 @@ export default {
 
 .register-footer a:hover {
   text-decoration: underline;
+}
+
+.language-switcher-top {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
 }
 </style>

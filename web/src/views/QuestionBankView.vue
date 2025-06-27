@@ -1,43 +1,43 @@
 <template>
   <div class="question-bank-container">
     <div class="header">
-      <h1>Question Bank Management</h1>
+      <h1>{{ $t('questionBank.management') }}</h1>
       <button @click="showCreateModal = true" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Add Question
+        <i class="fas fa-plus"></i> {{ $t('questionBank.addQuestion') }}
       </button>
     </div>
 
     <!-- Filters -->
     <div class="filters">
       <div class="filter-group">
-        <label>Question Type:</label>
+        <label>{{ $t('questionBank.questionType') }}:</label>
         <select v-model="filters.type" @change="loadQuestions">
-          <option value="">All Types</option>
-          <option value="SINGLE_CHOICE">Single Choice</option>
-          <option value="MULTIPLE_CHOICE">Multiple Choice</option>
-          <option value="FILL_IN_THE_BLANK">Fill in the Blank</option>
-          <option value="SHORT_ANSWER">Short Answer</option>
-          <option value="PROGRAMMING">Programming</option>
+          <option value="">{{ $t('ui.allTypes') }}</option>
+          <option value="SINGLE_CHOICE">{{ $t('questionBank.singleChoice') }}</option>
+          <option value="MULTIPLE_CHOICE">{{ $t('questionBank.multipleChoice') }}</option>
+          <option value="FILL_IN_THE_BLANK">{{ $t('questionBank.fillInTheBlank') }}</option>
+          <option value="SHORT_ANSWER">{{ $t('questionBank.shortAnswer') }}</option>
+          <option value="PROGRAMMING">{{ $t('questionBank.programming') }}</option>
         </select>
       </div>
       
       <div class="filter-group">
-        <label>Difficulty:</label>
+        <label>{{ $t('common.difficulty') }}:</label>
         <select v-model="filters.difficulty" @change="loadQuestions">
-          <option value="">All Difficulties</option>
-          <option value="EASY">Easy</option>
-          <option value="MEDIUM">Medium</option>
-          <option value="HARD">Hard</option>
+          <option value="">{{ $t('ui.allDifficulties') }}</option>
+          <option value="EASY">{{ $t('difficulty.easy') }}</option>
+          <option value="MEDIUM">{{ $t('difficulty.medium') }}</option>
+          <option value="HARD">{{ $t('difficulty.hard') }}</option>
         </select>
       </div>
       
       <div class="filter-group">
-        <label>Search:</label>
+        <label>{{ $t('common.search') }}:</label>
         <input 
           type="text" 
           v-model="searchQuery" 
           @input="debounceSearch"
-          placeholder="Search questions..."
+          :placeholder="$t('questionBank.searchQuestionsPlaceholder')"
           class="search-input"
         />
       </div>
@@ -45,10 +45,10 @@
 
     <!-- Questions List -->
     <div class="questions-list">
-      <div v-if="loading" class="loading">Loading questions...</div>
+      <div v-if="loading" class="loading">{{ $t('ui.loadingQuestions') }}</div>
       
       <div v-else-if="questions.length === 0" class="no-questions">
-        No questions found. Create your first question!
+        {{ $t('questionBank.noQuestionsFound') }}
       </div>
       
       <div v-else class="questions-grid">
@@ -130,52 +130,52 @@
     <div v-if="showCreateModal" class="modal-overlay" @click="closeModal">
       <div class="modal" @click.stop>
         <div class="modal-header">
-          <h2>{{ editingQuestion ? 'Edit Question' : 'Create New Question' }}</h2>
+          <h2>{{ editingQuestion ? $t('questionBank.editQuestion') : $t('questionBank.createNewQuestion') }}</h2>
           <button @click="closeModal" class="close-btn">&times;</button>
         </div>
         
         <div class="modal-body">
           <form @submit.prevent="saveQuestion">
             <div class="form-group">
-              <label>Question Text *</label>
+              <label>{{ $t('questionBank.questionText') }} *</label>
               <textarea 
                 v-model="questionForm.questionText" 
                 required 
                 rows="4"
-                placeholder="Enter your question here..."
+                :placeholder="$t('questionBank.questionTextPlaceholder')"
               ></textarea>
             </div>
             
             <div class="form-row">
               <div class="form-group">
-                <label>Question Type *</label>
+                <label>{{ $t('questionBank.questionType') }} *</label>
                 <select v-model="questionForm.questionType" required @change="onQuestionTypeChange">
-                  <option value="">Select Type</option>
-                  <option value="SINGLE_CHOICE">Single Choice</option>
-                  <option value="MULTIPLE_CHOICE">Multiple Choice</option>
-                  <option value="FILL_IN_THE_BLANK">Fill in the Blank</option>
-                  <option value="SHORT_ANSWER">Short Answer</option>
-                  <option value="PROGRAMMING">Programming</option>
+                  <option value="">{{ $t('ui.selectType') }}</option>
+                  <option value="SINGLE_CHOICE">{{ $t('questionBank.singleChoice') }}</option>
+                  <option value="MULTIPLE_CHOICE">{{ $t('questionBank.multipleChoice') }}</option>
+                  <option value="FILL_IN_THE_BLANK">{{ $t('questionBank.fillInTheBlank') }}</option>
+                  <option value="SHORT_ANSWER">{{ $t('questionBank.shortAnswer') }}</option>
+                  <option value="PROGRAMMING">{{ $t('questionBank.programming') }}</option>
                 </select>
               </div>
               
               <div class="form-group">
-                <label>Difficulty *</label>
+                <label>{{ $t('common.difficulty') }} *</label>
                 <select v-model="questionForm.difficulty" required>
-                  <option value="EASY">Easy</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="HARD">Hard</option>
+                  <option value="EASY">{{ $t('difficulty.easy') }}</option>
+                  <option value="MEDIUM">{{ $t('difficulty.medium') }}</option>
+                  <option value="HARD">{{ $t('difficulty.hard') }}</option>
                 </select>
               </div>
               
               <div class="form-group">
-                <label>Points</label>
+                <label>{{ $t('common.points') }}</label>
                 <input 
                   type="number" 
                   v-model.number="questionForm.points" 
                   min="0.5" 
                   step="0.5"
-                  placeholder="1.0"
+                  :placeholder="$t('questionBank.pointsPlaceholder')"
                 />
               </div>
             </div>
@@ -192,7 +192,7 @@
                   <input 
                     type="text" 
                     v-model="questionForm.options[index]" 
-                    :placeholder="`Option ${String.fromCharCode(65 + index)}`"
+                    :placeholder="`${$t('questionBank.optionPlaceholder')} ${String.fromCharCode(65 + index)}`"
                     required
                   />
                   <button 
@@ -211,17 +211,17 @@
                   class="btn btn-sm btn-outline"
                   :disabled="questionForm.options.length >= 6"
                 >
-                  <i class="fas fa-plus"></i> Add Option
+                  <i class="fas fa-plus"></i> {{ $t('questionBank.addOption') }}
                 </button>
               </div>
             </div>
             
             <!-- Correct Answer -->
             <div class="form-group">
-              <label>Correct Answer *</label>
+              <label>{{ $t('questionBank.correctAnswer') }} *</label>
               <div v-if="questionForm.questionType === 'SINGLE_CHOICE'">
                 <select v-model="questionForm.correctAnswer" required>
-                  <option value="">Select correct option</option>
+                  <option value="">{{ $t('questionBank.selectCorrectOption') }}</option>
                   <option 
                     v-for="(option, index) in questionForm.options" 
                     :key="index" 
@@ -254,16 +254,16 @@
                   v-model="questionForm.correctAnswer" 
                   required 
                   rows="3"
-                  placeholder="Enter the correct answer..."
+                  :placeholder="$t('questionBank.correctAnswerPlaceholder')"
                 ></textarea>
               </div>
             </div>
             
             <!-- Programming Language (for programming questions) -->
             <div v-if="questionForm.questionType === 'PROGRAMMING'" class="form-group">
-              <label>Programming Language</label>
+              <label>{{ $t('questionBank.programmingLanguage') }}</label>
               <select v-model="questionForm.programmingLanguage">
-                <option value="">Select Language</option>
+                <option value="">{{ $t('ui.selectLanguage') }}</option>
                 <option value="java">Java</option>
                 <option value="python">Python</option>
                 <option value="javascript">JavaScript</option>
@@ -279,7 +279,7 @@
               <textarea 
                 v-model="questionForm.templateCode" 
                 rows="6"
-                placeholder="Enter template code here..."
+                :placeholder="$t('questionBank.templateCodePlaceholder')"
                 class="code-textarea"
               ></textarea>
             </div>
@@ -289,7 +289,7 @@
               <textarea 
                 v-model="questionForm.explanation" 
                 rows="3"
-                placeholder="Explain the answer or provide additional context..."
+                :placeholder="$t('questionBank.explanationPlaceholder')"
               ></textarea>
             </div>
             
@@ -334,13 +334,13 @@
               <input 
                 type="text" 
                 v-model="tagsInput" 
-                placeholder="e.g., algebra, geometry, calculus"
+                :placeholder="$t('questionBank.tagsPlaceholder')"
               />
             </div>
             
             <div class="modal-actions">
               <button type="button" @click="closeModal" class="btn btn-outline">
-                Cancel
+                {{ $t('common.cancel') }}
               </button>
               <button type="submit" class="btn btn-primary" :disabled="saving">
                 {{ saving ? 'Saving...' : (editingQuestion ? 'Update' : 'Create') }}
@@ -355,7 +355,7 @@
     <div v-if="showKnowledgeGraphModal" class="modal-overlay" @click="closeKnowledgeGraphModal">
       <div class="modal knowledge-graph-modal" @click.stop>
         <div class="modal-header">
-          <h2>Select Knowledge Points</h2>
+          <h2>{{ $t('questionBank.selectKnowledgePoints') }}</h2>
           <button @click="closeKnowledgeGraphModal" class="close-btn">&times;</button>
         </div>
         
@@ -371,8 +371,8 @@
           </div>
           
           <div class="selection-info">
-            <p><strong>Instructions:</strong> Click on nodes in the graph to select/deselect knowledge points for this question.</p>
-            <p><strong>Selected:</strong> {{ selectedKnowledgePoints.length }} knowledge point(s)</p>
+            <p><strong>{{ $t('ui.instructions') }}:</strong> {{ $t('questionBank.knowledgePointInstructions') }}</p>
+            <p><strong>{{ $t('ui.selected') }}:</strong> {{ selectedKnowledgePoints.length }} {{ $t('ui.knowledgePoints') }}</p>
           </div>
         </div>
         
@@ -381,7 +381,7 @@
             Cancel
           </button>
           <button type="button" @click="confirmKnowledgePointSelection" class="btn btn-primary">
-            Confirm Selection
+            {{ $t('ui.confirmSelection') }}
           </button>
         </div>
       </div>

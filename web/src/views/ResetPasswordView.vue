@@ -25,7 +25,7 @@
           <el-input 
             v-model="resetForm.password" 
             type="password" 
-            placeholder="New Password"
+            :placeholder="$t('resetPassword.newPasswordPlaceholder')"
             prefix-icon="el-icon-lock"
             show-password
           />
@@ -35,7 +35,7 @@
           <el-input 
             v-model="resetForm.confirmPassword" 
             type="password" 
-            placeholder="Confirm New Password"
+            :placeholder="$t('resetPassword.confirmPasswordPlaceholder')"
             prefix-icon="el-icon-lock"
             show-password
           />

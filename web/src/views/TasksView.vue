@@ -1,11 +1,11 @@
 <template>
   <div class="tasks-container">
     <div class="section-header">
-      <h2>Task Management</h2>
+      <h2>{{ $t('tasks.management') }}</h2>
       <div class="section-actions">
         <el-select
           v-model="selectedCourse"
-          placeholder="Filter by Course"
+          :placeholder="$t('tasks.filterByCourse')"
           clearable
           style="width: 200px; margin-right: 10px"
           @change="handleCourseFilter"
@@ -19,7 +19,7 @@
         </el-select>
         <el-button type="primary" @click="showCreateDialog">
           <el-icon><Plus /></el-icon>
-          Add Task
+          {{ $t('tasks.addTask') }}
         </el-button>
       </div>
     </div>
@@ -31,9 +31,9 @@
         v-loading="loading"
         stripe
         style="width: 100%"
-        empty-text="No tasks found"
+        :empty-text="$t('tasks.noTasksFound')"
       >
-        <el-table-column prop="taskName" label="Task Name" min-width="150">
+        <el-table-column prop="taskName" :label="$t('tasks.taskName')" min-width="150">
           <template #default="{ row }">
             <div class="task-name">
               <el-icon class="task-icon">
@@ -50,9 +50,9 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="courseName" label="Course" width="150" />
+        <el-table-column prop="courseName" :label="$t('tasks.course')" width="150" />
         
-        <el-table-column prop="taskType" label="Type" width="140">
+        <el-table-column prop="taskType" :label="$t('tasks.type')" width="140">
           <template #default="{ row }">
             <el-tag :type="getTaskTypeColor(row.taskType)" size="small">
               {{ getTaskTypeLabel(row.taskType) }}
@@ -60,7 +60,7 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="deadline" label="Deadline" width="160">
+        <el-table-column prop="deadline" :label="$t('tasks.deadline')" width="160">
           <template #default="{ row }">
             <div class="deadline-cell">
               <el-icon><Clock /></el-icon>
@@ -71,7 +71,7 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="submissionMethod" label="Submission" width="120">
+        <el-table-column prop="submissionMethod" :label="$t('tasks.submission')" width="120">
           <template #default="{ row }">
             <el-tag size="small" type="info">
               {{ row.submissionMethod }}
@@ -79,7 +79,7 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="taskDescription" label="Description" min-width="200">
+        <el-table-column prop="taskDescription" :label="$t('tasks.description')" min-width="200">
           <template #default="{ row }">
             <el-tooltip :content="row.taskDescription" placement="top">
               <div class="description-cell">
@@ -89,7 +89,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="Resources" width="200" align="center">
+        <el-table-column :label="$t('tasks.resources')" width="200" align="center">
           <template #default="{ row }">
             <div class="resource-cell">
               <el-button
@@ -136,7 +136,7 @@
       <div class="resources-dialog-content">
         <!-- Upload Section -->
         <div class="upload-section">
-          <h4>Upload New Files</h4>
+          <h4>{{ $t('tasks.uploadNewFiles') }}</h4>
           <el-upload
             ref="uploadRef"
             :auto-upload="false"
@@ -200,7 +200,7 @@
                   :loading="deletingResources[resource.id]"
                 >
                   <el-icon><Delete /></el-icon>
-                  Delete
+                  {{ $t('common.delete') }}
                 </el-button>
               </div>
             </div>
@@ -212,7 +212,7 @@
     <!-- Media Viewer Dialog -->
     <el-dialog
       v-model="mediaViewerVisible"
-      :title="`Viewing: ${selectedResource?.resourceName || ''}`"
+      :title="$t('media.viewing') + ': ' + (selectedResource?.resourceName || '')"
       width="90%"
       top="5vh"
       @close="closeMediaViewer"
@@ -232,7 +232,7 @@
 
     <!-- Create/Edit Task Dialog -->
     <el-dialog
-      :title="dialogMode === 'create' ? 'Create New Task' : 'Edit Task'"
+      :title="dialogMode === 'create' ? $t('tasks.createNewTask') : $t('tasks.editTask')"
       v-model="dialogVisible"
       width="600px"
       :before-close="handleDialogClose"
@@ -244,10 +244,10 @@
         label-width="120px"
         label-position="left"
       >
-        <el-form-item label="Course" prop="courseId">
+        <el-form-item :label="$t('common.course')" prop="courseId">
           <el-select
             v-model="taskForm.courseId"
-            placeholder="Select a course"
+            :placeholder="$t('taskManagement.selectCourse')"
             style="width: 100%"
           >
             <el-option
@@ -259,19 +259,19 @@
           </el-select>
         </el-form-item>
         
-        <el-form-item label="Task Name" prop="taskName">
+        <el-form-item :label="$t('tasks.taskName')" prop="taskName">
           <el-input
             v-model="taskForm.taskName"
-            placeholder="Enter task name"
+            :placeholder="$t('taskManagement.taskNamePlaceholder')"
             maxlength="100"
             show-word-limit
           />
         </el-form-item>
         
-        <el-form-item label="Task Type" prop="taskType">
+        <el-form-item :label="$t('tasks.type')" prop="taskType">
           <el-select
             v-model="taskForm.taskType"
-            placeholder="Select task type"
+            :placeholder="$t('taskManagement.selectTaskType')"
             style="width: 100%"
           >
             <el-option
@@ -295,7 +295,7 @@
             v-model="taskForm.taskDescription"
             type="textarea"
             :rows="4"
-            placeholder="Enter task description"
+            :placeholder="$t('taskManagement.taskDescriptionPlaceholder')"
             maxlength="500"
             show-word-limit
           />
@@ -305,7 +305,7 @@
           <el-date-picker
             v-model="taskForm.deadline"
             type="datetime"
-            placeholder="Select deadline"
+            :placeholder="$t('taskManagement.selectDeadline')"
             style="width: 100%"
             :disabled-date="disabledDate"
           />
@@ -314,7 +314,7 @@
         <el-form-item label="Submission" prop="submissionMethod">
           <el-select
             v-model="taskForm.submissionMethod"
-            placeholder="Select submission method"
+            :placeholder="$t('taskManagement.selectSubmissionMethod')"
             style="width: 100%"
           >
             <el-option label="File Upload" value="upload" />
@@ -343,6 +343,7 @@
 
 <script>
 import { ref, reactive, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Plus,
@@ -379,6 +380,7 @@ export default {
     MediaViewer
   },
   setup() {
+    const { t } = useI18n()
     // Reactive data
     const loading = ref(false)
     const submitting = ref(false)
@@ -853,6 +855,7 @@ export default {
     
     return {
       // Reactive data
+      t,
       loading,
       submitting,
       dialogVisible,

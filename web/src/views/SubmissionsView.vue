@@ -1,15 +1,15 @@
 <template>
   <div class="submissions-container">
     <div class="page-header">
-      <h2><TypewriterText :text="'Student Submissions'" :show="true" :speed="70" /></h2>
-      <p class="page-description">Review, score, and provide feedback on student task submissions</p>
+      <h2><TypewriterText :text="$t('submissions.title')" :show="true" :speed="70" /></h2>
+      <p class="page-description">{{ $t('submissions.description') }}</p>
     </div>
 
     <!-- Filters -->
     <el-card class="filter-card" shadow="never">
       <el-row :gutter="20">
         <el-col :span="6">
-          <el-select v-model="selectedCourse" placeholder="Select Course" @change="loadTasks" clearable>
+          <el-select v-model="selectedCourse" :placeholder="$t('submissions.selectCourse')" @change="loadTasks" clearable>
             <el-option
               v-for="course in courses"
               :key="course.id"
@@ -19,7 +19,7 @@
           </el-select>
         </el-col>
         <el-col :span="6">
-          <el-select v-model="selectedTask" placeholder="Select Task" @change="loadSubmissions" clearable>
+          <el-select v-model="selectedTask" :placeholder="$t('submissions.selectTask')" @change="loadSubmissions" clearable>
             <el-option
               v-for="task in tasks"
               :key="task.id"
@@ -29,16 +29,16 @@
           </el-select>
         </el-col>
         <el-col :span="6">
-          <el-select v-model="statusFilter" placeholder="Filter by Status" @change="filterSubmissions" clearable>
-            <el-option label="All" value="" />
-            <el-option label="Submitted" value="2" />
-            <el-option label="Graded" value="3" />
+          <el-select v-model="statusFilter" :placeholder="$t('submissions.filterByStatus')" @change="filterSubmissions" clearable>
+            <el-option :label="$t('submissions.all')" value="" />
+            <el-option :label="$t('submissions.submitted')" value="2" />
+            <el-option :label="$t('submissions.graded')" value="3" />
           </el-select>
         </el-col>
         <el-col :span="6">
           <el-button type="primary" @click="loadSubmissions" :loading="loading">
             <el-icon><Refresh /></el-icon>
-            Refresh
+            {{ $t('common.refresh') }}
           </el-button>
         </el-col>
       </el-row>
@@ -55,7 +55,7 @@
         :header-cell-style="{ backgroundColor: '#f5f7fa', fontWeight: 'bold' }"
         border
       >
-        <el-table-column prop="studentName" label="Student" min-width="180" show-overflow-tooltip>
+        <el-table-column prop="studentName" :label="$t('submissions.student')" min-width="180" show-overflow-tooltip>
           <template #default="scope">
             <div class="student-cell">
               <el-icon class="student-icon"><User /></el-icon>
@@ -63,7 +63,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="taskName" label="Task" min-width="220" show-overflow-tooltip>
+        <el-table-column prop="taskName" :label="$t('submissions.task')" min-width="220" show-overflow-tooltip>
           <template #default="scope">
             <div class="task-cell">
               <el-icon class="task-icon"><Document /></el-icon>
@@ -71,7 +71,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="submissionTime" label="Submitted At" width="180" align="center">
+        <el-table-column prop="submissionTime" :label="$t('submissions.submittedAt')" width="180" align="center">
           <template #default="scope">
             <div class="time-cell">
               <el-icon class="time-icon"><Clock /></el-icon>
@@ -79,22 +79,22 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="score" label="Score" width="120" align="center">
+        <el-table-column prop="score" :label="$t('submissions.score')" width="120" align="center">
           <template #default="scope">
             <el-tag v-if="scope.row.score !== null" type="success" size="large">
               {{ scope.row.score }}/100
             </el-tag>
-            <el-tag v-else type="warning" size="large">Pending</el-tag>
+            <el-tag v-else type="warning" size="large">{{ $t('submissions.pending') }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="completionStatus" label="Status" width="130" align="center">
+        <el-table-column prop="completionStatus" :label="$t('submissions.status')" width="130" align="center">
           <template #default="scope">
             <el-tag :type="getStatusType(scope.row.completionStatus)" size="large">
               {{ getStatusText(scope.row.completionStatus) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="Actions" width="320" align="center">
+        <el-table-column :label="$t('submissions.actions')" width="320" align="center">
           <template #default="scope">
             <div class="action-buttons">
               <el-button
@@ -102,7 +102,7 @@
                 size="small"
                 @click.stop="gradeSubmission(scope.row)"
               >
-                {{ scope.row.score !== null ? 'Edit Grade' : 'Grade' }}
+                {{ scope.row.score !== null ? $t('submissions.editGrade') : $t('submissions.grade') }}
               </el-button>
               <el-button
                 type="success"
@@ -112,14 +112,14 @@
                 :disabled="!scope.row.submissionContent"
               >
                 <el-icon><MagicStick /></el-icon>
-                AI Grade
+                {{ $t('submissions.aiGrade') }}
               </el-button>
               <el-button
                 type="info"
                 size="small"
                 @click.stop="viewSubmissionFiles(scope.row)"
               >
-                Files
+                {{ $t('submissions.files') }}
               </el-button>
             </div>
           </template>
@@ -130,42 +130,42 @@
     <!-- Grading Dialog -->
     <el-dialog
       v-model="gradingDialogVisible"
-      title="Grade Submission"
+      :title="$t('submissions.gradeSubmission')"
       width="600px"
       @close="resetGradingForm"
     >
       <div v-if="currentSubmission">
         <el-descriptions :column="2" border>
-          <el-descriptions-item label="Student">{{ currentSubmission.studentName }}</el-descriptions-item>
-          <el-descriptions-item label="Task">{{ currentSubmission.taskName }}</el-descriptions-item>
-          <el-descriptions-item label="Submitted At">{{ formatDateTime(currentSubmission.submissionTime) }}</el-descriptions-item>
-          <el-descriptions-item label="Current Score">{{ currentSubmission.score || 'Not graded' }}</el-descriptions-item>
+          <el-descriptions-item :label="$t('submissions.student')">{{ currentSubmission.studentName }}</el-descriptions-item>
+          <el-descriptions-item :label="$t('submissions.task')">{{ currentSubmission.taskName }}</el-descriptions-item>
+          <el-descriptions-item :label="$t('submissions.submittedAt')">{{ formatDateTime(currentSubmission.submissionTime) }}</el-descriptions-item>
+          <el-descriptions-item :label="$t('submissions.currentScore')">{{ currentSubmission.score || $t('submissions.notGraded') }}</el-descriptions-item>
         </el-descriptions>
 
         <div class="submission-content" v-if="currentSubmission.submissionContent">
-          <h4>Submission Content:</h4>
+          <h4>{{ $t('submissions.submissionContent') }}:</h4>
           <el-card class="content-card">
             <p>{{ currentSubmission.submissionContent }}</p>
           </el-card>
         </div>
 
         <el-form :model="gradingForm" :rules="gradingRules" ref="gradingFormRef" label-width="100px" class="grading-form">
-          <el-form-item label="Score" prop="score">
+          <el-form-item :label="$t('submissions.score')" prop="score">
             <el-input-number
               v-model="gradingForm.score"
               :min="0"
               :max="100"
               :precision="1"
-              placeholder="Enter score (0-100)"
+              :placeholder="$t('submissions.scorePlaceholder')"
               style="width: 100%"
             />
           </el-form-item>
-          <el-form-item label="Feedback" prop="feedback">
+          <el-form-item :label="$t('submissions.feedback')" prop="feedback">
             <el-input
               v-model="gradingForm.feedback"
               type="textarea"
               :rows="4"
-              placeholder="Provide feedback for the student..."
+              :placeholder="$t('submissions.feedbackPlaceholder')"
             />
           </el-form-item>
         </el-form>
@@ -173,9 +173,9 @@
 
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="gradingDialogVisible = false">Cancel</el-button>
+          <el-button @click="gradingDialogVisible = false">{{ $t('common.cancel') }}</el-button>
           <el-button type="primary" @click="submitGrade" :loading="grading">
-            Submit Grade
+            {{ $t('submissions.submitGrade') }}
           </el-button>
         </span>
       </template>
@@ -184,7 +184,7 @@
     <!-- Files Dialog -->
     <el-dialog
       v-model="filesDialogVisible"
-      title="Submission Files"
+      :title="$t('submissions.submissionFiles')"
       width="500px"
     >
       <div v-if="submissionFiles.length > 0">
@@ -198,14 +198,14 @@
                 size="small"
                 @click="downloadFile(file)"
               >
-                Download
+                {{ $t('common.download') }}
               </el-button>
             </div>
           </el-list-item>
         </el-list>
       </div>
       <div v-else class="no-files">
-        <el-empty description="No files uploaded for this submission" />
+        <el-empty :description="$t('submissions.noFiles')" />
       </div>
     </el-dialog>
   </div>
@@ -215,6 +215,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { User, Document, Clock, Refresh, MagicStick } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
 import TypewriterText from '@/components/TypewriterText.vue'
 import submissionService from '@/services/submissionService'
 import courseService from '@/services/courseService'
@@ -232,6 +233,7 @@ export default {
     MagicStick
   },
   setup() {
+    const { t: $t } = useI18n()
     const loading = ref(false)
     const grading = ref(false)
     const courses = ref([])
@@ -251,12 +253,12 @@ export default {
       feedback: ''
     })
 
-    const gradingRules = {
+    const gradingRules = computed(() => ({
       score: [
-        { required: true, message: 'Please enter a score', trigger: 'blur' },
-        { type: 'number', min: 0, max: 100, message: 'Score must be between 0 and 100', trigger: 'blur' }
+        { required: true, message: $t('submissions.scoreRequired'), trigger: 'blur' },
+        { type: 'number', min: 0, max: 100, message: $t('submissions.scoreRange'), trigger: 'blur' }
       ]
-    }
+    }))
 
     const filteredSubmissions = computed(() => {
       if (!statusFilter.value) return submissions.value

@@ -112,13 +112,13 @@
             :loading="recommendationsLoading"
             style="margin-left: 10px"
           >
-            Test RAG Direct
+            {{ $t('studentAbility.testRagDirect') }}
           </el-button>
         </div>
         
         <div v-if="recommendations" class="recommendations-content">
           <el-tabs v-model="activeRecommendationTab" type="card">
-            <el-tab-pane label="All Recommendations" name="all">
+            <el-tab-pane :label="$t('studentAbility.allRecommendations')" name="all">
               <div class="resource-list">
                 <div
                   v-for="(resource, index) in allUniqueRecommendations"
