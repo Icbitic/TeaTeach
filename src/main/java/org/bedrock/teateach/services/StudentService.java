@@ -1,6 +1,7 @@
 package org.bedrock.teateach.services;
 
 import org.bedrock.teateach.beans.Student;
+import org.bedrock.teateach.beans.StudentLearningData;
 import org.bedrock.teateach.mappers.StudentMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -60,6 +61,60 @@ public class StudentService {
     @Cacheable(value = "allStudents")
     public List<Student> getAllStudents() {
         return studentMapper.findAll();
+    }
+
+    /**
+     * Get student by student ID (string identifier)
+     * @param studentId the student ID string
+     * @return Student entity or null if not found
+     */
+    @Cacheable(value = "students", key = "'studentId:' + #studentId")
+    public Student getStudentByStudentId(String studentId) {
+        return studentMapper.findByStudentId(studentId);
+    }
+
+    /**
+     * Convert student ID (string) to database ID (Long)
+     * @param studentId the student ID string
+     * @return database ID (Long) or null if student not found
+     */
+    public Long convertStudentIdToId(String studentId) {
+        if (studentId == null || studentId.trim().isEmpty()) {
+            return null;
+        }
+        Student student = getStudentByStudentId(studentId);
+        return student != null ? student.getId() : null;
+    }
+
+    /**
+     * Convert database ID (Long) to student ID (string)
+     * @param id the database ID
+     * @return student ID string or null if student not found
+     */
+    public String convertIdToStudentId(Long id) {
+        if (id == null) {
+            return null;
+        }
+        Student student = getStudentById(id);
+        return student != null ? student.getStudentId() : null;
+    }
+
+    /**
+     * Check if a student exists by student ID
+     * @param studentId the student ID string
+     * @return true if student exists, false otherwise
+     */
+    public boolean existsByStudentId(String studentId) {
+        return getStudentByStudentId(studentId) != null;
+    }
+
+    /**
+     * Check if a student exists by database ID
+     * @param id the database ID
+     * @return true if student exists, false otherwise
+     */
+    public boolean existsById(Long id) {
+        return getStudentById(id) != null;
     }
 
     // Add methods for bulk import/export logic here, interacting with file I/O
@@ -270,6 +325,45 @@ public class StudentService {
         }
         
         return null;
+    }
+    
+    /**
+     * Get student learning data for recommendations
+     * TODO: Implement actual database queries when StudentLearningData mapper is available
+     * @param studentId The student's ID
+     * @param courseId Optional course ID to filter data
+     * @return List of student learning data
+     */
+    public List<StudentLearningData> getStudentLearningData(String studentId, Long courseId) {
+        // TODO: Replace with actual database query
+        // For now, return mock data to demonstrate the functionality
+        List<StudentLearningData> mockData = new ArrayList<>();
+        
+        // Create sample learning data
+        StudentLearningData data1 = new StudentLearningData();
+        data1.setId(1L);
+        data1.setStudentId(Long.parseLong(studentId));
+        data1.setCourseId(courseId != null ? courseId : 1L);
+        data1.setTaskId(1L);
+        data1.setQuizScore(75.0);
+        data1.setCompletionRate(0.8);
+        data1.setTimeSpentSeconds(3600L);
+        data1.setAdditionalData("{\"topic\": \"Mathematics\", \"difficulty\": \"medium\"}");
+        
+        StudentLearningData data2 = new StudentLearningData();
+        data2.setId(2L);
+        data2.setStudentId(Long.parseLong(studentId));
+        data2.setCourseId(courseId != null ? courseId : 1L);
+        data2.setTaskId(2L);
+        data2.setQuizScore(60.0);
+        data2.setCompletionRate(0.6);
+        data2.setTimeSpentSeconds(2400L);
+        data2.setAdditionalData("{\"topic\": \"Physics\", \"difficulty\": \"hard\"}");
+        
+        mockData.add(data1);
+        mockData.add(data2);
+        
+        return mockData;
     }
     
     /**

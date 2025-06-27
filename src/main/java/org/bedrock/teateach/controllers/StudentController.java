@@ -60,6 +60,45 @@ public class StudentController {
         List<Student> students = studentService.getAllStudents();
         return ResponseEntity.ok(students);
     }
+
+    @GetMapping("/by-student-id/{studentId}")
+    public ResponseEntity<Student> getStudentByStudentId(@PathVariable String studentId) {
+        Student student = studentService.getStudentByStudentId(studentId);
+        if (student != null) {
+            return ResponseEntity.ok(student);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/convert/student-id-to-id/{studentId}")
+    public ResponseEntity<Long> convertStudentIdToId(@PathVariable String studentId) {
+        Long id = studentService.convertStudentIdToId(studentId);
+        if (id != null) {
+            return ResponseEntity.ok(id);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/convert/id-to-student-id/{id}")
+    public ResponseEntity<String> convertIdToStudentId(@PathVariable Long id) {
+        String studentId = studentService.convertIdToStudentId(id);
+        if (studentId != null) {
+            return ResponseEntity.ok(studentId);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/exists/by-student-id/{studentId}")
+    public ResponseEntity<Boolean> existsByStudentId(@PathVariable String studentId) {
+        boolean exists = studentService.existsByStudentId(studentId);
+        return ResponseEntity.ok(exists);
+    }
+
+    @GetMapping("/exists/by-id/{id}")
+    public ResponseEntity<Boolean> existsById(@PathVariable Long id) {
+        boolean exists = studentService.existsById(id);
+        return ResponseEntity.ok(exists);
+    }
     
     /**
      * Export all students to Excel file

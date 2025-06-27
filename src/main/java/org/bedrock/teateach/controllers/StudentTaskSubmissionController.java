@@ -2,6 +2,7 @@ package org.bedrock.teateach.controllers;
 
 import org.bedrock.teateach.beans.StudentTaskSubmission;
 import org.bedrock.teateach.beans.SubmissionFile;
+import org.bedrock.teateach.llm.LLMService;
 import org.bedrock.teateach.services.GradeService; // For recordSubmissionScore
 import org.bedrock.teateach.services.StudentTaskSubmissionService; // Assuming a dedicated service for basic CRUD
 import org.bedrock.teateach.services.SubmissionFileService;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,14 +26,17 @@ public class StudentTaskSubmissionController {
     private final StudentTaskSubmissionService studentTaskSubmissionService;
     private final GradeService gradeService; // For specific grading logic
     private final SubmissionFileService submissionFileService;
+    private final LLMService llmService; // For AI-powered grading and feedback
 
     @Autowired
     public StudentTaskSubmissionController(StudentTaskSubmissionService studentTaskSubmissionService,
                                            GradeService gradeService,
-                                           SubmissionFileService submissionFileService) {
+                                           SubmissionFileService submissionFileService,
+                                           LLMService llmService) {
         this.studentTaskSubmissionService = studentTaskSubmissionService;
         this.gradeService = gradeService;
         this.submissionFileService = submissionFileService;
+        this.llmService = llmService;
     }
 
     /**
@@ -277,6 +282,200 @@ public class StudentTaskSubmissionController {
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Uses LLM service to automatically grade and provide feedback for a student submission.
+     * POST /api/submissions/{submissionId}/llm-grade
+     * @param submissionId The ID of the submission to grade.
+     * @param gradingRubric The grading criteria/rubric to use for assessment.
+     * @return The updated submission with AI-generated score and feedback.
+     */
+    @PostMapping("/{submissionId}/llm-grade")
+    public ResponseEntity<?> gradeSubmissionWithLLM(@PathVariable Long submissionId,
+                                                    @RequestParam(required = false) String gradingRubric) {
+        try {
+            // Retrieve the submission
+            Optional<StudentTaskSubmission> submissionOpt = studentTaskSubmissionService.getSubmissionById(submissionId);
+            if (submissionOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            StudentTaskSubmission submission = submissionOpt.get();
+            
+            // Call LLM service for grading
+            Map<String, Object> gradingResult = llmService.gradeSubmission(submission, gradingRubric);
+            
+            // Check if grading was successful
+            if (!(Boolean) gradingResult.get("success")) {
+                return ResponseEntity.badRequest().body(gradingResult);
+            }
+            
+            // Extract score and feedback from LLM response
+            Double score = null;
+            Object scoreObj = gradingResult.get("score");
+            if (scoreObj instanceof Number) {
+                score = ((Number) scoreObj).doubleValue();
+            }
+            String feedback = (String) gradingResult.get("feedback");
+            
+            // Update the submission with LLM results
+            submission.setScore(score);
+            submission.setFeedback(feedback);
+            submission.setCompletionStatus(3); // Mark as graded
+            
+            StudentTaskSubmission updatedSubmission = studentTaskSubmissionService.updateSubmission(submission);
+            
+            // Update overall grade
+            gradeService.recordSubmissionScore(submissionId, score);
+            
+            // Return success response with updated submission
+            gradingResult.put("submission", updatedSubmission);
+            
+            return ResponseEntity.ok(gradingResult);
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "success", false,
+                    "error", "LLM grading failed",
+                    "message", "The LLM grading service encountered an error: " + e.getMessage()
+                ));
+        }
+    }
+
+    /**
+     * Uses LLM service to generate feedback only (without grading) for a student submission.
+     * POST /api/submissions/{submissionId}/llm-feedback
+     * @param submissionId The ID of the submission to provide feedback for.
+     * @param feedbackPrompt Custom prompt for the type of feedback desired.
+     * @return The updated submission with AI-generated feedback.
+     */
+    @PostMapping("/{submissionId}/llm-feedback")
+    public ResponseEntity<?> generateFeedbackWithLLM(@PathVariable Long submissionId,
+                                                     @RequestParam(required = false) String feedbackPrompt) {
+        try {
+            // Retrieve the submission
+            Optional<StudentTaskSubmission> submissionOpt = studentTaskSubmissionService.getSubmissionById(submissionId);
+            if (submissionOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            StudentTaskSubmission submission = submissionOpt.get();
+            
+            // Call LLM service for feedback generation
+            Map<String, Object> feedbackResult = llmService.generateFeedback(submission, feedbackPrompt);
+            
+            // Check if feedback generation was successful
+            if (!(Boolean) feedbackResult.get("success")) {
+                return ResponseEntity.badRequest().body(feedbackResult);
+            }
+            
+            // Extract feedback from LLM response
+            String feedback = (String) feedbackResult.get("feedback");
+            
+            // Update the submission with LLM feedback
+            String existingFeedback = submission.getFeedback();
+            String newFeedback = existingFeedback != null && !existingFeedback.trim().isEmpty() 
+                ? existingFeedback + "\n\n--- AI-Generated Feedback ---\n" + feedback
+                : "--- AI-Generated Feedback ---\n" + feedback;
+            
+            submission.setFeedback(newFeedback);
+            
+            StudentTaskSubmission updatedSubmission = studentTaskSubmissionService.updateSubmission(submission);
+            
+            // Return success response with updated submission
+            feedbackResult.put("submission", updatedSubmission);
+            
+            return ResponseEntity.ok(feedbackResult);
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "success", false,
+                    "error", "LLM feedback generation failed",
+                    "message", "The LLM feedback service encountered an error: " + e.getMessage()
+                ));
+        }
+    }
+
+    /**
+     * Batch process multiple submissions for LLM grading.
+     * POST /api/submissions/batch-llm-grade
+     * @param request Contains submission IDs and optional grading rubric.
+     * @return Results of batch grading operation.
+     */
+    @PostMapping("/batch-llm-grade")
+    public ResponseEntity<?> batchGradeSubmissionsWithLLM(@RequestBody Map<String, Object> request) {
+        try {
+            @SuppressWarnings("unchecked")
+            List<Long> submissionIds = (List<Long>) request.get("submissionIds");
+            String gradingRubric = (String) request.get("gradingRubric");
+            
+            if (submissionIds == null || submissionIds.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", "No submission IDs provided",
+                    "message", "Please provide a list of submission IDs to grade"
+                ));
+            }
+
+            // Get submissions for batch processing
+            List<StudentTaskSubmission> submissions = new ArrayList<>();
+            for (Long submissionId : submissionIds) {
+                Optional<StudentTaskSubmission> submissionOpt = studentTaskSubmissionService.getSubmissionById(submissionId);
+                if (submissionOpt.isPresent()) {
+                    submissions.add(submissionOpt.get());
+                }
+            }
+
+            // Call LLM service for batch grading
+            Map<String, Object> batchResult = llmService.batchGradeSubmissions(submissions, gradingRubric);
+            
+            // Check if batch grading was successful
+            if (!(Boolean) batchResult.get("success")) {
+                return ResponseEntity.badRequest().body(batchResult);
+            }
+            
+            // Process the successful results and update submissions
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> successfulGradings = (List<Map<String, Object>>) batchResult.get("successfulGradings");
+            
+            for (Map<String, Object> result : successfulGradings) {
+                Long submissionId = (Long) result.get("submissionId");
+                Double score = null;
+                Object scoreObj = result.get("score");
+                if (scoreObj instanceof Number) {
+                    score = ((Number) scoreObj).doubleValue();
+                }
+                String feedback = (String) result.get("feedback");
+                
+                // Update the submission in database
+                Optional<StudentTaskSubmission> submissionOpt = studentTaskSubmissionService.getSubmissionById(submissionId);
+                if (submissionOpt.isPresent()) {
+                    StudentTaskSubmission submission = submissionOpt.get();
+                    submission.setScore(score);
+                    submission.setFeedback(feedback);
+                    submission.setCompletionStatus(3); // Mark as graded
+                    
+                    StudentTaskSubmission updatedSubmission = studentTaskSubmissionService.updateSubmission(submission);
+                    result.put("submission", updatedSubmission);
+                    
+                    // Update overall grade
+                    gradeService.recordSubmissionScore(submissionId, score);
+                }
+            }
+            
+            return ResponseEntity.ok(batchResult);
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "success", false,
+                    "error", "Batch LLM grading failed",
+                    "message", "The batch LLM grading service encountered an error: " + e.getMessage()
+                ));
         }
     }
 }

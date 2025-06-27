@@ -293,6 +293,42 @@
               ></textarea>
             </div>
             
+            <!-- Knowledge Points Selection -->
+            <div class="form-group">
+              <label>Knowledge Points</label>
+              <div class="knowledge-points-section">
+                <div class="selected-knowledge-points" v-if="selectedKnowledgePoints.length > 0">
+                  <h4>Selected Knowledge Points ({{ selectedKnowledgePoints.length }})</h4>
+                  <div class="selected-kp-list">
+                    <div 
+                      v-for="kp in selectedKnowledgePoints" 
+                      :key="kp.id" 
+                      class="selected-kp-item"
+                    >
+                      <span class="kp-name">{{ kp.name }}</span>
+                      <span class="kp-difficulty" :class="kp.difficultyLevel.toLowerCase()">{{ kp.difficultyLevel }}</span>
+                      <button 
+                        type="button" 
+                        @click="removeKnowledgePoint(kp.id)" 
+                        class="btn btn-sm btn-danger"
+                      >
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <button 
+                  type="button" 
+                  @click="showKnowledgeGraphModal = true" 
+                  class="btn btn-outline knowledge-graph-btn"
+                >
+                  <i class="fas fa-project-diagram"></i> 
+                  {{ selectedKnowledgePoints.length > 0 ? 'Modify Knowledge Points' : 'Select Knowledge Points' }}
+                </button>
+              </div>
+            </div>
+            
             <div class="form-group">
               <label>Tags (comma-separated)</label>
               <input 
@@ -314,15 +350,56 @@
         </div>
       </div>
     </div>
+
+    <!-- Knowledge Graph Selection Modal -->
+    <div v-if="showKnowledgeGraphModal" class="modal-overlay" @click="closeKnowledgeGraphModal">
+      <div class="modal knowledge-graph-modal" @click.stop>
+        <div class="modal-header">
+          <h2>Select Knowledge Points</h2>
+          <button @click="closeKnowledgeGraphModal" class="close-btn">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="knowledge-graph-container">
+            <KnowledgeGraphVisualization
+              :knowledge-points="allKnowledgePoints"
+              :selected-knowledge-point-ids="tempSelectedKnowledgePoints.map(kp => kp.id)"
+              :disable-dragging="true"
+              @node-click="toggleKnowledgePointSelection"
+              ref="knowledgeGraph"
+            />
+          </div>
+          
+          <div class="selection-info">
+            <p><strong>Instructions:</strong> Click on nodes in the graph to select/deselect knowledge points for this question.</p>
+            <p><strong>Selected:</strong> {{ selectedKnowledgePoints.length }} knowledge point(s)</p>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" @click="closeKnowledgeGraphModal" class="btn btn-outline">
+            Cancel
+          </button>
+          <button type="button" @click="confirmKnowledgePointSelection" class="btn btn-primary">
+            Confirm Selection
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import { ElMessage } from 'element-plus'
 import { questionService } from '@/services/questionService'
+import knowledgePointService from '@/services/knowledgePointService'
+import KnowledgeGraphVisualization from '@/components/KnowledgeGraphVisualization.vue'
 
 export default {
   name: 'QuestionBankView',
+  components: {
+    KnowledgeGraphVisualization
+  },
   data() {
     return {
       questions: [],
@@ -348,10 +425,16 @@ export default {
         points: 1.0,
         programmingLanguage: '',
         templateCode: '',
-        tags: []
+        tags: [],
+        knowledgePointIds: []
       },
       tagsInput: '',
-      searchTimeout: null
+      searchTimeout: null,
+      // Knowledge Graph related
+      showKnowledgeGraphModal: false,
+      allKnowledgePoints: [],
+      selectedKnowledgePoints: [],
+      tempSelectedKnowledgePoints: []
     }
   },
   computed: {
@@ -361,6 +444,7 @@ export default {
   },
   mounted() {
     this.loadQuestions()
+    this.loadKnowledgePoints()
   },
   methods: {
     async loadQuestions() {
@@ -424,6 +508,13 @@ export default {
         tags: question.tags || []
       }
       this.tagsInput = (question.tags || []).join(', ')
+      
+      // Load selected knowledge points for editing
+      this.selectedKnowledgePoints = this.allKnowledgePoints.filter(kp => 
+        (question.knowledgePointIds || []).includes(kp.id)
+      )
+      this.tempSelectedKnowledgePoints = [...this.selectedKnowledgePoints]
+      
       this.showCreateModal = true
     },
     
@@ -526,6 +617,43 @@ export default {
         tags: []
       }
       this.tagsInput = ''
+      this.selectedKnowledgePoints = []
+    },
+    
+    // Knowledge Graph related methods
+    async loadKnowledgePoints() {
+      try {
+        const response = await knowledgePointService.getAllKnowledgePoints()
+        this.allKnowledgePoints = response.data || []
+      } catch (error) {
+        console.error('Error loading knowledge points:', error)
+        ElMessage.error('Failed to load knowledge points')
+      }
+    },
+    
+    toggleKnowledgePointSelection(knowledgePoint) {
+      const index = this.tempSelectedKnowledgePoints.findIndex(kp => kp.id === knowledgePoint.id)
+      if (index > -1) {
+        this.tempSelectedKnowledgePoints.splice(index, 1)
+      } else {
+        this.tempSelectedKnowledgePoints.push(knowledgePoint)
+      }
+    },
+    
+    removeKnowledgePoint(knowledgePointId) {
+      this.selectedKnowledgePoints = this.selectedKnowledgePoints.filter(kp => kp.id !== knowledgePointId)
+      this.questionForm.knowledgePointIds = this.selectedKnowledgePoints.map(kp => kp.id)
+    },
+    
+    closeKnowledgeGraphModal() {
+      this.showKnowledgeGraphModal = false
+      this.tempSelectedKnowledgePoints = [...this.selectedKnowledgePoints]
+    },
+    
+    confirmKnowledgePointSelection() {
+      this.selectedKnowledgePoints = [...this.tempSelectedKnowledgePoints]
+      this.questionForm.knowledgePointIds = this.selectedKnowledgePoints.map(kp => kp.id)
+      this.showKnowledgeGraphModal = false
     }
   }
 }
@@ -889,6 +1017,114 @@ export default {
   padding: 40px;
   color: #6c757d;
   font-size: 16px;
+}
+
+/* Knowledge Graph Modal Styles */
+.knowledge-graph-modal {
+  width: 90vw;
+  max-width: 1200px;
+  height: 90vh;
+  max-height: 900px;
+}
+
+.knowledge-graph-container {
+  height: 600px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.selection-info {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.selection-info p {
+  margin: 5px 0;
+  color: #666;
+}
+
+/* Knowledge Points Selection Styles */
+.knowledge-points-section {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 15px;
+  background: #fafafa;
+}
+
+.selected-knowledge-points {
+  margin-bottom: 15px;
+}
+
+.selected-knowledge-points h4 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.selected-kp-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.selected-kp-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.kp-name {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.kp-difficulty {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.kp-difficulty.beginner {
+  background: #e8f5e8;
+  color: #388e3c;
+}
+
+.kp-difficulty.intermediate {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.kp-difficulty.advanced {
+  background: #fce4ec;
+  color: #c2185b;
+}
+
+.knowledge-graph-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 2px dashed #007bff;
+  background: white;
+  color: #007bff;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.knowledge-graph-btn:hover {
+  background: #007bff;
+  color: white;
+  border-style: solid;
 }
 
 @media (max-width: 768px) {

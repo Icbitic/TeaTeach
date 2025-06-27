@@ -12,7 +12,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -66,6 +68,7 @@ public class KnowledgePointService {
 
     /**
      * Deletes a knowledge point by its ID.
+     * Also removes the deleted knowledge point ID from prerequisite and related fields of other knowledge points.
      *
      * @param id The ID of the knowledge point to delete.
      */
@@ -73,6 +76,13 @@ public class KnowledgePointService {
     @CacheEvict(value = {"knowledgePoints", "allKnowledgePoints", "courseKnowledgePoints"},
             allEntries = true)
     public void deleteKnowledgePoint(Long id) {
+        // First, remove the knowledge point ID from prerequisite fields of other knowledge points
+        knowledgePointMapper.removeFromPrerequisiteFields(id);
+        
+        // Then, remove the knowledge point ID from related fields of other knowledge points
+        knowledgePointMapper.removeFromRelatedFields(id);
+        
+        // Finally, delete the knowledge point itself
         knowledgePointMapper.delete(id);
     }
 
@@ -103,7 +113,6 @@ public class KnowledgePointService {
      *
      * @return A list of all knowledge points.
      */
-    @Cacheable(value = "allKnowledgePoints")
     public List<KnowledgePoint> getAllKnowledgePoints() {
         return knowledgePointMapper.findAll();
     }
@@ -121,16 +130,76 @@ public class KnowledgePointService {
     @Transactional
     public List<KnowledgePoint> generateKnowledgeGraphFromContent(String courseContent, Long courseId) {
         // Use LLMService to extract knowledge points and their relationships
-        List<KnowledgePoint> extractedKPs = llmService.extractKnowledgePoints(courseContent, courseId, selfProxy.getAllKnowledgePoints(), courseService.getAllCourses());
+        List<KnowledgePoint> extractedKPs = llmService.extractKnowledgePoints(courseContent, courseId, selfProxy.getAllKnowledgePoints());
 
-        // Persist the extracted knowledge points
-        extractedKPs.forEach(kp -> {
+        // Create ID mapping from temporary IDs (10001+) to real database IDs
+        Map<Long, Long> idMapping = new HashMap<>();
+        
+        // First pass: Create knowledge points without relationships and build ID mapping
+        for (KnowledgePoint kp : extractedKPs) {
+            Long tempId = kp.getId();
+            
             // Ensure courseId is set if not already done by LLMService
             if (kp.getCourseId() == null) {
                 kp.setCourseId(courseId);
             }
-            createKnowledgePoint(kp); // Call the service's create method to ensure transactionality
-        });
+            
+            // Clear relationships temporarily to avoid referencing non-existent IDs
+            List<Long> originalPrerequisites = kp.getPrerequisiteKnowledgePointIds();
+            List<Long> originalRelated = kp.getRelatedKnowledgePointIds();
+            kp.setPrerequisiteKnowledgePointIds(null);
+            kp.setRelatedKnowledgePointIds(null);
+            
+            // Create the knowledge point (database will assign real ID)
+            createKnowledgePoint(kp);
+            
+            // Map temporary ID to real database ID
+            if (tempId != null && tempId >= 10001) {
+                idMapping.put(tempId, kp.getId());
+            }
+            
+            // Restore original relationships for second pass
+            kp.setPrerequisiteKnowledgePointIds(originalPrerequisites);
+            kp.setRelatedKnowledgePointIds(originalRelated);
+        }
+        
+        // Second pass: Update relationships with mapped IDs
+        for (KnowledgePoint kp : extractedKPs) {
+            boolean needsUpdate = false;
+            
+            // Map prerequisite IDs
+            if (kp.getPrerequisiteKnowledgePointIds() != null) {
+                List<Long> mappedPrerequisites = kp.getPrerequisiteKnowledgePointIds().stream()
+                    .map(id -> {
+                        if (id >= 10001 && idMapping.containsKey(id)) {
+                            return idMapping.get(id);
+                        }
+                        return id; // Keep existing IDs that are not temporary
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+                kp.setPrerequisiteKnowledgePointIds(mappedPrerequisites);
+                needsUpdate = true;
+            }
+            
+            // Map related IDs
+            if (kp.getRelatedKnowledgePointIds() != null) {
+                List<Long> mappedRelated = kp.getRelatedKnowledgePointIds().stream()
+                    .map(id -> {
+                        if (id >= 10001 && idMapping.containsKey(id)) {
+                            return idMapping.get(id);
+                        }
+                        return id; // Keep existing IDs that are not temporary
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+                kp.setRelatedKnowledgePointIds(mappedRelated);
+                needsUpdate = true;
+            }
+            
+            // Update the knowledge point with mapped relationships
+            if (needsUpdate) {
+                updateKnowledgePoint(kp);
+            }
+        }
 
         return extractedKPs;
     }

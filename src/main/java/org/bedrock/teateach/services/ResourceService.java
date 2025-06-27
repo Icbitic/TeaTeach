@@ -5,8 +5,10 @@ import org.bedrock.teateach.beans.Resource;
 import org.bedrock.teateach.beans.User;
 import org.bedrock.teateach.mappers.ResourceMapper;
 import org.bedrock.teateach.mappers.UserMapper;
+import org.bedrock.teateach.llm.LLMService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,13 +34,15 @@ public class ResourceService {
 
     private final ResourceMapper resourceMapper;
     private final UserMapper userMapper;
-
-    private final String fileStorageLocation = System.getProperty("user.home") + "/teateach_uploads";
+    private final LLMService llmService;
+    private final String fileStorageLocation;
 
     @Autowired
-    public ResourceService(ResourceMapper resourceMapper, UserMapper userMapper) {
+    public ResourceService(ResourceMapper resourceMapper, UserMapper userMapper, @Lazy LLMService llmService, @Value("${file.upload-dir}") String fileStorageLocation) {
         this.resourceMapper = resourceMapper;
         this.userMapper = userMapper;
+        this.llmService = llmService;
+        this.fileStorageLocation = fileStorageLocation;
         // Ensure the upload directory exists
         try {
             Files.createDirectories(Paths.get(fileStorageLocation));
@@ -51,6 +56,15 @@ public class ResourceService {
     @Transactional
     public Resource createResource(Resource resource) {
         resourceMapper.insert(resource);
+        
+        // Add the new resource to the vector store
+        try {
+            llmService.addResourceToVectorStore(resource);
+        } catch (Exception e) {
+            // Log the error but don't fail the upload if vector store addition fails
+            System.err.println("Failed to add resource to vector store: " + e.getMessage());
+        }
+        
         return resource;
     }
 
@@ -139,6 +153,15 @@ public class ResourceService {
         }
 
         resourceMapper.insert(resource);
+        
+        // Add the new resource to the vector store
+        try {
+            llmService.addResourceToVectorStore(resource);
+        } catch (Exception e) {
+            // Log the error but don't fail the upload if vector store addition fails
+            System.err.println("Failed to add resource to vector store: " + e.getMessage());
+        }
+        
         return resource;
     }
 
