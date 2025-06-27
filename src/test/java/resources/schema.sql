@@ -161,7 +161,7 @@ create table teateach.grade_analysis
 (
     id            bigint auto_increment
         primary key,
-    student_id    bigint                             not null,
+    student_id    varchar(50)                        not null,
     course_id     bigint                             not null,
     overall_grade double                             null comment 'Overall calculated grade for the student in this course',
     task_grades   text                               null comment 'JSON string of task grades (e.g., {"Quiz 1": 85.0, "Report": 92.5})',
@@ -170,12 +170,8 @@ create table teateach.grade_analysis
     updated_at    datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP,
     constraint student_id
         unique (student_id, course_id),
-    constraint grade_analysis_ibfk_1
-        foreign key (student_id) references teateach.students (id)
-            on delete cascade,
-    constraint grade_analysis_ibfk_2
-        foreign key (course_id) references teateach.courses (id)
-            on delete cascade
+    constraint grade_analysis_students_student_id_fk
+        foreign key (student_id) references teateach.students (student_id)
 );
 
 create index course_id

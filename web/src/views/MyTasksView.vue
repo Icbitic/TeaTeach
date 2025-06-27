@@ -3,17 +3,17 @@
     <div class="page-header">
       <div class="header-content">
         <div class="title-section">
-          <h1>My Tasks</h1>
-          <p>Manage and track your assignments</p>
+          <h1>{{ $t('myTasks.title') }}</h1>
+          <p>{{ $t('myTasks.subtitle') }}</p>
         </div>
         <div class="header-stats">
           <div class="stat-card">
             <div class="stat-number">{{ tasks.length }}</div>
-            <div class="stat-label">Total Tasks</div>
+            <div class="stat-label">{{ $t('myTasks.totalTasks') }}</div>
           </div>
           <div class="stat-card overdue">
             <div class="stat-number">{{ overdueTasks.length }}</div>
-            <div class="stat-label">Overdue</div>
+            <div class="stat-label">{{ $t('myTasks.overdue') }}</div>
           </div>
         </div>
       </div>
@@ -26,11 +26,11 @@
           <el-col :span="6">
             <el-select
               v-model="selectedCourse"
-              placeholder="All Courses"
+              :placeholder="$t('myTasks.allCourses')"
               clearable
               class="filter-select"
             >
-              <el-option label="All Courses" value="" />
+              <el-option :label="$t('myTasks.allCourses')" value="" />
               <el-option
                 v-for="course in courses"
                 :key="course.id"
@@ -42,34 +42,34 @@
           <el-col :span="6">
             <el-select
               v-model="selectedType"
-              placeholder="All Types"
+              :placeholder="$t('myTasks.allTypes')"
               clearable
               class="filter-select"
             >
-              <el-option label="All Types" value="" />
-              <el-option label="Assignment" value="assignment" />
-              <el-option label="Quiz" value="quiz" />
-              <el-option label="Project" value="project" />
-              <el-option label="Reading" value="reading" />
+              <el-option :label="$t('myTasks.allTypes')" value="" />
+              <el-option :label="$t('myTasks.assignment')" value="assignment" />
+              <el-option :label="$t('myTasks.quiz')" value="quiz" />
+              <el-option :label="$t('myTasks.project')" value="project" />
+              <el-option :label="$t('myTasks.reading')" value="reading" />
             </el-select>
           </el-col>
           <el-col :span="6">
             <el-select
               v-model="selectedStatus"
-              placeholder="All Status"
+              :placeholder="$t('myTasks.allStatus')"
               clearable
               class="filter-select"
             >
-              <el-option label="All Status" value="" />
-              <el-option label="Pending" value="pending" />
-              <el-option label="Completed" value="completed" />
-              <el-option label="Overdue" value="overdue" />
+              <el-option :label="$t('myTasks.allStatus')" value="" />
+              <el-option :label="$t('myTasks.pending')" value="pending" />
+              <el-option :label="$t('myTasks.completed')" value="completed" />
+              <el-option :label="$t('myTasks.overdue')" value="overdue" />
             </el-select>
           </el-col>
           <el-col :span="6">
             <el-input
               v-model="searchQuery"
-              placeholder="Search tasks..."
+              :placeholder="$t('myTasks.searchTasks')"
               class="search-input"
             >
               <template #prefix>
@@ -329,7 +329,7 @@
             v-model="submissionForm.submissionContent"
             type="textarea"
             :rows="6"
-            placeholder="Enter your submission content here..."
+            :placeholder="$t('myTasks.submissionContentPlaceholder')"
           />
         </el-form-item>
         
@@ -340,7 +340,7 @@
         >
           <el-input
             v-model="submissionForm.submissionContent"
-            placeholder="Enter the URL of your submission"
+            :placeholder="$t('myTasks.submissionUrlPlaceholder')"
           />
         </el-form-item>
         
@@ -353,7 +353,7 @@
             v-model="submissionForm.submissionContent"
             type="textarea"
             :rows="6"
-            placeholder="Enter your submission text or notes..."
+            :placeholder="$t('myTasks.submissionTextPlaceholder')"
           />
         </el-form-item>
       </el-form>

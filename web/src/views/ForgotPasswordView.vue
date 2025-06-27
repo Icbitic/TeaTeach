@@ -3,15 +3,15 @@
     <GitHubButton />
     <div class="forgot-password-box">
       <div class="forgot-password-header">
-        <h1>TeaTeach</h1>
-        <p>Reset Your Password</p>
+        <h1>{{ $t('app.title') }}</h1>
+        <p>{{ $t('forgotPassword.title') }}</p>
       </div>
       
       <el-form :model="resetForm" :rules="rules" ref="resetFormRef" class="forgot-password-form">
         <el-form-item prop="email">
           <el-input 
             v-model="resetForm.email" 
-            placeholder="Email"
+            :placeholder="$t('auth.email')"
             prefix-icon="el-icon-message"
           />
         </el-form-item>
@@ -23,21 +23,22 @@
             @click="submitForm"
             class="forgot-password-button"
           >
-            Send Reset Link
+            {{ $t('forgotPassword.sendResetLink') }}
           </el-button>
         </el-form-item>
       </el-form>
       
       <div class="forgot-password-footer">
-        <p>Remember your password? <router-link to="/login">Back to Login</router-link></p>
+        <p>{{ $t('forgotPassword.rememberPassword') }} <router-link to="/login">{{ $t('forgotPassword.backToLogin') }}</router-link></p>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { authService } from '../services/api'
 import GitHubButton from '@/components/GitHubButton.vue'
@@ -48,6 +49,7 @@ export default {
     GitHubButton
   },
   setup() {
+    const { t } = useI18n()
     const router = useRouter()
     const resetFormRef = ref(null)
     const loading = ref(false)
@@ -57,12 +59,12 @@ export default {
       email: ''
     })
     
-    const rules = {
+    const rules = computed(() => ({
       email: [
-        { required: true, message: 'Please enter your email', trigger: 'blur' },
-        { type: 'email', message: 'Please enter a valid email address', trigger: 'blur' }
+        { required: true, message: t('auth.emailRequired'), trigger: 'blur' },
+        { type: 'email', message: t('auth.emailInvalid'), trigger: 'blur' }
       ]
-    }
+    }))
     
     const submitForm = () => {
       resetFormRef.value.validate(valid => {
@@ -72,7 +74,7 @@ export default {
             .then(() => {
               emailSent.value = true
               ElMessage({
-                message: 'Password reset link has been sent to your email',
+                message: t('forgotPassword.resetLinkSent'),
                 type: 'success'
               })
               setTimeout(() => {
@@ -82,7 +84,7 @@ export default {
             .catch(error => {
               console.error('Password reset error:', error)
               ElMessage({
-                message: error.response?.data?.message || 'Failed to send reset link. Please try again.',
+                message: error.response?.data?.message || t('forgotPassword.resetFailed'),
                 type: 'error'
               })
             })

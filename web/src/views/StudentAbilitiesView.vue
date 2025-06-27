@@ -4,9 +4,9 @@
     <div class="page-header">
       <div class="header-content">
         <div class="header-text">
-          <h1><TypewriterText :text="'My Learning Abilities'" :show="true" :speed="70" /></h1>
+          <h1><TypewriterText :text="$t('abilities.myLearningAbilities')" :show="true" :speed="70" /></h1>
           <p class="page-description">
-            Discover your learning strengths and get personalized recommendations to enhance your educational journey.
+            {{ $t('abilities.pageDescription') }}
           </p>
         </div>
         <div class="header-actions">
@@ -16,7 +16,7 @@
             :loading="refreshing"
             icon="el-icon-refresh"
           >
-            Refresh Analysis
+            {{ $t('abilities.refreshAnalysis') }}
           </el-button>
         </div>
       </div>
@@ -33,7 +33,7 @@
     <!-- Help Section -->
     <el-card class="help-section" shadow="hover">
       <div class="help-header">
-        <h3><i class="el-icon-question"></i> Understanding Your Analysis</h3>
+        <h3><i class="el-icon-question"></i> {{ $t('abilities.understandingAnalysis') }}</h3>
       </div>
       <el-row :gutter="20">
         <el-col :xs="24" :sm="12" :md="8">
@@ -41,8 +41,8 @@
             <div class="help-icon problem-solving">
               <i class="el-icon-cpu"></i>
             </div>
-            <h4>Problem Solving</h4>
-            <p>Measures your ability to identify, analyze, and solve complex problems systematically.</p>
+            <h4>{{ $t('abilities.problemSolving') }}</h4>
+            <p>{{ $t('abilities.problemSolvingDesc') }}</p>
           </div>
         </el-col>
         <el-col :xs="24" :sm="12" :md="8">
@@ -50,8 +50,8 @@
             <div class="help-icon critical-thinking">
               <i class="el-icon-view"></i>
             </div>
-            <h4>Critical Thinking</h4>
-            <p>Evaluates your capacity to analyze information objectively and make reasoned judgments.</p>
+            <h4>{{ $t('abilities.criticalThinking') }}</h4>
+            <p>{{ $t('abilities.criticalThinkingDesc') }}</p>
           </div>
         </el-col>
         <el-col :xs="24" :sm="12" :md="8">
@@ -59,8 +59,8 @@
             <div class="help-icon creativity">
               <i class="el-icon-brush"></i>
             </div>
-            <h4>Creativity</h4>
-            <p>Assesses your ability to generate innovative ideas and think outside conventional boundaries.</p>
+            <h4>{{ $t('abilities.creativity') }}</h4>
+            <p>{{ $t('abilities.creativityDesc') }}</p>
           </div>
         </el-col>
         <el-col :xs="24" :sm="12" :md="8">
@@ -68,8 +68,8 @@
             <div class="help-icon collaboration">
               <i class="el-icon-user-solid"></i>
             </div>
-            <h4>Collaboration</h4>
-            <p>Measures your effectiveness in working with others and contributing to team success.</p>
+            <h4>{{ $t('abilities.collaboration') }}</h4>
+            <p>{{ $t('abilities.collaborationDesc') }}</p>
           </div>
         </el-col>
         <el-col :xs="24" :sm="12" :md="8">
@@ -77,8 +77,8 @@
             <div class="help-icon communication">
               <i class="el-icon-chat-dot-round"></i>
             </div>
-            <h4>Communication</h4>
-            <p>Evaluates your ability to express ideas clearly and interact effectively with others.</p>
+            <h4>{{ $t('abilities.communication') }}</h4>
+            <p>{{ $t('abilities.communicationDesc') }}</p>
           </div>
         </el-col>
         <el-col :xs="24" :sm="12" :md="8">
@@ -86,8 +86,8 @@
             <div class="help-icon recommendations">
               <i class="el-icon-magic-stick"></i>
             </div>
-            <h4>Recommendations</h4>
-            <p>AI-powered suggestions for resources that match your learning style and improvement areas.</p>
+            <h4>{{ $t('abilities.recommendations') }}</h4>
+            <p>{{ $t('abilities.recommendationsDesc') }}</p>
           </div>
         </el-col>
       </el-row>
@@ -96,28 +96,28 @@
     <!-- Tips Section -->
     <el-card class="tips-section" shadow="hover">
       <div class="tips-header">
-        <h3><i class="el-icon-lightbulb"></i> Tips for Improvement</h3>
+        <h3><i class="el-icon-lightbulb"></i> {{ $t('abilities.tipsForImprovement') }}</h3>
       </div>
       <el-row :gutter="20">
         <el-col :xs="24" :md="12">
           <div class="tip-category">
-            <h4>Enhancing Your Strengths</h4>
+            <h4>{{ $t('abilities.enhancingStrengths') }}</h4>
             <ul>
-              <li>Focus on advanced materials in your strong areas</li>
-              <li>Mentor other students in subjects you excel at</li>
-              <li>Take on leadership roles in group projects</li>
-              <li>Explore specialized courses in your interest areas</li>
+              <li>{{ $t('abilities.tip1') }}</li>
+              <li>{{ $t('abilities.tip2') }}</li>
+              <li>{{ $t('abilities.tip3') }}</li>
+              <li>{{ $t('abilities.tip4') }}</li>
             </ul>
           </div>
         </el-col>
         <el-col :xs="24" :md="12">
           <div class="tip-category">
-            <h4>Improving Weak Areas</h4>
+            <h4>{{ $t('abilities.improvingWeakAreas') }}</h4>
             <ul>
-              <li>Practice regularly with targeted exercises</li>
-              <li>Seek help from teachers or tutors</li>
-              <li>Form study groups with classmates</li>
-              <li>Use the recommended resources for guided learning</li>
+              <li>{{ $t('abilities.tip5') }}</li>
+              <li>{{ $t('abilities.tip6') }}</li>
+              <li>{{ $t('abilities.tip7') }}</li>
+              <li>{{ $t('abilities.tip8') }}</li>
             </ul>
           </div>
         </el-col>

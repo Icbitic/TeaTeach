@@ -1,15 +1,15 @@
 <template>
   <div class="knowledge-points-view">
     <div class="header">
-      <h1>Knowledge Points Management</h1>
+      <h1>{{ $t('knowledgePoints.management') }}</h1>
       <div class="header-actions">
         <el-button type="primary" @click="showCreateDialog = true">
           <el-icon><Plus /></el-icon>
-          Add Knowledge Point
+          {{ $t('knowledgePoints.add') }}
         </el-button>
         <el-button type="success" @click="showGenerateDialog = true">
           <el-icon><MagicStick /></el-icon>
-          Generate from Content
+          {{ $t('knowledgePoints.generateFromContent') }}
         </el-button>
       </div>
     </div>
@@ -18,7 +18,7 @@
     <div class="filters">
       <el-select
         v-model="selectedCourseId"
-        placeholder="Filter by Course"
+        :placeholder="$t('knowledgePoints.filterByCourse')"
         clearable
         @change="loadKnowledgePoints"
         style="width: 300px"
@@ -34,7 +34,7 @@
 
     <!-- Tabs for different views -->
     <el-tabs v-model="activeTab" class="knowledge-tabs">
-      <el-tab-pane label="Table View" name="table">
+      <el-tab-pane :label="$t('knowledgePoints.tableView')" name="table">
         <!-- Knowledge Points Table -->
     <el-table
       :data="knowledgePoints"
@@ -42,15 +42,15 @@
       style="width: 100%"
       class="knowledge-points-table"
     >
-      <el-table-column prop="id" label="ID" width="80" />
-      <el-table-column prop="name" label="Name" width="200" />
-      <el-table-column label="Course" width="150">
+      <el-table-column prop="id" :label="$t('knowledgePoints.id')" width="80" />
+      <el-table-column prop="name" :label="$t('knowledgePoints.name')" width="200" />
+      <el-table-column :label="$t('knowledgePoints.course')" width="150">
         <template #default="scope">
           {{ getCourseName(scope.row.courseId) }}
         </template>
       </el-table-column>
-      <el-table-column prop="briefDescription" label="Brief Description" width="300" />
-      <el-table-column prop="difficultyLevel" label="Difficulty" width="120">
+      <el-table-column prop="briefDescription" :label="$t('knowledgePoints.briefDescription')" width="300" />
+      <el-table-column prop="difficultyLevel" :label="$t('knowledgePoints.difficulty')" width="120">
         <template #default="scope">
           <el-tag
             :type="getDifficultyTagType(scope.row.difficultyLevel)"
@@ -60,7 +60,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Prerequisites" width="150">
+      <el-table-column :label="$t('knowledgePoints.prerequisites')" width="150">
         <template #default="scope">
           <el-tag
             v-for="prereqId in scope.row.prerequisiteKnowledgePointIds || []"
@@ -72,7 +72,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Related" width="150">
+      <el-table-column :label="$t('knowledgePoints.related')" width="150">
         <template #default="scope">
           <el-tag
             v-for="relatedId in scope.row.relatedKnowledgePointIds || []"
@@ -85,27 +85,27 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Actions" width="200" fixed="right">
+      <el-table-column :label="$t('knowledgePoints.actions')" width="200" fixed="right">
         <template #default="scope">
           <el-button
             size="small"
             @click="editKnowledgePoint(scope.row)"
           >
-            Edit
+            {{ $t('knowledgePoints.edit') }}
           </el-button>
           <el-button
             size="small"
             type="danger"
             @click="deleteKnowledgePoint(scope.row.id)"
           >
-            Delete
+            {{ $t('knowledgePoints.delete') }}
           </el-button>
         </template>
       </el-table-column>
     </el-table>
       </el-tab-pane>
       
-      <el-tab-pane label="Graph View" name="graph">
+      <el-tab-pane :label="$t('knowledgePoints.graphView')" name="graph">
         <KnowledgeGraphVisualization
           :knowledge-points="knowledgePoints"
           @node-click="editKnowledgePoint"
@@ -115,7 +115,7 @@
 
     <!-- Create/Edit Dialog -->
     <el-dialog
-      :title="editingKnowledgePoint ? 'Edit Knowledge Point' : 'Create Knowledge Point'"
+      :title="editingKnowledgePoint ? $t('knowledgePoints.editKnowledgePoint') : $t('knowledgePoints.createKnowledgePoint')"
       v-model="showCreateDialog"
       width="600px"
     >
@@ -125,12 +125,12 @@
         ref="knowledgePointFormRef"
         label-width="150px"
       >
-        <el-form-item label="Name" prop="name">
+        <el-form-item :label="$t('knowledgePoints.name')" prop="name">
           <el-input v-model="knowledgePointForm.name" />
         </el-form-item>
         
-        <el-form-item label="Course" prop="courseId">
-          <el-select v-model="knowledgePointForm.courseId" placeholder="Select Course">
+        <el-form-item :label="$t('knowledgePoints.course')" prop="courseId">
+          <el-select v-model="knowledgePointForm.courseId" :placeholder="$t('knowledgePointsManagement.selectCourse')">
             <el-option
               v-for="course in courses"
               :key="course.id"
@@ -140,7 +140,7 @@
           </el-select>
         </el-form-item>
         
-        <el-form-item label="Brief Description" prop="briefDescription">
+        <el-form-item :label="$t('knowledgePoints.briefDescription')" prop="briefDescription">
           <el-input
             v-model="knowledgePointForm.briefDescription"
             type="textarea"
@@ -148,7 +148,7 @@
           />
         </el-form-item>
         
-        <el-form-item label="Detailed Content">
+        <el-form-item :label="$t('knowledgePoints.detailedContent')">
           <el-input
             v-model="knowledgePointForm.detailedContent"
             type="textarea"
@@ -156,19 +156,19 @@
           />
         </el-form-item>
         
-        <el-form-item label="Difficulty Level" prop="difficultyLevel">
-          <el-select v-model="knowledgePointForm.difficultyLevel" placeholder="Select Difficulty">
-            <el-option label="Beginner" value="BEGINNER" />
-            <el-option label="Intermediate" value="INTERMEDIATE" />
-            <el-option label="Advanced" value="ADVANCED" />
+        <el-form-item :label="$t('knowledgePoints.difficulty')" prop="difficultyLevel">
+          <el-select v-model="knowledgePointForm.difficultyLevel" :placeholder="$t('knowledgePointsManagement.selectDifficulty')">
+            <el-option :label="$t('knowledgePoints.beginner')" value="BEGINNER" />
+            <el-option :label="$t('knowledgePoints.intermediate')" value="INTERMEDIATE" />
+            <el-option :label="$t('knowledgePoints.advanced')" value="ADVANCED" />
           </el-select>
         </el-form-item>
         
-        <el-form-item label="Prerequisites">
+        <el-form-item :label="$t('knowledgePoints.prerequisites')">
           <el-select
             v-model="knowledgePointForm.prerequisiteKnowledgePointIds"
             multiple
-            placeholder="Select Prerequisites"
+            :placeholder="$t('knowledgePointsManagement.selectPrerequisites')"
           >
             <el-option
               v-for="kp in availableKnowledgePoints"
@@ -179,11 +179,11 @@
           </el-select>
         </el-form-item>
         
-        <el-form-item label="Related Points">
+        <el-form-item :label="$t('knowledgePoints.related')">
           <el-select
             v-model="knowledgePointForm.relatedKnowledgePointIds"
             multiple
-            placeholder="Select Related Points"
+            :placeholder="$t('knowledgePointsManagement.selectRelatedPoints')"
           >
             <el-option
               v-for="kp in availableKnowledgePoints"
@@ -197,9 +197,9 @@
       
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="showCreateDialog = false">Cancel</el-button>
+          <el-button @click="showCreateDialog = false">{{ $t('common.cancel') }}</el-button>
           <el-button type="primary" @click="saveKnowledgePoint">
-            {{ editingKnowledgePoint ? 'Update' : 'Create' }}
+            {{ editingKnowledgePoint ? $t('knowledgePoints.update') : $t('knowledgePoints.create') }}
           </el-button>
         </span>
       </template>
@@ -207,13 +207,13 @@
 
     <!-- Generate from Content Dialog -->
     <el-dialog
-      title="Generate Knowledge Points from Content"
+      :title="$t('knowledgePoints.generateFromContentTitle')"
       v-model="showGenerateDialog"
       width="700px"
     >
       <el-form :model="generateForm" label-width="120px">
-        <el-form-item label="Course" required>
-          <el-select v-model="generateForm.courseId" placeholder="Select Course">
+        <el-form-item :label="$t('knowledgePoints.course')" required>
+          <el-select v-model="generateForm.courseId" :placeholder="$t('knowledgePointsManagement.selectCourse')">
             <el-option
               v-for="course in courses"
               :key="course.id"
@@ -223,25 +223,25 @@
           </el-select>
         </el-form-item>
         
-        <el-form-item label="Course Content" required>
+        <el-form-item :label="$t('knowledgePoints.courseContent')" required>
           <el-input
             v-model="generateForm.courseContent"
             type="textarea"
             :rows="10"
-            placeholder="Paste your course content here (lecture notes, textbook chapters, etc.)"
+            :placeholder="$t('knowledgePointsManagement.courseContentPlaceholder')"
           />
         </el-form-item>
       </el-form>
       
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="showGenerateDialog = false">Cancel</el-button>
+          <el-button @click="showGenerateDialog = false">{{ $t('common.cancel') }}</el-button>
           <el-button
             type="primary"
             @click="generateKnowledgeGraph"
             :loading="generating"
           >
-            Generate Knowledge Points
+            {{ $t('knowledgePoints.generateFromContent') }}
           </el-button>
         </span>
       </template>
@@ -251,6 +251,7 @@
 
 <script>
 import { ref, reactive, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, MagicStick } from '@element-plus/icons-vue'
 import knowledgePointService from '../services/knowledgePointService'
@@ -265,6 +266,7 @@ export default {
     KnowledgeGraphVisualization
   },
   setup() {
+    const { t } = useI18n()
     const loading = ref(false)
     const generating = ref(false)
     const knowledgePoints = ref([])
@@ -460,6 +462,7 @@ export default {
     })
 
     return {
+      t,
       loading,
       generating,
       knowledgePoints,

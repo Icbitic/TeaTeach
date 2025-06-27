@@ -1,15 +1,15 @@
 <template>
   <div class="video-heatmap-container">
     <div class="page-header">
-      <h2><TypewriterText :text="'Video Heatmap Visualization'" :show="true" :speed="70" /></h2>
-      <p class="page-description">Analyze student video viewing patterns and engagement</p>
+      <h2><TypewriterText :text="$t('videoHeatmap.title')" :show="true" :speed="70" /></h2>
+      <p class="page-description">{{ $t('videoHeatmap.description') }}</p>
     </div>
 
     <!-- Filter Controls -->
     <el-card class="filter-card" shadow="never">
       <el-row :gutter="20">
         <el-col :span="6">
-          <el-select v-model="selectedResource" placeholder="Select Video Resource" @change="loadHeatmapData" clearable>
+          <el-select v-model="selectedResource" :placeholder="$t('videoHeatmap.selectVideoResource')" @change="loadHeatmapData" clearable>
             <el-option
               v-for="resource in resources"
               :key="resource.id"
@@ -19,7 +19,7 @@
           </el-select>
         </el-col>
         <el-col :span="6">
-          <el-select v-model="selectedStudent" placeholder="Select Student (Optional)" @change="loadStudentProgress" clearable>
+          <el-select v-model="selectedStudent" :placeholder="$t('videoHeatmap.selectStudent')" @change="loadStudentProgress" clearable>
             <el-option
               v-for="student in students"
               :key="student.id"
@@ -31,13 +31,13 @@
         <el-col :span="6">
           <el-button type="primary" @click="refreshData" :loading="loading">
             <el-icon><Refresh /></el-icon>
-            Refresh Data
+            {{ $t('common.refresh') }}
           </el-button>
         </el-col>
         <el-col :span="6">
           <el-button @click="exportHeatmapData" :loading="exporting">
             <el-icon><Download /></el-icon>
-            Export Data
+            {{ $t('common.export') }}
           </el-button>
         </el-col>
       </el-row>
@@ -47,20 +47,20 @@
     <el-card v-if="selectedResourceInfo" class="resource-info-card" shadow="never">
       <template #header>
         <div class="card-header">
-          <span>Resource Information</span>
+          <span>{{ $t('videoHeatmap.resourceInfo') }}</span>
           <el-tag type="primary">{{ selectedResourceInfo.fileType?.toUpperCase() || 'Video' }}</el-tag>
         </div>
       </template>
       <el-row :gutter="20">
         <el-col :span="12">
           <div class="info-item">
-            <span class="info-label">Title:</span>
+            <span class="info-label">{{ $t('videoHeatmap.title') }}:</span>
             <span class="info-value">{{ selectedResourceInfo.resourceName }}</span>
           </div>
         </el-col>
         <el-col :span="12">
           <div class="info-item">
-            <span class="info-label">Total Views:</span>
+            <span class="info-label">{{ $t('videoHeatmap.totalViews') }}:</span>
             <span class="info-value">{{ totalViews }}</span>
           </div>
         </el-col>
@@ -71,17 +71,17 @@
     <el-card v-if="heatmapData.length > 0" class="heatmap-card" shadow="never">
       <template #header>
         <div class="card-header">
-          <span>Video Engagement Heatmap</span>
+          <span>{{ $t('videoHeatmap.engagementHeatmap') }}</span>
           <el-tag type="success">Interactive</el-tag>
         </div>
       </template>
       <div class="heatmap-container">
         <div class="heatmap-legend">
-          <span class="legend-label">Engagement Level:</span>
+          <span class="legend-label">{{ $t('videoHeatmap.engagementLevel') }}:</span>
           <div class="legend-gradient">
-            <span class="legend-text">Low</span>
+            <span class="legend-text">{{ $t('videoHeatmap.low') }}</span>
             <div class="gradient-bar"></div>
-            <span class="legend-text">High</span>
+            <span class="legend-text">{{ $t('videoHeatmap.high') }}</span>
           </div>
         </div>
         <div class="heatmap-chart">
@@ -99,7 +99,7 @@
     <el-card v-if="selectedStudent && studentProgress" class="progress-card" shadow="never">
       <template #header>
         <div class="card-header">
-          <span>Individual Student Progress</span>
+          <span>{{ $t('videoHeatmap.individualProgress') }}</span>
           <el-tag type="info">{{ getStudentName(selectedStudent) }}</el-tag>
         </div>
       </template>
@@ -108,19 +108,19 @@
           <el-col :span="8">
             <div class="progress-metric">
               <div class="metric-value">{{ studentProgress.watchPercentage }}%</div>
-              <div class="metric-label">Watch Percentage</div>
+              <div class="metric-label">{{ $t('videoHeatmap.watchPercentage') }}</div>
             </div>
           </el-col>
           <el-col :span="8">
             <div class="progress-metric">
               <div class="metric-value">{{ studentProgress.totalPlayCount }}</div>
-              <div class="metric-label">Total Play Count</div>
+              <div class="metric-label">{{ $t('videoHeatmap.totalPlayCount') }}</div>
             </div>
           </el-col>
           <el-col :span="8">
             <div class="progress-metric">
               <div class="metric-value">{{ studentProgress.maxPlayCount || 'N/A' }}</div>
-              <div class="metric-label">Max Replays</div>
+              <div class="metric-label">{{ $t('videoHeatmap.maxReplays') }}</div>
             </div>
           </el-col>
         </el-row>
@@ -145,7 +145,7 @@
             </div>
             <div class="stat-info">
               <h3>{{ averageEngagement }}%</h3>
-              <p>Avg Engagement</p>
+              <p>{{ $t('videoHeatmap.avgEngagement') }}</p>
             </div>
           </div>
         </el-card>
@@ -158,7 +158,7 @@
             </div>
             <div class="stat-info">
               <h3>{{ formatTime(peakEngagementTime) }}</h3>
-              <p>Peak Engagement</p>
+              <p>{{ $t('videoHeatmap.peakEngagement') }}</p>
             </div>
           </div>
         </el-card>
@@ -171,7 +171,7 @@
             </div>
             <div class="stat-info">
               <h3>{{ formatTime(dropoffPoint) }}</h3>
-              <p>Drop-off Point</p>
+              <p>{{ $t('videoHeatmap.dropoffPoint') }}</p>
             </div>
           </div>
         </el-card>
@@ -184,7 +184,7 @@
             </div>
             <div class="stat-info">
               <h3>{{ completionRate }}%</h3>
-              <p>Completion Rate</p>
+              <p>{{ $t('videoHeatmap.completionRate') }}</p>
             </div>
           </div>
         </el-card>
@@ -200,7 +200,7 @@
           </el-icon>
         </template>
         <template #description>
-          <p>Select a video resource to view engagement heatmap</p>
+          <p>{{ $t('videoHeatmap.selectVideoPrompt') }}</p>
         </template>
       </el-empty>
     </el-card>
@@ -209,8 +209,8 @@
     <div v-if="tooltip.visible" class="heatmap-tooltip" :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }">
       <div class="tooltip-content">
         <div class="tooltip-time">{{ tooltip.time }}</div>
-        <div class="tooltip-engagement">Engagement: {{ tooltip.engagement }}%</div>
-        <div class="tooltip-views">Views: {{ tooltip.views }}</div>
+        <div class="tooltip-engagement">{{ $t('videoHeatmap.engagement') }}: {{ tooltip.engagement }}%</div>
+        <div class="tooltip-views">{{ $t('videoHeatmap.views') }}: {{ tooltip.views }}</div>
       </div>
     </div>
   </div>

@@ -5,7 +5,7 @@
       <div class="section-actions">
         <el-input
           v-model="searchQuery"
-          placeholder="Search resources..."
+          :placeholder="$t('studentResources.searchPlaceholder')"
           style="width: 300px; margin-right: 10px"
           @input="handleSearch"
         >
@@ -15,7 +15,7 @@
         </el-input>
         <el-select
           v-model="selectedFileType"
-          placeholder="Filter by Type"
+          :placeholder="$t('studentResources.filterByType')"
           clearable
           style="width: 150px"
           @change="handleTypeFilter"

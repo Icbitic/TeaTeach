@@ -23,13 +23,13 @@
       <div v-if="showProgress" class="video-progress-info">
         <el-row :gutter="20">
           <el-col :span="8">
-            <el-statistic title="Watch Progress" :value="watchPercentage" suffix="%" />
+            <el-statistic :title="$t('media.watchProgress')" :value="watchPercentage" suffix="%" />
           </el-col>
           <el-col :span="8">
-            <el-statistic title="Total Watch Time" :value="totalWatchTime" suffix="s" />
+            <el-statistic :title="$t('media.totalWatchTime')" :value="totalWatchTime" suffix="s" />
           </el-col>
           <el-col :span="8">
-            <el-statistic title="Current Time" :value="currentTime" suffix="s" />
+            <el-statistic :title="$t('media.currentTime')" :value="currentTime" suffix="s" />
           </el-col>
         </el-row>
       </div>
@@ -132,6 +132,7 @@
 
 <script>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { Picture, Download, Document, View, Warning } from '@element-plus/icons-vue'
 import { resourceService } from '@/services/resourceService'
@@ -166,6 +167,7 @@ export default {
   },
   emits: ['progress-update', 'playback-complete'],
   setup(props, { emit }) {
+    const { t } = useI18n()
     const videoPlayer = ref(null)
     const audioPlayer = ref(null)
     const loading = ref(false)
@@ -455,6 +457,7 @@ export default {
     })
     
     return {
+      t,
       videoPlayer,
       audioPlayer,
       loading,
