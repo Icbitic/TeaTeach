@@ -30,7 +30,6 @@ public class PlaybackVectorService {
     /**
      * Get the playback vector for a specific student and resource
      */
-    @Cacheable(value = "playbackVectors", key = "#studentId + '-' + #resourceId")
     public PlaybackVector getPlaybackVector(Long studentId, Long resourceId) {
         return playbackVectorMapper.findByStudentAndResource(studentId, resourceId);
     }
@@ -38,7 +37,6 @@ public class PlaybackVectorService {
     /**
      * Get all playback vectors for a specific resource
      */
-    @Cacheable(value = "resourcePlaybackVectors", key = "#resourceId")
     public List<PlaybackVector> getPlaybackVectorsByResource(Long resourceId) {
         return playbackVectorMapper.findByResourceId(resourceId);
     }
@@ -46,7 +44,6 @@ public class PlaybackVectorService {
     /**
      * Get all playback vectors for a specific student
      */
-    @Cacheable(value = "studentPlaybackVectors", key = "#studentId")
     public List<PlaybackVector> getPlaybackVectorsByStudent(Long studentId) {
         return playbackVectorMapper.findByStudentId(studentId);
     }
@@ -55,7 +52,6 @@ public class PlaybackVectorService {
      * Create a new playback vector for a student and resource
      */
     @Transactional
-    @CacheEvict(value = {"playbackVectors", "resourcePlaybackVectors", "studentPlaybackVectors"}, allEntries = true)
     public PlaybackVector createPlaybackVector(Long studentId, Long resourceId) {
         // Check if playback vector already exists
         PlaybackVector existing = playbackVectorMapper.findByStudentAndResource(studentId, resourceId);
@@ -85,7 +81,6 @@ public class PlaybackVectorService {
      * Update playback vector with seconds that were played once
      */
     @Transactional
-    @CacheEvict(value = {"playbackVectors", "resourcePlaybackVectors", "studentPlaybackVectors"}, allEntries = true)
     public PlaybackVector updatePlaybackVector(Long studentId, Long resourceId, int[] playedSeconds) {
         // Get existing playback vector or create new one
         PlaybackVector playbackVector = playbackVectorMapper.findByStudentAndResource(studentId, resourceId);
@@ -111,7 +106,6 @@ public class PlaybackVectorService {
      * @return The updated PlaybackVector
      */
     @Transactional
-    @CacheEvict(value = {"playbackVectors", "resourcePlaybackVectors", "studentPlaybackVectors"}, allEntries = true)
     public PlaybackVector updatePlaybackVectorWithCounts(Long studentId, Long resourceId, int[] playbackCountVector) {
         // Get existing playback vector or create new one
         PlaybackVector playbackVector = playbackVectorMapper.findByStudentAndResource(studentId, resourceId);

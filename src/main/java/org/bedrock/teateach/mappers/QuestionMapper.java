@@ -16,8 +16,11 @@ public interface QuestionMapper {
      *
      * @param question The Question object to insert.
      */
-    @Insert("INSERT INTO questions (question_text, question_type, difficulty, knowledge_point_ids, options, correct_answer, created_at, updated_at) " +
-            "VALUES (#{questionText}, #{questionType}, #{difficulty}, #{knowledgePointIds}, #{options}, #{correctAnswer}, #{createdAt}, #{updatedAt})")
+    @Insert("INSERT INTO questions (question_text, question_type, difficulty, knowledge_point_ids, options, correct_answer, " +
+            "explanation, programming_language, template_code, test_cases, created_at, updated_at) " +
+            "VALUES (#{questionText}, #{questionType}, #{difficulty}, #{knowledgePointIds, typeHandler=org.bedrock.teateach.typehandler.LongListJsonTypeHandler}, #{options, typeHandler=org.bedrock.teateach.typehandler.StringArrayJsonTypeHandler}, #{correctAnswer}, " +
+            "#{explanation}, #{programmingLanguage}, #{templateCode}, #{testCases}, " +
+            "#{createdAt}, #{updatedAt})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     void insert(Question question);
 
@@ -27,16 +30,21 @@ public interface QuestionMapper {
      * @param id The ID of the question.
      * @return The Question object if found, otherwise null.
      */
-    @Select("SELECT id, question_text, question_type, difficulty, knowledge_point_ids, options, correct_answer, created_at, updated_at " +
+    @Select("SELECT id, question_text, question_type, difficulty, knowledge_point_ids, options, correct_answer, " +
+            "explanation, programming_language, template_code, test_cases, created_at, updated_at " +
             "FROM questions WHERE id = #{id}")
     @Results({
             @Result(property = "id",                 column = "id"),
             @Result(property = "questionText",       column = "question_text"),
             @Result(property = "questionType",       column = "question_type"),
             @Result(property = "difficulty",         column = "difficulty"),
-            @Result(property = "knowledgePointIds",  column = "knowledge_point_ids"),
-            @Result(property = "options",            column = "options"),
+            @Result(property = "knowledgePointIds",  column = "knowledge_point_ids", typeHandler = org.bedrock.teateach.typehandler.LongListJsonTypeHandler.class),
+            @Result(property = "options",            column = "options", typeHandler = org.bedrock.teateach.typehandler.StringArrayJsonTypeHandler.class),
             @Result(property = "correctAnswer",      column = "correct_answer"),
+            @Result(property = "explanation",        column = "explanation"),
+            @Result(property = "programmingLanguage", column = "programming_language"),
+            @Result(property = "templateCode",       column = "template_code"),
+            @Result(property = "testCases",          column = "test_cases"),
             @Result(property = "createdAt",          column = "created_at"),
             @Result(property = "updatedAt",          column = "updated_at")
     })
@@ -48,8 +56,10 @@ public interface QuestionMapper {
      * @param question The Question object with updated fields.
      */
     @Update("UPDATE questions SET question_text = #{questionText}, question_type = #{questionType}, " +
-            "difficulty = #{difficulty}, knowledge_point_ids = #{knowledgePointIds}, options = #{options}, " +
-            "correct_answer = #{correctAnswer}, updated_at = #{updatedAt} WHERE id = #{id}")
+            "difficulty = #{difficulty}, knowledge_point_ids = #{knowledgePointIds, typeHandler=org.bedrock.teateach.typehandler.LongListJsonTypeHandler}, options = #{options, typeHandler=org.bedrock.teateach.typehandler.StringArrayJsonTypeHandler}, " +
+            "correct_answer = #{correctAnswer}, explanation = #{explanation}, programming_language = #{programmingLanguage}, " +
+            "template_code = #{templateCode}, test_cases = #{testCases}, " +
+            "updated_at = #{updatedAt} WHERE id = #{id}")
     void update(Question question);
 
     /**
@@ -65,16 +75,21 @@ public interface QuestionMapper {
      *
      * @return A list of all Question objects.
      */
-    @Select("SELECT id, question_text, question_type, difficulty, knowledge_point_ids, options, correct_answer, created_at, updated_at " +
-            "FROM questions")
+    @Select("SELECT id, question_text, question_type, difficulty, knowledge_point_ids, options, correct_answer, " +
+            "explanation, programming_language, template_code, test_cases, created_at, updated_at " +
+            "FROM questions ORDER BY created_at DESC")
     @Results({
             @Result(property = "id",                 column = "id"),
             @Result(property = "questionText",       column = "question_text"),
             @Result(property = "questionType",       column = "question_type"),
             @Result(property = "difficulty",         column = "difficulty"),
-            @Result(property = "knowledgePointIds",  column = "knowledge_point_ids"),
-            @Result(property = "options",            column = "options"),
+            @Result(property = "knowledgePointIds",  column = "knowledge_point_ids", typeHandler = org.bedrock.teateach.typehandler.LongListJsonTypeHandler.class),
+            @Result(property = "options",            column = "options", typeHandler = org.bedrock.teateach.typehandler.StringArrayJsonTypeHandler.class),
             @Result(property = "correctAnswer",      column = "correct_answer"),
+            @Result(property = "explanation",        column = "explanation"),
+            @Result(property = "programmingLanguage", column = "programming_language"),
+            @Result(property = "templateCode",       column = "template_code"),
+            @Result(property = "testCases",          column = "test_cases"),
             @Result(property = "createdAt",          column = "created_at"),
             @Result(property = "updatedAt",          column = "updated_at")
     })
@@ -89,7 +104,8 @@ public interface QuestionMapper {
      */
     @Select({
             "<script>",
-            "SELECT id, question_text, question_type, difficulty, knowledge_point_ids, options, correct_answer, created_at, updated_at",
+            "SELECT id, question_text, question_type, difficulty, knowledge_point_ids, options, correct_answer,",
+            "explanation, programming_language, template_code, test_cases, created_at, updated_at",
             "FROM questions",
             "<where>",
             "   <if test='type != null and type != \"\"'>",
@@ -99,6 +115,7 @@ public interface QuestionMapper {
             "       AND difficulty = #{difficulty}",
             "   </if>",
             "</where>",
+            "ORDER BY created_at DESC",
             "</script>"
     })
     @Results({
@@ -106,9 +123,13 @@ public interface QuestionMapper {
             @Result(property = "questionText",       column = "question_text"),
             @Result(property = "questionType",       column = "question_type"),
             @Result(property = "difficulty",         column = "difficulty"),
-            @Result(property = "knowledgePointIds",  column = "knowledge_point_ids"),
-            @Result(property = "options",            column = "options"),
+            @Result(property = "knowledgePointIds",  column = "knowledge_point_ids", typeHandler = org.bedrock.teateach.typehandler.LongListJsonTypeHandler.class),
+            @Result(property = "options",            column = "options", typeHandler = org.bedrock.teateach.typehandler.StringArrayJsonTypeHandler.class),
             @Result(property = "correctAnswer",      column = "correct_answer"),
+            @Result(property = "explanation",        column = "explanation"),
+            @Result(property = "programmingLanguage", column = "programming_language"),
+            @Result(property = "templateCode",       column = "template_code"),
+            @Result(property = "testCases",          column = "test_cases"),
             @Result(property = "createdAt",          column = "created_at"),
             @Result(property = "updatedAt",          column = "updated_at")
     })
@@ -120,18 +141,79 @@ public interface QuestionMapper {
      * @param knowledgePointId The ID of the knowledge point.
      * @return A list of questions related to the knowledge point.
      */
-    @Select("SELECT id, question_text, question_type, difficulty, knowledge_point_ids, options, correct_answer, created_at, updated_at " +
-            "FROM questions WHERE knowledge_point_ids = #{knowledgePointId}") // Changed from knowledge_point_id to knowledge_point_ids
+    @Select("SELECT id, question_text, question_type, difficulty, knowledge_point_ids, options, correct_answer, " +
+            "explanation, programming_language, template_code, test_cases, created_at, updated_at FROM questions " +
+            "WHERE JSON_CONTAINS(knowledge_point_ids, #{knowledgePointId}) ORDER BY created_at DESC")
     @Results({
             @Result(property = "id",                 column = "id"),
             @Result(property = "questionText",       column = "question_text"),
             @Result(property = "questionType",       column = "question_type"),
             @Result(property = "difficulty",         column = "difficulty"),
-            @Result(property = "knowledgePointIds",  column = "knowledge_point_ids"),
-            @Result(property = "options",            column = "options"),
+            @Result(property = "knowledgePointIds",  column = "knowledge_point_ids", typeHandler = org.bedrock.teateach.typehandler.LongListJsonTypeHandler.class),
+            @Result(property = "options",            column = "options", typeHandler = org.bedrock.teateach.typehandler.StringArrayJsonTypeHandler.class),
             @Result(property = "correctAnswer",      column = "correct_answer"),
+            @Result(property = "explanation",        column = "explanation"),
+            @Result(property = "programmingLanguage", column = "programming_language"),
+            @Result(property = "templateCode",       column = "template_code"),
+            @Result(property = "testCases",          column = "test_cases"),
             @Result(property = "createdAt",          column = "created_at"),
             @Result(property = "updatedAt",          column = "updated_at")
     })
     List<Question> findByKnowledgePointId(Long knowledgePointId);
+
+    /**
+     * Finds all questions with pagination.
+     *
+     * @param offset The offset for pagination.
+     * @param limit The limit for pagination.
+     * @return A list of questions.
+     */
+    @Select("SELECT id, question_text, question_type, difficulty, knowledge_point_ids, options, correct_answer, " +
+            "explanation, programming_language, template_code, test_cases, created_at, updated_at " +
+            "FROM questions ORDER BY created_at DESC LIMIT #{limit} OFFSET #{offset}")
+    @Results({
+            @Result(property = "id",                 column = "id"),
+            @Result(property = "questionText",       column = "question_text"),
+            @Result(property = "questionType",       column = "question_type"),
+            @Result(property = "difficulty",         column = "difficulty"),
+            @Result(property = "knowledgePointIds",  column = "knowledge_point_ids", typeHandler = org.bedrock.teateach.typehandler.LongListJsonTypeHandler.class),
+            @Result(property = "options",            column = "options", typeHandler = org.bedrock.teateach.typehandler.StringArrayJsonTypeHandler.class),
+            @Result(property = "correctAnswer",      column = "correct_answer"),
+            @Result(property = "explanation",        column = "explanation"),
+            @Result(property = "programmingLanguage", column = "programming_language"),
+            @Result(property = "templateCode",       column = "template_code"),
+            @Result(property = "testCases",          column = "test_cases"),
+            @Result(property = "createdAt",          column = "created_at"),
+            @Result(property = "updatedAt",          column = "updated_at")
+    })
+    List<Question> findAllWithPagination(@Param("offset") int offset, @Param("limit") int limit);
+
+    /**
+     * Finds all questions with pagination and search.
+     *
+     * @param offset The offset for pagination.
+     * @param limit The limit for pagination.
+     * @param search The search term.
+     * @return A list of questions matching the search criteria.
+     */
+    @Select("SELECT id, question_text, question_type, difficulty, knowledge_point_ids, options, correct_answer, " +
+            "explanation, programming_language, template_code, test_cases, created_at, updated_at " +
+            "FROM questions WHERE (question_text LIKE CONCAT('%', #{search}, '%') " +
+            "OR explanation LIKE CONCAT('%', #{search}, '%')) ORDER BY created_at DESC LIMIT #{limit} OFFSET #{offset}")
+    @Results({
+            @Result(property = "id",                 column = "id"),
+            @Result(property = "questionText",       column = "question_text"),
+            @Result(property = "questionType",       column = "question_type"),
+            @Result(property = "difficulty",         column = "difficulty"),
+            @Result(property = "knowledgePointIds",  column = "knowledge_point_ids", typeHandler = org.bedrock.teateach.typehandler.LongListJsonTypeHandler.class),
+            @Result(property = "options",            column = "options", typeHandler = org.bedrock.teateach.typehandler.StringArrayJsonTypeHandler.class),
+            @Result(property = "correctAnswer",      column = "correct_answer"),
+            @Result(property = "explanation",        column = "explanation"),
+            @Result(property = "programmingLanguage", column = "programming_language"),
+            @Result(property = "templateCode",       column = "template_code"),
+            @Result(property = "testCases",          column = "test_cases"),
+            @Result(property = "createdAt",          column = "created_at"),
+            @Result(property = "updatedAt",          column = "updated_at")
+    })
+    List<Question> findAllWithPaginationAndSearch(@Param("offset") int offset, @Param("limit") int limit, @Param("search") String search);
 }

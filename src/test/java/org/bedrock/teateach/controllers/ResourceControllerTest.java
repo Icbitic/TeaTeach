@@ -23,6 +23,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import java.time.LocalDateTime;
 
 @ExtendWith(MockitoExtension.class)
 class ResourceControllerTest {
@@ -43,23 +44,29 @@ class ResourceControllerTest {
         testResource = new Resource();
         testResource.setId(1L);
         testResource.setResourceName("Test Resource");
-        testResource.setCourseId(1L);
+
         testResource.setFilePath("test-file.pdf");
         testResource.setFileType("pdf");
         testResource.setFileSize(1024L);
         testResource.setDescription("Test resource description");
+        testResource.setCreatedAt(LocalDateTime.now());
+        testResource.setUpdatedAt(LocalDateTime.now());
 
         Resource resource2 = new Resource();
         resource2.setId(2L);
         resource2.setResourceName("Another Resource");
-        resource2.setCourseId(1L);
+
         resource2.setFilePath("another-file.docx");
         resource2.setFileType("docx");
         resource2.setFileSize(2048L);
+        resource2.setCreatedAt(LocalDateTime.now());
+        resource2.setUpdatedAt(LocalDateTime.now());
 
         testResources = Arrays.asList(testResource, resource2);
         testFileContent = "Test file content".getBytes();
     }
+
+
 
     @Test
     void createResource_ShouldReturnCreatedResource() {
@@ -79,41 +86,37 @@ class ResourceControllerTest {
     void uploadResource_WhenSuccessful_ShouldReturnCreatedResource() throws Exception {
         // Given
         MultipartFile file = new MockMultipartFile("file", "test.pdf", "application/pdf", testFileContent);
-        Long courseId = 1L;
-        Long taskId = 10L;
         String resourceName = "Uploaded Resource";
         String description = "Uploaded resource description";
 
-        when(resourceService.uploadFile(file, courseId, taskId, resourceName, description)).thenReturn(testResource);
+        when(resourceService.uploadFile(file, resourceName, description)).thenReturn(testResource);
 
         // When
-        ResponseEntity<Resource> response = resourceController.uploadResource(file, courseId, taskId, resourceName, description);
+        ResponseEntity<Resource> response = resourceController.uploadResource(file, resourceName, description);
 
         // Then
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(testResource, response.getBody());
-        verify(resourceService, times(1)).uploadFile(file, courseId, taskId, resourceName, description);
+        verify(resourceService, times(1)).uploadFile(file, resourceName, description);
     }
 
     @Test
     void uploadResource_WhenException_ShouldReturnInternalServerError() throws Exception {
         // Given
         MultipartFile file = new MockMultipartFile("file", "test.pdf", "application/pdf", testFileContent);
-        Long courseId = 1L;
-        Long taskId = 10L;
         String resourceName = "Uploaded Resource";
         String description = "Uploaded resource description";
 
-        when(resourceService.uploadFile(any(), anyLong(), anyLong(), anyString(), anyString()))
+        when(resourceService.uploadFile(any(), anyString(), anyString()))
                 .thenThrow(new RuntimeException("Upload failed"));
 
         // When
-        ResponseEntity<Resource> response = resourceController.uploadResource(file, courseId, taskId, resourceName, description);
+        ResponseEntity<Resource> response = resourceController.uploadResource(file, resourceName, description);
 
         // Then
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertNull(response.getBody());
-        verify(resourceService, times(1)).uploadFile(file, courseId, taskId, resourceName, description);
+        verify(resourceService, times(1)).uploadFile(file, resourceName, description);
     }
 
     @Test
@@ -211,20 +214,7 @@ class ResourceControllerTest {
         verify(resourceService, times(1)).getResourceById(999L);
     }
 
-    @Test
-    void getResourcesByCourseId_ShouldReturnListOfResources() {
-        // Given
-        Long courseId = 1L;
-        when(resourceService.getResourcesByCourseId(courseId)).thenReturn(testResources);
 
-        // When
-        ResponseEntity<List<Resource>> response = resourceController.getResourcesByCourseId(courseId);
-
-        // Then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(testResources.size(), response.getBody().size());
-        verify(resourceService, times(1)).getResourcesByCourseId(courseId);
-    }
 
     @Test
     void updateResource_WhenIdMatches_AndResourceExists_ShouldReturnUpdatedResource() {

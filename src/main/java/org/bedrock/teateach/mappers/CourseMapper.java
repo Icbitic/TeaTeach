@@ -20,8 +20,26 @@ public interface CourseMapper {
     void delete(@Param("id") Long id);
 
     @Select("SELECT * FROM courses WHERE id=#{id}")
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "courseCode", column = "course_code"),
+            @Result(property = "courseName", column = "course_name"),
+            @Result(property = "instructor", column = "instructor"),
+            @Result(property = "credits", column = "credits"),
+            @Result(property = "hours", column = "hours"),
+            @Result(property = "description", column = "description")
+    })
     Course findById(@Param("id") Long id);
 
     @Select("SELECT * FROM courses")
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "courseCode", column = "course_code"),
+            @Result(property = "courseName", column = "course_name"),
+            @Result(property = "instructor", column = "instructor"),
+            @Result(property = "credits", column = "credits"),
+            @Result(property = "hours", column = "hours"),
+            @Result(property = "description", column = "description")
+    })
     List<Course> findAll();
 }

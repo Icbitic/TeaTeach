@@ -2,10 +2,15 @@
 package org.bedrock.teateach.services;
 
 import org.bedrock.teateach.beans.Resource;
+import org.bedrock.teateach.beans.User;
 import org.bedrock.teateach.mappers.ResourceMapper;
+import org.bedrock.teateach.mappers.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,7 +18,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID; // For unique file names
@@ -22,12 +30,14 @@ import java.util.UUID; // For unique file names
 public class ResourceService {
 
     private final ResourceMapper resourceMapper;
+    private final UserMapper userMapper;
 
     private final String fileStorageLocation = System.getProperty("user.home") + "/teateach_uploads";
 
     @Autowired
-    public ResourceService(ResourceMapper resourceMapper) {
+    public ResourceService(ResourceMapper resourceMapper, UserMapper userMapper) {
         this.resourceMapper = resourceMapper;
+        this.userMapper = userMapper;
         // Ensure the upload directory exists
         try {
             Files.createDirectories(Paths.get(fileStorageLocation));
@@ -36,8 +46,9 @@ public class ResourceService {
         }
     }
 
+
+
     @Transactional
-    @CacheEvict(value = {"courseResources"}, key = "#resource.courseId")
     public Resource createResource(Resource resource) {
         resourceMapper.insert(resource);
         return resource;
@@ -48,20 +59,28 @@ public class ResourceService {
         return Optional.ofNullable(resourceMapper.findById(id));
     }
 
-    @Cacheable(value = "courseResources", key = "#courseId")
-    public List<Resource> getResourcesByCourseId(Long courseId) {
-        return resourceMapper.findByCourseId(courseId);
+    /**
+     * Gets all resources.
+     *
+     * @return A list of all resources.
+     */
+//    @Cacheable(value = "allResources")
+    public List<Resource> getAllResources() {
+        return resourceMapper.findAll();
     }
 
+
+
     @Transactional
-    @CacheEvict(value = {"resources", "courseResources"}, allEntries = true)
+    @CacheEvict(value = {"resources"}, allEntries = true)
     public Resource updateResource(Resource resource) {
+        resource.setUpdatedAt(LocalDateTime.now());
         resourceMapper.update(resource);
         return resource;
     }
 
     @Transactional
-    @CacheEvict(value = {"resources", "courseResources"}, allEntries = true)
+    @CacheEvict(value = {"resources"}, allEntries = true)
     public void deleteResource(Long id) {
         Optional<Resource> resourceOptional = getResourceById(id);
         if (resourceOptional.isPresent()) {
@@ -80,8 +99,7 @@ public class ResourceService {
     }
 
     @Transactional
-    @CacheEvict(value = {"courseResources"}, key = "#courseId")
-    public Resource uploadFile(MultipartFile file, Long courseId, Long taskId, String resourceName, String description) throws IOException {
+    public Resource uploadFile(MultipartFile file, String resourceName, String description) throws IOException {
         String originalFileName = file.getOriginalFilename();
         String fileExtension = "";
         if (originalFileName != null && originalFileName.contains(".")) {
@@ -103,17 +121,22 @@ public class ResourceService {
         }
 
         Resource resource = new Resource();
-        resource.setCourseId(courseId);
-        resource.setTaskId(taskId); // Can be null
         resource.setResourceName(resourceName);
         resource.setFilePath(storedFileName); // Store internal path/name, not full path
         resource.setFileType(fileExtension);
         resource.setFileSize(file.getSize());
         resource.setDescription(description);
-//        resource.setCreatedAt(LocalDateTime.now());
-//        resource.setUpdatedAt(LocalDateTime.now());
-        // Set uploadedBy if you have user context (e.g., from security principal)
-        // resource.setUploadedBy(currentUser.getId());
+        resource.setCreatedAt(LocalDateTime.now());
+        resource.setUpdatedAt(LocalDateTime.now());
+        // Automatically set uploadedBy from current authenticated user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getName())) {
+            String username = authentication.getName();
+            Optional<User> user = userMapper.findByUsername(username);
+            if (user.isPresent()) {
+                resource.setUploadedBy(user.get().getId());
+            }
+        }
 
         resourceMapper.insert(resource);
         return resource;
@@ -129,5 +152,71 @@ public class ResourceService {
             }
         }
         return null; // Or throw ResourceNotFoundException
+    }
+
+    /**
+     * Gets all resources uploaded by a specific user.
+     *
+     * @param uploadedBy The ID of the user who uploaded the resources.
+     * @return A list of resources uploaded by the specified user.
+     */
+    public List<Resource> getResourcesByUploadedBy(Long uploadedBy) {
+        return resourceMapper.findByUploadedBy(uploadedBy);
+    }
+
+    /**
+     * Gets all resources uploaded by the current authenticated user.
+     *
+     * @return A list of resources uploaded by the current user.
+     */
+    public List<Resource> getMyResources() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getName())) {
+            String username = authentication.getName();
+            Optional<User> user = userMapper.findByUsername(username);
+            if (user.isPresent()) {
+                return resourceMapper.findByUploadedBy(user.get().getId());
+            }
+        }
+        return List.of(); // Return empty list if user not authenticated
+    }
+
+    /**
+     * Gets resources associated with a specific task.
+     *
+     * @param taskId The ID of the task.
+     * @return A list of resources associated with the specified task.
+     */
+    public List<Resource> getResourcesByTaskId(Long taskId) {
+        return resourceMapper.findByTaskId(taskId);
+    }
+
+    /**
+     * Gets resources uploaded by a specific user for a specific task.
+     *
+     * @param uploadedBy The ID of the user who uploaded the resources.
+     * @param taskId The ID of the task.
+     * @return A list of resources uploaded by the user for the specified task.
+     */
+    public List<Resource> getResourcesByUploadedByAndTaskId(Long uploadedBy, Long taskId) {
+        return resourceMapper.findByUploadedByAndTaskId(uploadedBy, taskId);
+    }
+
+    /**
+     * Gets resources uploaded by the current authenticated user for a specific task.
+     *
+     * @param taskId The ID of the task.
+     * @return A list of resources uploaded by the current user for the specified task.
+     */
+    public List<Resource> getMyResourcesForTask(Long taskId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getName())) {
+            String username = authentication.getName();
+            Optional<User> user = userMapper.findByUsername(username);
+            if (user.isPresent()) {
+                return resourceMapper.findByUploadedByAndTaskId(user.get().getId(), taskId);
+            }
+        }
+        return List.of(); // Return empty list if user not authenticated
     }
 }

@@ -46,6 +46,23 @@ public class QuestionController {
     }
 
     /**
+     * Retrieves all questions with pagination and search.
+     * GET /api/questions?page=0&size=12&search=
+     * @param page The page number (default: 0).
+     * @param size The page size (default: 12).
+     * @param search Optional search term.
+     * @return A list of questions matching the criteria.
+     */
+    @GetMapping
+    public ResponseEntity<List<Question>> getAllQuestions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(defaultValue = "") String search) {
+        List<Question> questions = questionService.getAllQuestions(page, size, search);
+        return ResponseEntity.ok(questions);
+    }
+
+    /**
      * Retrieves questions by their type and difficulty (optional filters).
      * GET /api/questions/filter?type=SINGLE_CHOICE&difficulty=EASY
      * @param type Optional: The type of question (e.g., SINGLE_CHOICE).
