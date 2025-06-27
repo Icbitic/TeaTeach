@@ -39,7 +39,7 @@ class QuestionServiceTest {
         testQuestion.setQuestionType(QuestionType.MULTIPLE_CHOICE);
         testQuestion.setDifficulty("EASY");
         testQuestion.setKnowledgePointIds(Arrays.asList(101L, 102L)); // Example List<Long>
-        testQuestion.setOptions("A) 3,B) 4,C) 5");
+        testQuestion.setOptions(new String[]{"A) 3", "B) 4", "C) 5"});
         testQuestion.setCorrectAnswer("B");
 //        testQuestion.setCreatedAt(LocalDateTime.now());
 //        testQuestion.setUpdatedAt(LocalDateTime.now());
