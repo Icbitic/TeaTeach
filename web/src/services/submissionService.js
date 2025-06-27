@@ -77,6 +77,37 @@ export const submissionService = {
   // Delete submission file
   deleteSubmissionFile(fileId) {
     return apiClient.delete(`/submissions/files/${fileId}`)
+  },
+
+  // LLM-based grading
+  llmGradeSubmission(submissionId, gradingRubric = null) {
+    let url = `/submissions/${submissionId}/llm-grade`
+    const params = {}
+    if (gradingRubric) {
+      params.gradingRubric = gradingRubric
+    }
+    return apiClient.post(url, null, { params })
+  },
+
+  // LLM-based feedback generation
+  llmGenerateFeedback(submissionId, feedbackPrompt = null) {
+    let url = `/submissions/${submissionId}/llm-feedback`
+    const params = {}
+    if (feedbackPrompt) {
+      params.feedbackPrompt = feedbackPrompt
+    }
+    return apiClient.post(url, null, { params })
+  },
+
+  // Batch LLM grading
+  batchLlmGrade(submissionIds, gradingRubric = null) {
+    const data = {
+      submissionIds: submissionIds
+    }
+    if (gradingRubric) {
+      data.gradingRubric = gradingRubric
+    }
+    return apiClient.post('/submissions/batch-llm-grade', data)
   }
 }
 

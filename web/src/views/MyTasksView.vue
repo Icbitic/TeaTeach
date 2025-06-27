@@ -464,7 +464,7 @@ export default {
     // Computed properties
     const currentStudentId = computed(() => {
       const user = JSON.parse(localStorage.getItem('user') || '{}')
-      return user.referenceId || user.id
+      return user.referenceId
     })
 
     const overdueTasks = computed(() => {

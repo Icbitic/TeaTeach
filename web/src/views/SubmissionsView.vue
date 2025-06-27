@@ -94,7 +94,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="Actions" width="220" align="center">
+        <el-table-column label="Actions" width="320" align="center">
           <template #default="scope">
             <div class="action-buttons">
               <el-button
@@ -103,6 +103,16 @@
                 @click.stop="gradeSubmission(scope.row)"
               >
                 {{ scope.row.score !== null ? 'Edit Grade' : 'Grade' }}
+              </el-button>
+              <el-button
+                type="success"
+                size="small"
+                @click.stop="aiGradeSubmission(scope.row)"
+                :loading="scope.row.aiGrading"
+                :disabled="!scope.row.submissionContent"
+              >
+                <el-icon><MagicStick /></el-icon>
+                AI Grade
               </el-button>
               <el-button
                 type="info"
@@ -204,7 +214,7 @@
 <script>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { User, Document, Clock, Refresh } from '@element-plus/icons-vue'
+import { User, Document, Clock, Refresh, MagicStick } from '@element-plus/icons-vue'
 import TypewriterText from '@/components/TypewriterText.vue'
 import submissionService from '@/services/submissionService'
 import courseService from '@/services/courseService'
@@ -218,7 +228,8 @@ export default {
     User,
     Document,
     Clock,
-    Refresh
+    Refresh,
+    MagicStick
   },
   setup() {
     const loading = ref(false)
@@ -362,6 +373,39 @@ export default {
       }
     }
 
+    const aiGradeSubmission = async (submission) => {
+      if (!submission.submissionContent) {
+        ElMessage.warning('No submission content available for AI grading')
+        return
+      }
+
+      // Set loading state for this specific submission
+      submission.aiGrading = true
+      
+      try {
+        ElMessage.info('AI is analyzing the submission...')
+        
+        const response = await submissionService.llmGradeSubmission(submission.id)
+        
+        if (response.data.success) {
+          ElMessage.success(`AI grading completed! Score: ${response.data.score}/100`)
+          // Refresh the submissions to show updated data
+          loadSubmissions()
+        } else {
+          ElMessage.error(response.data.message || 'AI grading failed')
+        }
+      } catch (error) {
+        console.error('AI grading error:', error)
+        if (error.response?.data?.message) {
+          ElMessage.error(`AI grading failed: ${error.response.data.message}`)
+        } else {
+          ElMessage.error('AI grading service is currently unavailable')
+        }
+      } finally {
+        submission.aiGrading = false
+      }
+    }
+
     const resetGradingForm = () => {
       gradingForm.score = null
       gradingForm.feedback = ''
@@ -450,6 +494,7 @@ export default {
       viewSubmission,
       gradeSubmission,
       submitGrade,
+      aiGradeSubmission,
       resetGradingForm,
       viewSubmissionFiles,
       downloadFile,
@@ -561,9 +606,10 @@ export default {
 
 .action-buttons {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 /* Improve table header styling */
@@ -590,6 +636,11 @@ export default {
   .action-buttons {
     flex-direction: column;
     gap: 4px;
+  }
+  
+  .action-buttons .el-button {
+    font-size: 11px;
+    padding: 4px 8px;
   }
   
   .student-cell,

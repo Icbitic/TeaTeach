@@ -226,29 +226,39 @@
             <!-- Knowledge Points Selection (for BY_KNOWLEDGE_POINT method) -->
             <div v-if="generateForm.generationMethod === 'BY_KNOWLEDGE_POINT'" class="form-group">
               <label>Knowledge Points *</label>
-              <div class="knowledge-points-selection">
-                <div class="search-knowledge-points">
-                  <input 
-                    type="text" 
-                    v-model="knowledgePointSearch" 
-                    placeholder="Search knowledge points..."
-                    @input="searchKnowledgePoints"
-                  />
+              <div class="knowledge-points-section">
+                <div class="selected-knowledge-points" v-if="selectedKnowledgePoints.length > 0">
+                  <h4>Selected Knowledge Points ({{ selectedKnowledgePoints.length }})</h4>
+                  <div class="selected-kp-list">
+                    <div 
+                      v-for="kp in selectedKnowledgePoints" 
+                      :key="kp.id" 
+                      class="selected-kp-item"
+                    >
+                      <span class="kp-name">{{ kp.name }}</span>
+                      <span class="kp-difficulty" :class="kp.difficultyLevel ? kp.difficultyLevel.toLowerCase() : ''">
+                        {{ kp.difficultyLevel || 'Unknown' }}
+                      </span>
+                      <button 
+                        type="button" 
+                        @click="removeKnowledgePoint(kp.id)" 
+                        class="remove-btn"
+                        title="Remove knowledge point"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div class="knowledge-points-list">
-                  <label 
-                    class="checkbox-label" 
-                    v-for="kp in filteredKnowledgePoints" 
-                    :key="kp.id"
-                  >
-                    <input 
-                      type="checkbox" 
-                      :value="kp.id" 
-                      v-model="generateForm.knowledgePointIds"
-                    />
-                    {{ kp.name }}
-                  </label>
-                </div>
+                
+                <button 
+                  type="button" 
+                  @click="showKnowledgeGraphModal = true" 
+                  class="knowledge-graph-btn"
+                >
+                  <i class="fas fa-project-diagram"></i>
+                  Select from Knowledge Graph
+                </button>
               </div>
             </div>
             
@@ -536,6 +546,42 @@
         </div>
       </div>
     </div>
+
+    <!-- Knowledge Graph Selection Modal -->
+    <div v-if="showKnowledgeGraphModal" class="modal-overlay" @click="closeKnowledgeGraphModal">
+      <div class="modal knowledge-graph-modal" @click.stop>
+        <div class="modal-header">
+          <h2>Select Knowledge Points</h2>
+          <button @click="closeKnowledgeGraphModal" class="close-btn">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="knowledge-graph-container">
+            <KnowledgeGraphVisualization
+              :knowledge-points="allKnowledgePoints"
+              :selected-knowledge-point-ids="tempSelectedKnowledgePoints.map(kp => kp.id)"
+              :allow-dragging-with-physics-timeout="true"
+              @node-click="toggleKnowledgePointSelection"
+              ref="knowledgeGraph"
+            />
+          </div>
+          
+          <div class="selection-info">
+            <p><strong>Instructions:</strong> Click on knowledge points in the graph to select/deselect them for test generation.</p>
+            <p><strong>Selected:</strong> {{ tempSelectedKnowledgePoints.length }} knowledge point(s)</p>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" @click="closeKnowledgeGraphModal" class="btn btn-outline">
+            Cancel
+          </button>
+          <button type="button" @click="confirmKnowledgePointSelection" class="btn btn-primary">
+            Confirm Selection ({{ tempSelectedKnowledgePoints.length }})
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -544,9 +590,14 @@ import { ElMessage } from 'element-plus'
 import { testPaperService } from '@/services/testPaperService'
 import { questionService } from '@/services/questionService'
 import { courseService } from '@/services/courseService'
+import { knowledgePointService } from '@/services/knowledgePointService'
+import KnowledgeGraphVisualization from '@/components/KnowledgeGraphVisualization.vue'
 
 export default {
   name: 'TestPaperView',
+  components: {
+    KnowledgeGraphVisualization
+  },
   data() {
     return {
       testPapers: [],
@@ -559,6 +610,10 @@ export default {
       showGenerateModal: false,
       showCreateModal: false,
       showPreviewModal: false,
+      showKnowledgeGraphModal: false,
+      allKnowledgePoints: [],
+      selectedKnowledgePoints: [],
+      tempSelectedKnowledgePoints: [],
       searchQuery: '',
       questionSearch: '',
       knowledgePointSearch: '',
@@ -578,6 +633,7 @@ export default {
         totalScore: null,
         questionTypes: [],
         knowledgePointIds: [],
+        knowledgePointQuestionCounts: {},
         difficultyQuestionCounts: {
           EASY: 0,
           MEDIUM: 0,
@@ -676,11 +732,12 @@ export default {
     
     async loadKnowledgePoints() {
       try {
-        // Assuming there's a knowledge point service
-        // this.knowledgePoints = await knowledgePointService.getKnowledgePoints()
-        this.knowledgePoints = [] // Placeholder
+        const response = await knowledgePointService.getAllKnowledgePoints()
+        this.allKnowledgePoints = response.data || response
+        this.knowledgePoints = this.allKnowledgePoints // For backward compatibility
       } catch (error) {
         console.error('Error loading knowledge points:', error)
+        ElMessage.error('Failed to load knowledge points')
       }
     },
     
@@ -846,6 +903,7 @@ export default {
         totalScore: null,
         questionTypes: [],
         knowledgePointIds: [],
+        knowledgePointQuestionCounts: {},
         difficultyQuestionCounts: { EASY: 0, MEDIUM: 0, HARD: 0 },
         difficultyWeights: { EASY: 0.3, MEDIUM: 0.5, HARD: 0.2 }
       }
@@ -868,6 +926,59 @@ export default {
       this.showPreviewModal = false
       this.previewPaperData = {}
       this.previewQuestions = []
+    },
+    
+    // Knowledge Graph Methods
+    openKnowledgeGraphModal() {
+      this.tempSelectedKnowledgePoints = [...this.selectedKnowledgePoints]
+      this.showKnowledgeGraphModal = true
+    },
+    
+    closeKnowledgeGraphModal() {
+      this.showKnowledgeGraphModal = false
+      this.tempSelectedKnowledgePoints = []
+    },
+    
+    confirmKnowledgePointSelection() {
+      this.selectedKnowledgePoints = [...this.tempSelectedKnowledgePoints]
+      this.generateForm.knowledgePointIds = this.selectedKnowledgePoints.map(kp => kp.id)
+      
+      // Initialize knowledgePointQuestionCounts with default value of 1 for each selected knowledge point
+      this.generateForm.knowledgePointQuestionCounts = {}
+      this.selectedKnowledgePoints.forEach(kp => {
+        this.generateForm.knowledgePointQuestionCounts[kp.id] = 1
+      })
+      
+      this.closeKnowledgeGraphModal()
+      ElMessage.success(`Selected ${this.selectedKnowledgePoints.length} knowledge points`)
+    },
+    
+    toggleKnowledgePointSelection(knowledgePoint) {
+      const index = this.tempSelectedKnowledgePoints.findIndex(kp => kp.id === knowledgePoint.id)
+      if (index > -1) {
+        // Remove if already selected
+        this.tempSelectedKnowledgePoints.splice(index, 1)
+      } else {
+        // Add if not selected
+        this.tempSelectedKnowledgePoints.push(knowledgePoint)
+      }
+    },
+    
+    onKnowledgePointSelectionChange(selectedIds) {
+      this.tempSelectedKnowledgePoints = this.allKnowledgePoints.filter(kp => 
+        selectedIds.includes(kp.id)
+      )
+    },
+    
+    removeKnowledgePoint(index) {
+      const removedKp = this.selectedKnowledgePoints[index]
+      this.selectedKnowledgePoints.splice(index, 1)
+      this.generateForm.knowledgePointIds = this.selectedKnowledgePoints.map(kp => kp.id)
+      
+      // Remove from knowledgePointQuestionCounts
+      if (removedKp && this.generateForm.knowledgePointQuestionCounts) {
+        delete this.generateForm.knowledgePointQuestionCounts[removedKp.id]
+      }
     }
   }
 }
@@ -1390,5 +1501,91 @@ export default {
   .paper-details {
     grid-template-columns: 1fr;
   }
+}
+
+/* Knowledge Graph Modal Styles */
+.knowledge-graph-modal {
+  max-width: 95vw;
+  width: 1200px;
+  height: 90vh;
+  max-height: 900px;
+}
+
+.knowledge-graph-container {
+  height: 600px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin: 15px 0;
+}
+
+.selected-knowledge-points {
+  margin: 15px 0;
+}
+
+.selected-knowledge-points h4 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.knowledge-point-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 32px;
+  padding: 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background: #f9f9f9;
+}
+
+.knowledge-point-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  background: #e3f2fd;
+  color: #1976d2;
+  border-radius: 12px;
+  font-size: 12px;
+  border: 1px solid #bbdefb;
+}
+
+.knowledge-point-tag .remove-btn {
+  background: none;
+  border: none;
+  color: #1976d2;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 4px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.knowledge-point-tag .remove-btn:hover {
+  color: #d32f2f;
+}
+
+.selection-info {
+  margin: 15px 0;
+  padding: 10px;
+  background: #f0f8ff;
+  border-left: 4px solid #2196f3;
+  border-radius: 4px;
+}
+
+.selection-info p {
+  margin: 0;
+  color: #1976d2;
+  font-size: 14px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 15px 0 0 0;
+  border-top: 1px solid #eee;
+  margin-top: 15px;
 }
 </style>

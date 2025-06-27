@@ -132,12 +132,18 @@ public class TestPaperService {
     private List<Question> selectQuestionsByKnowledgePoints(List<Question> allQuestions, TestPaperGenerationRequest request) {
         List<Question> selectedQuestions = new ArrayList<>();
         
+        // Handle null knowledgePointQuestionCounts by providing default behavior
+        Map<Long, Integer> questionCounts = request.getKnowledgePointQuestionCounts();
+        if (questionCounts == null) {
+            questionCounts = new HashMap<>();
+        }
+        
         for (Long knowledgePointId : request.getKnowledgePointIds()) {
             List<Question> questionsForKP = allQuestions.stream()
                     .filter(q -> q.getKnowledgePointIds() != null && q.getKnowledgePointIds().contains(knowledgePointId))
                     .collect(Collectors.toList());
             
-            int requiredCount = request.getKnowledgePointQuestionCounts().getOrDefault(knowledgePointId, 1);
+            int requiredCount = questionCounts.getOrDefault(knowledgePointId, 1);
             Collections.shuffle(questionsForKP, random);
             
             selectedQuestions.addAll(questionsForKP.stream()

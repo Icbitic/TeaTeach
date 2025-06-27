@@ -6,7 +6,6 @@ import org.bedrock.teateach.mappers.KnowledgePointMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -16,6 +15,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.inOrder;
 
 @ExtendWith(MockitoExtension.class)
 class KnowledgePointServiceTest {
@@ -76,16 +76,26 @@ class KnowledgePointServiceTest {
     }
 
     @Test
-    void deleteKnowledgePoint_shouldDeleteKnowledgePoint() {
+    void deleteKnowledgePoint_shouldDeleteKnowledgePointAndUpdateReferences() {
         // Given
         Long kpId = 1L;
+        doNothing().when(knowledgePointMapper).removeFromPrerequisiteFields(kpId);
+        doNothing().when(knowledgePointMapper).removeFromRelatedFields(kpId);
         doNothing().when(knowledgePointMapper).delete(kpId);
 
         // When
         knowledgePointService.deleteKnowledgePoint(kpId);
 
         // Then
+        verify(knowledgePointMapper, times(1)).removeFromPrerequisiteFields(kpId);
+        verify(knowledgePointMapper, times(1)).removeFromRelatedFields(kpId);
         verify(knowledgePointMapper, times(1)).delete(kpId);
+        
+        // Verify the order of operations
+        var inOrder = inOrder(knowledgePointMapper);
+        inOrder.verify(knowledgePointMapper).removeFromPrerequisiteFields(kpId);
+        inOrder.verify(knowledgePointMapper).removeFromRelatedFields(kpId);
+        inOrder.verify(knowledgePointMapper).delete(kpId);
     }
 
     @Test
@@ -162,11 +172,9 @@ class KnowledgePointServiceTest {
         extractedKp2.setName("Extracted KP 2");
         extractedKp2.setCourseId(courseId); // Already set
 
-        List<KnowledgePoint> existingKPs = List.of(); // Mocked getAllKnowledgePoints result
         List<KnowledgePoint> extractedKPs = List.of(extractedKp1, extractedKp2);
 
-        when(selfProxy.getAllKnowledgePoints()).thenReturn(existingKPs);
-        when(llmService.extractKnowledgePoints(courseContent, courseId, existingKPs, List.of())).thenReturn(extractedKPs);
+        when(llmService.extractKnowledgePoints(courseContent, courseId, knowledgePointService.getAllKnowledgePoints())).thenReturn(extractedKPs);
         doNothing().when(knowledgePointMapper).insert(any(KnowledgePoint.class));
 
         // When
@@ -178,7 +186,6 @@ class KnowledgePointServiceTest {
         assertEquals(courseId, extractedKp1.getCourseId()); // Should have been set
         verify(knowledgePointMapper, times(1)).insert(extractedKp1);
         verify(knowledgePointMapper, times(1)).insert(extractedKp2);
-        verify(llmService, times(1)).extractKnowledgePoints(courseContent, courseId, existingKPs, List.of());
-        verify(selfProxy, times(1)).getAllKnowledgePoints();
+        verify(llmService, times(1)).extractKnowledgePoints(courseContent, courseId,  knowledgePointService.getAllKnowledgePoints());
     }
 }

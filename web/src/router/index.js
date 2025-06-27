@@ -18,6 +18,9 @@ import SettingsView from '../views/SettingsView.vue'
 import QuestionBankView from '../views/QuestionBankView.vue'
 import TestPaperView from '../views/TestPaperView.vue'
 import KnowledgePointsView from '../views/KnowledgePointsView.vue'
+import ResourcesView from '../views/ResourcesView.vue'
+import StudentPlatformResourcesView from '../views/StudentPlatformResourcesView.vue'
+import StudentAbilitiesView from '../views/StudentAbilitiesView.vue'
 
 const routes = [
   {
@@ -69,9 +72,21 @@ const routes = [
         meta: { requiresStudent: true }
       },
       {
+        path: 'platform-resources',
+        name: 'platform-resources',
+        component: StudentPlatformResourcesView,
+        meta: { requiresStudent: true }
+      },
+      {
         path: 'my-tasks',
         name: 'my-tasks',
         component: MyTasksView,
+        meta: { requiresStudent: true }
+      },
+      {
+        path: 'my-abilities',
+        name: 'my-abilities',
+        component: StudentAbilitiesView,
         meta: { requiresStudent: true }
       },
       {
@@ -126,6 +141,12 @@ const routes = [
         path: 'knowledge-points',
         name: 'knowledge-points',
         component: KnowledgePointsView,
+        meta: { requiresTeacher: true }
+      },
+      {
+        path: 'resources',
+        name: 'resources',
+        component: ResourcesView,
         meta: { requiresTeacher: true }
       },
       {

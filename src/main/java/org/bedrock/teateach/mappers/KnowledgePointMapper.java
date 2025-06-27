@@ -82,4 +82,36 @@ public interface KnowledgePointMapper {
             @Result(column="updated_at", property="updatedAt")
     })
     List<KnowledgePoint> findAll();
+
+    /**
+     * Remove a knowledge point ID from prerequisite_knowledge_point_ids field of all knowledge points
+     * Uses JSON_REMOVE to remove the ID from the JSON array
+     */
+    @Update("UPDATE knowledge_points SET " +
+            "prerequisite_knowledge_point_ids = CASE " +
+            "  WHEN prerequisite_knowledge_point_ids = CONCAT('[', #{deletedId}, ']') THEN '[]' " +
+            "  WHEN prerequisite_knowledge_point_ids LIKE CONCAT('[', #{deletedId}, ',%') THEN REPLACE(prerequisite_knowledge_point_ids, CONCAT(#{deletedId}, ','), '') " +
+            "  WHEN prerequisite_knowledge_point_ids LIKE CONCAT('%,', #{deletedId}, ']') THEN REPLACE(prerequisite_knowledge_point_ids, CONCAT(',', #{deletedId}), '') " +
+            "  WHEN prerequisite_knowledge_point_ids LIKE CONCAT('%,', #{deletedId}, ',%') THEN REPLACE(prerequisite_knowledge_point_ids, CONCAT(',', #{deletedId}, ','), ',') " +
+            "  ELSE prerequisite_knowledge_point_ids " +
+            "END, " +
+            "updated_at = NOW() " +
+            "WHERE prerequisite_knowledge_point_ids LIKE CONCAT('%', #{deletedId}, '%')")
+    void removeFromPrerequisiteFields(@Param("deletedId") Long deletedId);
+
+    /**
+     * Remove a knowledge point ID from related_knowledge_point_ids field of all knowledge points
+     * Uses JSON_REMOVE to remove the ID from the JSON array
+     */
+    @Update("UPDATE knowledge_points SET " +
+            "related_knowledge_point_ids = CASE " +
+            "  WHEN related_knowledge_point_ids = CONCAT('[', #{deletedId}, ']') THEN '[]' " +
+            "  WHEN related_knowledge_point_ids LIKE CONCAT('[', #{deletedId}, ',%') THEN REPLACE(related_knowledge_point_ids, CONCAT(#{deletedId}, ','), '') " +
+            "  WHEN related_knowledge_point_ids LIKE CONCAT('%,', #{deletedId}, ']') THEN REPLACE(related_knowledge_point_ids, CONCAT(',', #{deletedId}), '') " +
+            "  WHEN related_knowledge_point_ids LIKE CONCAT('%,', #{deletedId}, ',%') THEN REPLACE(related_knowledge_point_ids, CONCAT(',', #{deletedId}, ','), ',') " +
+            "  ELSE related_knowledge_point_ids " +
+            "END, " +
+            "updated_at = NOW() " +
+            "WHERE related_knowledge_point_ids LIKE CONCAT('%', #{deletedId}, '%')")
+    void removeFromRelatedFields(@Param("deletedId") Long deletedId);
 }

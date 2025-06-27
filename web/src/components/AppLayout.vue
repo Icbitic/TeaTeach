@@ -61,6 +61,10 @@
               <el-icon><el-icon-connection /></el-icon>
               <span><TypewriterText :text="'Knowledge Points'" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
+            <el-menu-item index="resources">
+              <el-icon><el-icon-folder /></el-icon>
+              <span><TypewriterText :text="'Resources'" :show="!isCollapse" :speed="50" /></span>
+            </el-menu-item>
           </template>
           
           <!-- Student Menu -->
@@ -77,9 +81,17 @@
               <el-icon><el-icon-folder /></el-icon>
               <span><TypewriterText :text="'Course Materials'" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
+            <el-menu-item index="platform-resources">
+              <el-icon><el-icon-files /></el-icon>
+              <span><TypewriterText :text="'Platform Resources'" :show="!isCollapse" :speed="50" /></span>
+            </el-menu-item>
             <el-menu-item index="my-tasks">
               <el-icon><el-icon-document /></el-icon>
               <span><TypewriterText :text="'My Tasks'" :show="!isCollapse" :speed="50" /></span>
+            </el-menu-item>
+            <el-menu-item index="my-abilities">
+              <el-icon><el-icon-cpu /></el-icon>
+              <span><TypewriterText :text="'My Abilities'" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
             <el-menu-item index="my-grades">
               <el-icon><el-icon-data-analysis /></el-icon>
@@ -183,14 +195,16 @@ export default {
         'courses': '/courses',
         'my-courses': '/my-courses',
         'course-materials': '/course-materials',
-        'tasks': '/tasks',
+        'platform-resources': '/platform-resources',
         'my-tasks': '/my-tasks',
+        'my-abilities': '/my-abilities',
         'analytics': '/analytics',
         'video-heatmap': '/video-heatmap',
         'submissions': '/submissions',
         'question-bank': '/question-bank',
         'test-papers': '/test-papers',
         'knowledge-points': '/knowledge-points',
+        'resources': '/resources',
         'my-grades': '/student-dashboard', // For now, redirect to student dashboard
         'settings': '/settings'
       }
@@ -206,16 +220,19 @@ export default {
         '/student-dashboard': 'student-dashboard',
         '/my-courses': 'my-courses',
         '/course-materials': 'course-materials',
+        '/platform-resources': 'platform-resources',
         '/students': 'students',
         '/courses': 'courses', 
         '/tasks': 'tasks',
         '/my-tasks': 'my-tasks',
+        '/my-abilities': 'my-abilities',
         '/analytics': 'analytics',
         '/video-heatmap': 'video-heatmap',
         '/submissions': 'submissions',
         '/question-bank': 'question-bank',
         '/test-papers': 'test-papers',
         '/knowledge-points': 'knowledge-points',
+        '/resources': 'resources',
         '/settings': 'settings'
       }
       return routeToKey[route.path] || (user.value.userType === 'STUDENT' ? 'student-dashboard' : 'dashboard')

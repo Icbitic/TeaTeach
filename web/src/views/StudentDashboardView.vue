@@ -7,7 +7,7 @@
 
     <!-- Stats Cards -->
     <el-row :gutter="20" class="dashboard-stats">
-      <el-col :xs="24" :sm="12" :md="6">
+      <el-col :xs="24" :sm="12" :lg="6">
         <el-card shadow="hover" class="stat-card">
           <div class="stat-icon courses-icon">
             <el-icon>
@@ -20,7 +20,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :xs="24" :sm="12" :md="6">
+      <el-col :xs="24" :sm="12" :lg="6">
         <el-card shadow="hover" class="stat-card">
           <div class="stat-icon tasks-icon">
             <el-icon>
@@ -33,7 +33,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :xs="24" :sm="12" :md="6">
+      <el-col :xs="24" :sm="12" :lg="6">
         <el-card shadow="hover" class="stat-card">
           <div class="stat-icon pending-icon">
             <el-icon>
@@ -46,7 +46,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :xs="24" :sm="12" :md="6">
+      <el-col :xs="24" :sm="12" :lg="6">
         <el-card shadow="hover" class="stat-card">
           <div class="stat-icon completed-icon">
             <el-icon>
@@ -56,6 +56,70 @@
           <div class="stat-info">
             <div class="stat-value">{{ completedTasks }}</div>
             <div class="stat-label">Completed Tasks</div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <!-- Quick Actions -->
+    <el-row :gutter="20" class="quick-actions">
+      <el-col :xs="24" :sm="12" :md="8">
+        <el-card shadow="hover" class="action-card abilities-card" @click="goToAbilities">
+          <div class="action-content">
+            <div class="action-icon abilities-icon">
+              <el-icon>
+                <el-icon-cpu/>
+              </el-icon>
+            </div>
+            <div class="action-info">
+              <h4>My Learning Abilities</h4>
+              <p>Discover your strengths and get personalized recommendations</p>
+            </div>
+            <div class="action-arrow">
+              <el-icon>
+                <el-icon-arrow-right/>
+              </el-icon>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="12" :md="8">
+        <el-card shadow="hover" class="action-card grades-card" @click="goToGrades">
+          <div class="action-content">
+            <div class="action-icon grades-icon">
+              <el-icon>
+                <el-icon-data-analysis/>
+              </el-icon>
+            </div>
+            <div class="action-info">
+              <h4>My Grades</h4>
+              <p>View your academic performance and progress</p>
+            </div>
+            <div class="action-arrow">
+              <el-icon>
+                <el-icon-arrow-right/>
+              </el-icon>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="12" :md="8">
+        <el-card shadow="hover" class="action-card resources-card" @click="goToResources">
+          <div class="action-content">
+            <div class="action-icon resources-icon">
+              <el-icon>
+                <el-icon-folder/>
+              </el-icon>
+            </div>
+            <div class="action-info">
+              <h4>Learning Resources</h4>
+              <p>Access course materials and platform resources</p>
+            </div>
+            <div class="action-arrow">
+              <el-icon>
+                <el-icon-arrow-right/>
+              </el-icon>
+            </div>
           </div>
         </el-card>
       </el-col>
@@ -380,6 +444,7 @@
 <script>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   Document,
@@ -420,6 +485,7 @@ export default {
   },
   setup() {
     const store = useStore()
+    const router = useRouter()
     const user = computed(() => store.getters.user)
     
     // Reactive data
@@ -797,13 +863,27 @@ export default {
       return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i]
     }
     
+    // Navigation methods for quick action cards
+    const navigateToAbilities = () => {
+      router.push('/my-abilities')
+    }
+
+    const navigateToGrades = () => {
+      // TODO: Implement grades view when available
+      ElMessage.info('Grades view coming soon!')
+    }
+
+    const navigateToResources = () => {
+      router.push('/resources')
+    }
+
     // Initialize data
     onMounted(async () => {
       await loadEnrolledCourses()
       await loadTasksForCourses()
       await loadSubmissions()
     })
-    
+
     return {
       user,
       showWelcomeMessage,
@@ -859,7 +939,10 @@ export default {
       isImageFile,
       isPdfFile,
       isAudioFile,
-      formatFileSize
+      formatFileSize,
+      navigateToAbilities,
+      navigateToGrades,
+      navigateToResources
     }
   }
 }

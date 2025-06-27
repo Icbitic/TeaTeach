@@ -64,7 +64,7 @@
         <el-table-column prop="hours" label="Hours" width="80" sortable/>
         <el-table-column prop="description" label="Description" min-width="200" show-overflow-tooltip/>
 
-        <el-table-column label="Actions" fixed="right" width="180">
+        <el-table-column label="Actions" fixed="right" width="220">
           <template #default="scope">
             <el-button
                 type="primary"
@@ -85,6 +85,17 @@
                 title="Manage Students">
               <el-icon>
                 <el-icon-user/>
+              </el-icon>
+            </el-button>
+            <el-button
+                type="warning"
+                size="small"
+                @click="generateKnowledgePoints(scope.row)"
+                circle
+                plain
+                title="Generate Knowledge Points">
+              <el-icon>
+                <el-icon-magic-stick/>
               </el-icon>
             </el-button>
             <el-button
@@ -257,6 +268,62 @@
         </span>
       </template>
     </el-dialog>
+
+    <!-- Knowledge Point Generation Dialog -->
+    <el-dialog
+        v-model="knowledgePointDialog.visible"
+        title="Generate Knowledge Points"
+        width="600px"
+        :close-on-click-modal="false">
+      <div class="knowledge-point-content">
+        <div class="course-info">
+          <h3>{{ knowledgePointDialog.course.courseName }} ({{ knowledgePointDialog.course.courseCode }})</h3>
+          <p>Instructor: {{ knowledgePointDialog.course.instructor }}</p>
+        </div>
+        
+        <el-form :model="knowledgePointDialog.form" label-width="120px">
+          <el-form-item label="Course Content" required>
+            <el-input
+                v-model="knowledgePointDialog.form.courseContent"
+                type="textarea"
+                :rows="8"
+                placeholder="Paste your course content here (lecture notes, textbook chapters, syllabus, etc.)\n\nThe AI will analyze this content and automatically generate relevant knowledge points with their relationships."
+                maxlength="10000"
+                show-word-limit
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-alert
+                title="How it works"
+                type="info"
+                :closable="false"
+                show-icon>
+              <template #default>
+                <p>The AI will analyze your course content and:</p>
+                <ul>
+                  <li>Extract key knowledge points and concepts</li>
+                  <li>Identify prerequisite relationships between topics</li>
+                  <li>Create a structured knowledge graph for your course</li>
+                </ul>
+              </template>
+            </el-alert>
+          </el-form-item>
+        </el-form>
+      </div>
+      
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="knowledgePointDialog.visible = false">Cancel</el-button>
+          <el-button 
+              type="primary" 
+              @click="submitKnowledgePointGeneration" 
+              :loading="knowledgePointDialog.loading"
+              :disabled="!knowledgePointDialog.form.courseContent.trim()">
+            Generate Knowledge Points
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -265,6 +332,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import courseService from '@/services/courseService'
 import courseEnrollmentService from '@/services/courseEnrollmentService'
+import knowledgePointService from '@/services/knowledgePointService'
 
 export default {
   name: 'CoursesView',
@@ -329,6 +397,16 @@ export default {
     const selectedEnrolledStudents = ref([])
     const selectedAvailableStudents = ref([])
     const studentSearchKeyword = ref('')
+
+    // Knowledge Point Generation dialog and data
+    const knowledgePointDialog = reactive({
+      visible: false,
+      loading: false,
+      course: {},
+      form: {
+        courseContent: ''
+      }
+    })
 
     // Methods
     const fetchCourses = () => {
@@ -665,6 +743,41 @@ export default {
       }
     }
 
+    // Knowledge Point Generation methods
+    const generateKnowledgePoints = (course) => {
+      knowledgePointDialog.course = { ...course }
+      knowledgePointDialog.form.courseContent = ''
+      knowledgePointDialog.visible = true
+    }
+
+    const submitKnowledgePointGeneration = async () => {
+      if (!knowledgePointDialog.form.courseContent.trim()) {
+        ElMessage.warning('Please enter course content')
+        return
+      }
+
+      try {
+        knowledgePointDialog.loading = true
+        const response = await knowledgePointService.generateKnowledgeGraphFromContent(
+          knowledgePointDialog.course.id,
+          knowledgePointDialog.form.courseContent
+        )
+        
+        const generatedCount = response.data.length
+        ElMessage.success(`Successfully generated ${generatedCount} knowledge point${generatedCount !== 1 ? 's' : ''} for ${knowledgePointDialog.course.courseName}`)
+        
+        // Reset form and close dialog
+        knowledgePointDialog.form.courseContent = ''
+        knowledgePointDialog.visible = false
+        
+      } catch (error) {
+        console.error('Error generating knowledge points:', error)
+        ElMessage.error('Failed to generate knowledge points. Please try again.')
+      } finally {
+        knowledgePointDialog.loading = false
+      }
+    }
+
     const filteredAvailableStudents = computed(() => {
       if (!studentSearchKeyword.value) {
         return availableStudents.value
@@ -692,6 +805,7 @@ export default {
       courseSearchForm,
       courseDialog,
       enrollmentDialog,
+      knowledgePointDialog,
       enrolledStudents,
       availableStudents,
       selectedEnrolledStudents,
@@ -718,7 +832,9 @@ export default {
       enrollSelectedStudents,
       unenrollSelectedStudents,
       handleEnrolledStudentsSelectionChange,
-      handleAvailableStudentsSelectionChange
+      handleAvailableStudentsSelectionChange,
+      generateKnowledgePoints,
+      submitKnowledgePointGeneration
     }
   }
 }
@@ -789,5 +905,41 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
+}
+
+.knowledge-point-content .course-info {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.knowledge-point-content .course-info h3 {
+  margin: 0 0 5px 0;
+  color: #303133;
+  font-size: 18px;
+}
+
+.knowledge-point-content .course-info p {
+  margin: 0;
+  color: #606266;
+  font-size: 14px;
+}
+
+.knowledge-point-content .el-textarea {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.knowledge-point-content .el-alert {
+  margin-top: 10px;
+}
+
+.knowledge-point-content .el-alert ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.knowledge-point-content .el-alert li {
+  margin-bottom: 4px;
 }
 </style>
