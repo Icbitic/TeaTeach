@@ -17,6 +17,7 @@ import SubmissionsView from '../views/SubmissionsView.vue'
 import SettingsView from '../views/SettingsView.vue'
 import QuestionBankView from '../views/QuestionBankView.vue'
 import TestPaperView from '../views/TestPaperView.vue'
+import KnowledgePointsView from '../views/KnowledgePointsView.vue'
 
 const routes = [
   {
@@ -119,6 +120,12 @@ const routes = [
         path: 'test-papers',
         name: 'test-papers',
         component: TestPaperView,
+        meta: { requiresTeacher: true }
+      },
+      {
+        path: 'knowledge-points',
+        name: 'knowledge-points',
+        component: KnowledgePointsView,
         meta: { requiresTeacher: true }
       },
       {

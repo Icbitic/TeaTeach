@@ -57,6 +57,10 @@
               <el-icon><el-icon-document-copy /></el-icon>
               <span><TypewriterText :text="'Test Papers'" :show="!isCollapse" :speed="50" /></span>
             </el-menu-item>
+            <el-menu-item index="knowledge-points">
+              <el-icon><el-icon-connection /></el-icon>
+              <span><TypewriterText :text="'Knowledge Points'" :show="!isCollapse" :speed="50" /></span>
+            </el-menu-item>
           </template>
           
           <!-- Student Menu -->
@@ -186,6 +190,7 @@ export default {
         'submissions': '/submissions',
         'question-bank': '/question-bank',
         'test-papers': '/test-papers',
+        'knowledge-points': '/knowledge-points',
         'my-grades': '/student-dashboard', // For now, redirect to student dashboard
         'settings': '/settings'
       }
@@ -210,6 +215,7 @@ export default {
         '/submissions': 'submissions',
         '/question-bank': 'question-bank',
         '/test-papers': 'test-papers',
+        '/knowledge-points': 'knowledge-points',
         '/settings': 'settings'
       }
       return routeToKey[route.path] || (user.value.userType === 'STUDENT' ? 'student-dashboard' : 'dashboard')
