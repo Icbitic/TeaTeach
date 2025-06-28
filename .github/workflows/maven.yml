@@ -91,7 +91,7 @@ jobs:
         with:
           host: 36.212.128.238
           username: root
-          password: Chuchuang0304@.com
+          password: Chuchuang0304)#)$@.com
           source: "deploy/*"
           target: "/tmp/"
           strip_components: 1
@@ -101,7 +101,7 @@ jobs:
         with:
           host: 36.212.128.238
           username: root
-          password: Chuchuang0304@.com
+          password: Chuchuang0304)#)$@.com
           script: |
             # Make setup script executable and run it
             chmod +x /tmp/setup-server.sh
@@ -115,7 +115,7 @@ jobs:
         with:
           host: 36.212.128.238
           username: root
-          password: Chuchuang0304@.com
+          password: Chuchuang0304)#)$@.com
           source: "target/*.jar"
           target: "/opt/teateach/backend/"
           strip_components: 1
@@ -125,7 +125,7 @@ jobs:
         with:
           host: 36.212.128.238
           username: root
-          password: Chuchuang0304@.com
+          password: Chuchuang0304)#)$@.com
           source: "web/dist/*"
           target: "/opt/teateach/frontend/"
           strip_components: 2
@@ -135,7 +135,7 @@ jobs:
         with:
           host: 36.212.128.238
           username: root
-          password: Chuchuang0304@.com
+          password: Chuchuang0304)#)$@.com
           script: |
             # Set proper permissions
             sudo chown -R root:root /opt/teateach
