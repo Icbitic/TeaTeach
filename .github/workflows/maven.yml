@@ -89,9 +89,9 @@ jobs:
       - name: Copy deployment files to server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: 219.216.65.249
-          username: neu
-          password: P@ssw0rd
+          host: 36.212.128.238
+          username: root
+          password: Chuchuang0304@.com
           source: "deploy/*"
           target: "/tmp/"
           strip_components: 1
@@ -99,9 +99,9 @@ jobs:
       - name: Setup Server Environment
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: 219.216.65.249
-          username: neu
-          password: P@ssw0rd
+          host: 36.212.128.238
+          username: root
+          password: Chuchuang0304@.com
           script: |
             # Make setup script executable and run it
             chmod +x /tmp/setup-server.sh
@@ -113,9 +113,9 @@ jobs:
       - name: Copy Backend JAR to Server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: 219.216.65.249
-          username: neu
-          password: P@ssw0rd
+          host: 36.212.128.238
+          username: root
+          password: Chuchuang0304@.com
           source: "target/*.jar"
           target: "/opt/teateach/backend/"
           strip_components: 1
@@ -123,9 +123,9 @@ jobs:
       - name: Copy Frontend Build to Server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: 219.216.65.249
-          username: neu
-          password: P@ssw0rd
+          host: 36.212.128.238
+          username: root
+          password: Chuchuang0304@.com
           source: "web/dist/*"
           target: "/opt/teateach/frontend/"
           strip_components: 2
@@ -133,12 +133,12 @@ jobs:
       - name: Start Services on Server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: 219.216.65.249
-          username: neu
-          password: P@ssw0rd
+          host: 36.212.128.238
+          username: root
+          password: Chuchuang0304@.com
           script: |
             # Set proper permissions
-            sudo chown -R neu:neu /opt/teateach
+            sudo chown -R root:root /opt/teateach
             
             # Start backend service
             sudo systemctl daemon-reload
@@ -173,8 +173,8 @@ jobs:
             curl -I http://localhost/ || echo "Frontend check failed"
             
             echo "=== Deployment Summary ==="
-            echo "Backend URL: http://219.216.65.249:8080"
-            echo "Frontend URL: http://219.216.65.249"
-            echo "API URL: http://219.216.65.249/api"
-            echo "Health Check: http://219.216.65.249/health"
+            echo "Backend URL: http://36.212.128.238:8080"
+            echo "Frontend URL: http://36.212.128.238"
+            echo "API URL: http://36.212.128.238/api"
+            echo "Health Check: http://36.212.128.238/health"
             echo "Deployment completed successfully!"
