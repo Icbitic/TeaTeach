@@ -1,4 +1,4 @@
-name: Java CI with Maven
+name: Build and Deploy TeaTeach
 
 on:
   push:
@@ -7,10 +7,9 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
-
+    
     services:
       mysql:
         image: mysql:8.0
@@ -35,9 +34,6 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-#      - name: List project files for debugging
-#        run: tree .
-
       - name: Wait for MySQL to be ready
         run: |
           until mysqladmin ping -h127.0.0.1 -uroot -pkalenitid618 --silent; do
@@ -52,6 +48,133 @@ jobs:
       - name: Build and run tests with Maven
         run: mvn clean test --file pom.xml
 
-      # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
-      - name: Update dependency graph
-        uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
+  build-and-deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      # Build Spring Boot Backend
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build Spring Boot JAR
+        run: mvn clean package -DskipTests
+
+      # Build Vue Frontend
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install Vue dependencies
+        run: |
+          cd web
+          npm ci
+
+      - name: Build Vue frontend
+        run: |
+          cd web
+          npm run build
+
+      # Deploy to Server
+      - name: Copy deployment files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: 219.216.65.249
+          username: neu
+          password: P@ssw0rd
+          source: "deploy/*"
+          target: "/tmp/"
+          strip_components: 1
+
+      - name: Setup Server Environment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 219.216.65.249
+          username: neu
+          password: P@ssw0rd
+          script: |
+            # Make setup script executable and run it
+            chmod +x /tmp/setup-server.sh
+            /tmp/setup-server.sh
+            
+            # Stop existing backend service
+            sudo systemctl stop teateach-backend || true
+
+      - name: Copy Backend JAR to Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: 219.216.65.249
+          username: neu
+          password: P@ssw0rd
+          source: "target/*.jar"
+          target: "/opt/teateach/backend/"
+          strip_components: 1
+
+      - name: Copy Frontend Build to Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: 219.216.65.249
+          username: neu
+          password: P@ssw0rd
+          source: "web/dist/*"
+          target: "/opt/teateach/frontend/"
+          strip_components: 2
+
+      - name: Start Services on Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 219.216.65.249
+          username: neu
+          password: P@ssw0rd
+          script: |
+            # Set proper permissions
+            sudo chown -R neu:neu /opt/teateach
+            
+            # Start backend service
+            sudo systemctl daemon-reload
+            sudo systemctl start teateach-backend
+            sudo systemctl enable teateach-backend
+            
+            # Restart nginx to ensure it's running with latest config
+            sudo systemctl restart nginx
+            
+            # Wait for services to start
+            sleep 15
+            
+            # Check service status
+            echo "=== Backend Service Status ==="
+            sudo systemctl status teateach-backend --no-pager || true
+            
+            echo "=== Nginx Service Status ==="
+            sudo systemctl status nginx --no-pager || true
+            
+            echo "=== Backend Health Check ==="
+            for i in {1..5}; do
+              if curl -f http://localhost:8080/actuator/health; then
+                echo "Backend is healthy!"
+                break
+              else
+                echo "Attempt $i: Backend not ready yet, waiting..."
+                sleep 5
+              fi
+            done
+            
+            echo "=== Frontend Check ==="
+            curl -I http://localhost/ || echo "Frontend check failed"
+            
+            echo "=== Deployment Summary ==="
+            echo "Backend URL: http://219.216.65.249:8080"
+            echo "Frontend URL: http://219.216.65.249"
+            echo "API URL: http://219.216.65.249/api"
+            echo "Health Check: http://219.216.65.249/health"
+            echo "Deployment completed successfully!"

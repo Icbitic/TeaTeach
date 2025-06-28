@@ -1,0 +1,29 @@
+[Unit]
+Description=TeaTeach Spring Boot Application
+After=network.target
+
+[Service]
+Type=simple
+User=neu
+Group=neu
+WorkingDirectory=/opt/teateach/backend
+ExecStart=/usr/bin/java -jar /opt/teateach/backend/TeaTeach-0.0.1-SNAPSHOT.jar --server.port=8080
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=teateach-backend
+
+# Environment variables
+Environment=JAVA_OPTS="-Xmx512m -Xms256m"
+Environment=SPRING_PROFILES_ACTIVE=prod
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/teateach/logs
+
+[Install]
+WantedBy=multi-user.target

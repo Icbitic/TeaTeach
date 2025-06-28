@@ -1,6 +1,11 @@
 import axios from 'axios'
 
-const API_URL = 'http://localhost:8080/api'
+// Determine API URL based on environment
+const API_URL = process.env.VUE_APP_API_URL || (
+  process.env.NODE_ENV === 'production' 
+    ? '/api'  // In production, use relative path (nginx will proxy to backend)
+    : 'http://172.18.140.60:8080/api'  // In development, use direct backend URL
+)
 
 // Create axios instance with base URL
 const apiClient = axios.create({

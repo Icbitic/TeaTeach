@@ -17,8 +17,8 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         
         // Allow all origins (including external clients)
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-        
+        configuration.setAllowedOriginPatterns(Arrays.asList("*", "http://localhost:8081", "http://172.18.185.70:8081"));
+
         // Allow all HTTP methods
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         
