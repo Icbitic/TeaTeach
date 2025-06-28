@@ -12,27 +12,32 @@ sudo apt update
 sudo apt upgrade -y
 
 # Install required packages
-sudo apt install -y openjdk-17-jdk nginx curl wget unzip
+sudo apt install -y openjdk-17-jdk nginx curl wget unzip git
+
+# Install Node.js 18.x
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt install -y nodejs
 
 # Create application directories
-sudo mkdir -p /opt/teateach/backend
-sudo mkdir -p /opt/teateach/frontend
-sudo mkdir -p /opt/teateach/logs
-sudo mkdir -p /opt/teateach/config
+mkdir -p /opt/teateach/backend
+mkdir -p /opt/teateach/frontend
+mkdir -p /opt/teateach/logs
+mkdir -p /opt/teateach/config
+mkdir -p /opt/teateach/source
 
-# Set proper ownership
-sudo chown -R neu:neu /opt/teateach
+# Set ownership
+chown -R root:root /opt/teateach
 
 # Create systemd service for backend
-sudo cp /tmp/teateach-backend.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable teateach-backend
+cp /tmp/teateach-backend.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable teateach-backend
 
 # Configure nginx
-sudo rm -f /etc/nginx/sites-enabled/default
+rm -f /etc/nginx/sites-enabled/default
 
 # Create nginx configuration
-sudo tee /etc/nginx/sites-available/teateach > /dev/null <<'EOF'
+tee /etc/nginx/sites-available/teateach > /dev/null <<'EOF'
 server {
     listen 80;
     server_name _;
@@ -77,17 +82,17 @@ server {
 EOF
 
 # Enable nginx site
-sudo ln -sf /etc/nginx/sites-available/teateach /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/teateach /etc/nginx/sites-enabled/
 
 # Test nginx configuration
-sudo nginx -t
+nginx -t
 
 # Enable and start nginx
-sudo systemctl enable nginx
-sudo systemctl restart nginx
+systemctl enable nginx
+systemctl restart nginx
 
 # Create log rotation configuration
-sudo tee /etc/logrotate.d/teateach > /dev/null <<'EOF'
+tee /etc/logrotate.d/teateach > /dev/null <<'EOF'
 /opt/teateach/logs/*.log {
     daily
     missingok
@@ -95,7 +100,7 @@ sudo tee /etc/logrotate.d/teateach > /dev/null <<'EOF'
     compress
     delaycompress
     notifempty
-    create 644 neu neu
+    create 644 root root
     postrotate
         systemctl reload teateach-backend
     endscript
@@ -106,7 +111,7 @@ echo "Server setup completed successfully!"
 echo "You can now deploy your application using GitHub Actions."
 echo ""
 echo "Useful commands:"
-echo "  - Check backend status: sudo systemctl status teateach-backend"
-echo "  - View backend logs: sudo journalctl -u teateach-backend -f"
-echo "  - Check nginx status: sudo systemctl status nginx"
-echo "  - View nginx logs: sudo tail -f /var/log/nginx/access.log"
+echo "  - Check backend status: systemctl status teateach-backend"
+echo "  - View backend logs: journalctl -u teateach-backend -f"
+echo "  - Check nginx status: systemctl status nginx"
+echo "  - View nginx logs: tail -f /var/log/nginx/access.log"

@@ -11,7 +11,9 @@ This guide explains how to deploy the TeaTeach application using GitHub Actions 
 
 ## Server Requirements
 
-- Ubuntu/Debian Linux server
+- **Server IP**: 36.212.128.238
+- **User**: root
+- **OS**: Ubuntu/Debian-based Linux
 - Java 17 or higher
 - Node.js 18 or higher
 - Nginx
@@ -67,17 +69,18 @@ sudo ufw enable
 The deployment is fully automated through GitHub Actions. When you push to the `main` branch:
 
 1. **Test Phase**: Runs unit tests with a temporary MySQL instance
-2. **Build Phase**: 
-   - Builds Spring Boot JAR file
-   - Builds Vue.js production bundle
-3. **Deploy Phase**:
+2. **Deploy Phase**:
    - Sets up server environment (first time only)
-   - Copies files to server
+   - Clones/updates repository on the server
+   - Builds Spring Boot JAR file on the server
+   - Builds Vue.js production bundle on the server
    - Starts/restarts services
 
 ### Workflow Features
 
 - ✅ Automated testing before deployment
+- ✅ Remote building (faster than uploading artifacts)
+- ✅ Git-based deployment with automatic updates
 - ✅ Zero-downtime deployment with systemd
 - ✅ Health checks after deployment
 - ✅ Nginx configuration for SPA routing
@@ -94,6 +97,12 @@ The deployment is fully automated through GitHub Actions. When you push to the `
 │   ├── index.html
 │   ├── static/
 │   └── ...
+├── source/
+│   ├── .git/
+│   ├── src/
+│   ├── web/
+│   ├── pom.xml
+│   └── ... (full repository)
 ├── logs/
 │   ├── application.log
 │   └── backend.log
@@ -139,10 +148,10 @@ sudo tail -f /var/log/nginx/error.log
 
 After successful deployment:
 
-- **Frontend**: http://219.216.65.249
-- **Backend API**: http://219.216.65.249/api
-- **Health Check**: http://219.216.65.249/health
-- **Direct Backend**: http://219.216.65.249:8080
+- **Frontend**: http://36.212.128.238
+- **Backend API**: http://36.212.128.238/api
+- **Health Check**: http://36.212.128.238/health
+- **Direct Backend**: http://36.212.128.238:8080
 
 ## Troubleshooting
 
@@ -185,18 +194,28 @@ After successful deployment:
 If you need to deploy manually:
 
 ```bash
+# SSH to the server
+ssh root@36.212.128.238
+
+# Navigate to source directory
+cd /opt/teateach/source
+
+# Update repository
+git pull origin main
+
 # Build backend
-mvn clean package -DskipTests
+./mvnw clean package -DskipTests
+cp target/*.jar /opt/teateach/backend/
 
 # Build frontend
-cd web && npm install && npm run build
-
-# Copy files to server
-scp target/*.jar neu@219.216.65.249:/opt/teateach/backend/
-scp -r web/dist/* neu@219.216.65.249:/opt/teateach/frontend/
+cd web
+npm ci
+npm run build
+rm -rf /opt/teateach/frontend/*
+cp -r dist/* /opt/teateach/frontend/
 
 # Restart services
-ssh neu@219.216.65.249 "sudo systemctl restart teateach-backend nginx"
+systemctl restart teateach-backend nginx
 ```
 
 ## Environment Variables

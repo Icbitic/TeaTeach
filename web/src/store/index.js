@@ -35,7 +35,7 @@ export default createStore({
     login({ commit }, user) {
       return new Promise((resolve, reject) => {
         commit('AUTH_REQUEST')
-        axios.post('http://172.18.140.60:8080/api/auth/login', user)
+        axios.post(`${process.env.VUE_APP_API_URL || (process.env.NODE_ENV === 'production' ? '/api' : 'http://172.18.140.60:8080/api')}/auth/login`, user)
           .then(response => {
             const token = response.data.token
             const user = {
@@ -60,7 +60,7 @@ export default createStore({
     register({ commit }, userData) {
       return new Promise((resolve, reject) => {
         commit('AUTH_REQUEST')
-        axios.post('http://172.18.140.60:8080/api/auth/register', userData)
+        axios.post(`${process.env.VUE_APP_API_URL || (process.env.NODE_ENV === 'production' ? '/api' : 'http://172.18.140.60:8080/api')}/auth/register`, userData)
           .then(response => {
             resolve(response)
           })

@@ -3,7 +3,7 @@
 # TeaTeach Deployment Status Check Script
 # This script checks if the deployment is working correctly
 
-SERVER_IP="219.216.65.249"
+SERVER_IP="36.212.128.238"
 BACKEND_PORT="8080"
 
 echo "🔍 Checking TeaTeach Deployment Status..."

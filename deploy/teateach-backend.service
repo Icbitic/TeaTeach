@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=neu
-Group=neu
+User=root
+Group=root
 WorkingDirectory=/opt/teateach/backend
 ExecStart=/usr/bin/java -jar /opt/teateach/backend/TeaTeach-0.0.1-SNAPSHOT.jar --server.port=8080
 Restart=always
