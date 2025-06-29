@@ -79,7 +79,7 @@
     <!-- Upload Dialog -->
     <el-dialog
       v-model="showUploadDialog"
-      title="Upload Resource"
+      :title="$t('resources.uploadResource')"
       width="500px"
       :before-close="handleUploadDialogClose"
     >
@@ -89,14 +89,14 @@
         :rules="uploadRules"
         label-width="120px"
       >
-        <el-form-item label="Resource Name" prop="resourceName">
+        <el-form-item :label="$t('resources.resourceName')" prop="resourceName">
           <el-input
             v-model="uploadForm.resourceName"
             :placeholder="$t('resourceManagement.resourceNamePlaceholder')"
           />
         </el-form-item>
         
-        <el-form-item label="Description" prop="description">
+        <el-form-item :label="$t('common.description')" prop="description">
           <el-input
             v-model="uploadForm.description"
             type="textarea"
@@ -105,7 +105,7 @@
           />
         </el-form-item>
         
-        <el-form-item label="File" prop="file">
+        <el-form-item :label="$t('common.file')" prop="file">
           <el-upload
             ref="uploadRef"
             :auto-upload="false"
@@ -116,11 +116,11 @@
           >
             <el-icon class="el-icon--upload"><upload-filled /></el-icon>
             <div class="el-upload__text">
-              Drop file here or <em>click to upload</em>
+              {{ $t('upload.dropFileHere') }} <em>{{ $t('upload.clickToUpload') }}</em>
             </div>
             <template #tip>
               <div class="el-upload__tip">
-                Supported formats: PDF, DOCX, PPTX, MP4, JPG, PNG, TXT
+                {{ $t('upload.supportedFormats') }} {{ $t('upload.supportedFormatsResources') }}
               </div>
             </template>
           </el-upload>
@@ -129,13 +129,13 @@
       
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="handleUploadDialogClose">Cancel</el-button>
+          <el-button @click="handleUploadDialogClose">{{ $t('common.cancel') }}</el-button>
           <el-button
             type="primary"
             :loading="uploading"
             @click="handleUpload"
           >
-            Upload
+            {{ $t('common.upload') }}
           </el-button>
         </span>
       </template>
@@ -145,6 +145,7 @@
 
 <script>
 import { ref, reactive, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Upload,
@@ -173,6 +174,7 @@ export default {
     UploadFilled
   },
   setup() {
+    const { t } = useI18n()
     const loading = ref(false)
     const uploading = ref(false)
     const resources = ref([])
@@ -188,10 +190,10 @@ export default {
     
     const uploadRules = {
       resourceName: [
-        { required: true, message: 'Please enter resource name', trigger: 'blur' }
+        { required: true, message: t('validation.pleaseEnterResourceName'), trigger: 'blur' }
       ],
       file: [
-        { required: true, message: 'Please select a file', trigger: 'change' }
+        { required: true, message: t('validation.pleaseSelectFile'), trigger: 'change' }
       ]
     }
     
@@ -201,8 +203,8 @@ export default {
         const response = await resourceService.getAllResources()
         resources.value = response.data
       } catch (error) {
-        console.error('Error loading resources:', error)
-        ElMessage.error('Failed to load resources')
+        console.error(t('errors.errorLoadingResources'), error)
+        ElMessage.error(t('messages.failedToLoadResources'))
       } finally {
         loading.value = false
       }
@@ -232,13 +234,13 @@ export default {
           uploadForm.description
         )
         
-        ElMessage.success('Resource uploaded successfully')
+        ElMessage.success(t('messages.resourceUploadedSuccessfully'))
         showUploadDialog.value = false
         resetUploadForm()
         await loadResources()
       } catch (error) {
-        console.error('Error uploading resource:', error)
-        ElMessage.error('Failed to upload resource')
+        console.error(t('errors.errorUploadingResource'), error)
+        ElMessage.error(t('messages.failedToUploadResource'))
       } finally {
         uploading.value = false
       }
@@ -276,40 +278,40 @@ export default {
         document.body.removeChild(link)
         window.URL.revokeObjectURL(url)
         
-        ElMessage.success('Download started')
+        ElMessage.success(t('messages.downloadStarted'))
       } catch (error) {
-        console.error('Error downloading resource:', error)
-        ElMessage.error('Failed to download resource')
+        console.error(t('errors.errorDownloadingResource'), error)
+        ElMessage.error(t('messages.failedToDownloadResource'))
       }
     }
     
     const confirmDelete = async (resource) => {
       try {
         await ElMessageBox.confirm(
-          `Are you sure you want to delete "${resource.resourceName}"?`,
-          'Confirm Delete',
+          t('messages.confirmDeleteResource', { name: resource.resourceName }),
+          t('common.confirmDelete'),
           {
-            confirmButtonText: 'Delete',
-            cancelButtonText: 'Cancel',
+            confirmButtonText: t('common.delete'),
+            cancelButtonText: t('common.cancel'),
             type: 'warning'
           }
         )
         
         await resourceService.deleteResource(resource.id)
-        ElMessage.success('Resource deleted successfully')
+        ElMessage.success(t('messages.resourceDeletedSuccessfully'))
         await loadResources()
       } catch (error) {
         if (error !== 'cancel') {
-          console.error('Error deleting resource:', error)
-          ElMessage.error('Failed to delete resource')
+          console.error(t('errors.errorDeletingResource'), error)
+          ElMessage.error(t('messages.failedToDeleteResource'))
         }
       }
     }
     
     const formatFileSize = (bytes) => {
-      if (!bytes) return '0 B'
+      if (!bytes) return `0 ${t('common.fileSizes.bytes')}`
       const k = 1024
-      const sizes = ['B', 'KB', 'MB', 'GB']
+      const sizes = [t('common.fileSizes.bytes'), t('common.fileSizes.kb'), t('common.fileSizes.mb'), t('common.fileSizes.gb')]
       const i = Math.floor(Math.log(bytes) / Math.log(k))
       return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
     }

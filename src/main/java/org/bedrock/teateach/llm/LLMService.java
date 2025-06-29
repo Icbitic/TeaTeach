@@ -1100,6 +1100,8 @@ public class LLMService {
                     .user(prompt.toString())
                     .call()
                     .content();
+            response = removeThinkTags(response);
+            response = cleanJsonResponse(response);
             
             // Parse JSON response
             ObjectMapper mapper = new ObjectMapper();

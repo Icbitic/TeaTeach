@@ -1,8 +1,8 @@
 <template>
   <div class="my-courses-container">
     <div class="courses-header">
-      <h2><TypewriterText :text="'My Courses'" :show="true" :speed="70" @typing-complete="onTitleComplete" /></h2>
-      <p class="subtitle"><TypewriterText :text="'Manage your enrolled courses and track your progress'" :show="showSubtitle" :speed="50" /></p>
+      <h2><TypewriterText :text="$t('myCourses.title')" :show="true" :speed="70" @typing-complete="onTitleComplete" /></h2>
+      <p class="subtitle"><TypewriterText :text="$t('myCourses.subtitle')" :show="showSubtitle" :speed="50" /></p>
     </div>
 
     <!-- Course Stats -->>
@@ -16,7 +16,7 @@
           </div>
           <div class="stat-info">
             <div class="stat-value">{{ enrolledCourses.length }}</div>
-            <div class="stat-label">Enrolled Courses</div>
+            <div class="stat-label">{{ $t('myCourses.enrolledCourses') }}</div>
           </div>
         </el-card>
       </el-col>
@@ -29,7 +29,7 @@
           </div>
           <div class="stat-info">
             <div class="stat-value">{{ completedCourses }}</div>
-            <div class="stat-label">Completed</div>
+            <div class="stat-label">{{ $t('myCourses.completed') }}</div>
           </div>
         </el-card>
       </el-col>
@@ -42,7 +42,7 @@
           </div>
           <div class="stat-info">
             <div class="stat-value">{{ activeCourses }}</div>
-            <div class="stat-label">In Progress</div>
+            <div class="stat-label">{{ $t('myCourses.inProgress') }}</div>
           </div>
         </el-card>
       </el-col>
@@ -53,7 +53,7 @@
       <el-col :span="24">
         <el-card shadow="hover">
           <el-form :inline="true" class="search-form">
-            <el-form-item label="Search">
+            <el-form-item :label="$t('common.search')">
               <el-input
                 v-model="searchKeyword"
                 :placeholder="$t('myCourses.searchCoursesPlaceholder')"
@@ -66,7 +66,7 @@
                 </template>
               </el-input>
             </el-form-item>
-            <el-form-item label="Status">
+            <el-form-item :label="$t('common.status')">
               <el-select
                 v-model="statusFilter"
                 :placeholder="$t('myCourses.allStatus')"
@@ -74,10 +74,10 @@
                 @change="filterCourses"
                 style="width: 150px"
               >
-                <el-option label="All" value="" />
-                <el-option label="Active" value="ACTIVE" />
-                <el-option label="Completed" value="COMPLETED" />
-                <el-option label="Paused" value="PAUSED" />
+                <el-option :label="$t('common.all')" value="" />
+                <el-option :label="$t('myCourses.active')" value="ACTIVE" />
+                <el-option :label="$t('myCourses.completed')" value="COMPLETED" />
+                <el-option :label="$t('myCourses.paused')" value="PAUSED" />
               </el-select>
             </el-form-item>
           </el-form>
@@ -103,7 +103,7 @@
               :type="getStatusTagType(course.enrollmentStatus)" 
               size="small"
             >
-              {{ course.enrollmentStatus || 'ACTIVE' }}
+              {{ getEnrollmentStatusLabel(course.enrollmentStatus) }}
             </el-tag>
           </div>
           
@@ -118,17 +118,17 @@
             </div>
             <div class="info-item">
               <el-icon><el-icon-star /></el-icon>
-              <span>{{ course.credits }} Credits</span>
+              <span>{{ $t('myCourses.creditsCount', { count: course.credits }) }}</span>
             </div>
             <div class="info-item">
               <el-icon><el-icon-clock /></el-icon>
-              <span>{{ course.hours }} Hours</span>
+              <span>{{ $t('myCourses.hoursCount', { count: course.hours }) }}</span>
             </div>
           </div>
           
           <div class="course-progress">
             <div class="progress-label">
-              <span>Progress</span>
+              <span>{{ $t('myCourses.progress') }}</span>
               <span>{{ getProgressPercentage(course) }}%</span>
             </div>
             <el-progress 
@@ -144,14 +144,14 @@
               size="small" 
               @click.stop="continueLearning(course)"
             >
-              Continue Learning
+              {{ $t('myCourses.continueLearning') }}
             </el-button>
             <el-button 
               type="info" 
               size="small" 
               @click.stop="viewCourseDetails(course)"
             >
-              Details
+              {{ $t('common.details') }}
             </el-button>
           </div>
         </el-card>
@@ -160,8 +160,8 @@
 
     <!-- Empty State -->
     <div v-if="filteredCourses.length === 0 && !loading" class="empty-state">
-      <el-empty description="No courses found">
-        <el-button type="primary" @click="exploreAllCourses">Explore Courses</el-button>
+      <el-empty :description="$t('myCourses.noCoursesFound')">
+        <el-button type="primary" @click="exploreAllCourses">{{ $t('myCourses.exploreCourses') }}</el-button>
       </el-empty>
     </div>
 
@@ -174,49 +174,49 @@
     >
       <div v-if="selectedCourse" class="course-detail">
         <el-descriptions :column="2" border>
-          <el-descriptions-item label="Course Code">
+          <el-descriptions-item :label="$t('courses.courseCode')">
             {{ selectedCourse.courseCode }}
           </el-descriptions-item>
-          <el-descriptions-item label="Instructor">
+          <el-descriptions-item :label="$t('courses.instructor')">
             {{ selectedCourse.instructor }}
           </el-descriptions-item>
-          <el-descriptions-item label="Credits">
+          <el-descriptions-item :label="$t('courses.credits')">
             {{ selectedCourse.credits }}
           </el-descriptions-item>
-          <el-descriptions-item label="Hours">
+          <el-descriptions-item :label="$t('courses.hours')">
             {{ selectedCourse.hours }}
           </el-descriptions-item>
-          <el-descriptions-item label="Status">
+          <el-descriptions-item :label="$t('common.status')">
             <el-tag :type="getStatusTagType(selectedCourse.enrollmentStatus)">
-              {{ selectedCourse.enrollmentStatus || 'ACTIVE' }}
+              {{ getEnrollmentStatusLabel(selectedCourse.enrollmentStatus) }}
             </el-tag>
           </el-descriptions-item>
-          <el-descriptions-item label="Progress">
+          <el-descriptions-item :label="$t('myCourses.progress')">
             <el-progress 
               :percentage="getProgressPercentage(selectedCourse)" 
               :stroke-width="6"
             />
           </el-descriptions-item>
-          <el-descriptions-item label="Description" :span="2">
+          <el-descriptions-item :label="$t('common.description')" :span="2">
             {{ selectedCourse.description }}
           </el-descriptions-item>
         </el-descriptions>
         
         <div class="course-tasks" v-if="courseTasks.length > 0">
-          <h4>Course Tasks</h4>
+          <h4>{{ $t('myCourses.courseTasks') }}</h4>
           <el-table :data="courseTasks" stripe>
-            <el-table-column prop="taskName" label="Task Name" />
-            <el-table-column prop="taskType" label="Type" width="120">
+            <el-table-column prop="taskName" :label="$t('tasks.taskName')" />
+            <el-table-column prop="taskType" :label="$t('tasks.type')" width="120">
               <template #default="{ row }">
                 <el-tag size="small">{{ getTaskTypeLabel(row.taskType) }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="deadline" label="Deadline" width="160">
+            <el-table-column prop="deadline" :label="$t('tasks.deadline')" width="160">
               <template #default="{ row }">
                 {{ formatDeadline(row.deadline) }}
               </template>
             </el-table-column>
-            <el-table-column label="Status" width="100">
+            <el-table-column :label="$t('common.status')" width="100">
               <template #default="{ row }">
                 <el-tag :type="getTaskStatusColor(row)" size="small">
                   {{ getTaskStatus(row) }}
@@ -229,8 +229,8 @@
       
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="courseDetailVisible = false">Close</el-button>
-          <el-button type="primary" @click="continueLearning(selectedCourse)">Continue Learning</el-button>
+          <el-button @click="courseDetailVisible = false">{{ $t('common.close') }}</el-button>
+          <el-button type="primary" @click="continueLearning(selectedCourse)">{{ $t('myCourses.continueLearning') }}</el-button>
         </span>
       </template>
     </el-dialog>
@@ -240,6 +240,7 @@
 <script>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { courseEnrollmentService } from '@/services/courseEnrollmentService'
 import { taskService } from '@/services/taskService'
@@ -251,6 +252,7 @@ export default {
     TypewriterText
   },
   setup() {
+    const { t } = useI18n()
     const router = useRouter()
     const loading = ref(false)
     const showSubtitle = ref(false)
@@ -289,8 +291,8 @@ export default {
         enrolledCourses.value = response.data || []
         filteredCourses.value = enrolledCourses.value
       } catch (error) {
-        console.error('Error fetching enrolled courses:', error)
-        ElMessage.error('Failed to load courses')
+        console.error(t('errors.errorFetchingEnrolledCourses'), error)
+        ElMessage.error(t('errors.failedToLoadCourses'))
       } finally {
         loading.value = false
       }
@@ -328,6 +330,16 @@ export default {
       }
     }
     
+    const getEnrollmentStatusLabel = (status) => {
+      const statusKey = status || 'ACTIVE'
+      const labels = {
+        'ACTIVE': t('myCourses.status.active'),
+        'COMPLETED': t('myCourses.status.completed'),
+        'PAUSED': t('myCourses.status.paused')
+      }
+      return labels[statusKey] || labels['ACTIVE']
+    }
+    
     const getProgressPercentage = (course) => {
       // This would typically come from the backend
       // For now, return a mock percentage based on course status
@@ -345,7 +357,8 @@ export default {
         const response = await taskService.getTasksForCourse(course.id)
         courseTasks.value = response.data || []
       } catch (error) {
-        console.error('Error fetching course tasks:', error)
+        console.error(t('errors.errorFetchingCourseTasks'), error)
+        ElMessage.error(t('errors.failedToLoadCourseTasks'))
       }
     }
     
@@ -359,7 +372,7 @@ export default {
     
     const exploreAllCourses = () => {
       // This would navigate to a course catalog page
-      ElMessage.info('Course catalog feature coming soon!')
+      ElMessage.info(t('info.courseCatalogComingSoon'))
     }
     
     const handleDetailClose = () => {
@@ -370,36 +383,32 @@ export default {
     
     const getTaskTypeLabel = (taskType) => {
       const labels = {
-        'READING_MATERIAL': 'Reading',
-        'VIDEO_WATCH': 'Video',
-        'CHAPTER_HOMEWORK': 'Homework',
-        'REPORT_UPLOAD': 'Report',
-        'EXAM_QUIZ': 'Quiz',
-        'PRACTICE_PROJECT': 'Project'
+        'READING_MATERIAL': t('tasks.types.reading'),
+        'VIDEO_WATCH': t('tasks.types.video'),
+        'CHAPTER_HOMEWORK': t('tasks.types.homework'),
+        'REPORT_UPLOAD': t('tasks.types.report'),
+        'EXAM_QUIZ': t('tasks.types.quiz'),
+        'PRACTICE_PROJECT': t('tasks.types.project')
       }
       return labels[taskType] || taskType
     }
     
     const formatDeadline = (deadline) => {
-      if (!deadline) return 'No deadline'
+      if (!deadline) return t('tasks.noDeadline')
       return new Date(deadline).toLocaleDateString()
     }
     
     const getTaskStatus = (task) => {
       // Mock task status logic
-      if (task.submissionDate) return 'Completed'
-      if (new Date(task.deadline) < new Date()) return 'Overdue'
-      return 'Pending'
+      if (task.submissionDate) return t('tasks.status.completed')
+      if (new Date(task.deadline) < new Date()) return t('tasks.status.overdue')
+      return t('tasks.status.pending')
     }
     
     const getTaskStatusColor = (task) => {
-      const status = getTaskStatus(task)
-      switch (status) {
-        case 'Completed': return 'success'
-        case 'Overdue': return 'danger'
-        case 'Pending': return 'warning'
-        default: return 'info'
-      }
+      if (task.submissionDate) return 'success'
+      if (new Date(task.deadline) < new Date()) return 'danger'
+      return 'warning'
     }
     
     onMounted(() => {
@@ -421,6 +430,7 @@ export default {
       onTitleComplete,
       filterCourses,
       getStatusTagType,
+      getEnrollmentStatusLabel,
       getProgressPercentage,
       viewCourseDetails,
       continueLearning,

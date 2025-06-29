@@ -132,7 +132,7 @@
               <div class="deadline-info">
                 <el-icon class="meta-icon"><Calendar /></el-icon>
                 <div class="deadline-content">
-                  <span class="deadline-label">Due Date</span>
+                  <span class="deadline-label">{{ $t('myTasks.dueDate') }}</span>
                   <span class="deadline-date" :class="{ 'overdue-text': isOverdue(task.deadline) }">
                     {{ formatDate(task.deadline) }}
                   </span>
@@ -142,8 +142,8 @@
               <div class="resources-info" v-if="task.resources && task.resources.length > 0">
                 <el-icon class="meta-icon"><Folder /></el-icon>
                 <div class="resources-content">
-                  <span class="resources-label">Resources</span>
-                  <span class="resources-count">{{ task.resources.length }} file(s)</span>
+                  <span class="resources-label">{{ $t('myTasks.resources') }}</span>
+                  <span class="resources-count">{{ $t('myTasks.fileCount', { count: task.resources.length }) }}</span>
                 </div>
               </div>
             </div>
@@ -157,10 +157,10 @@
             <div v-if="task.submissionStatus" class="submission-section">
               <div class="submission-header">
                 <el-icon class="submission-icon"><Document /></el-icon>
-                <span class="submission-text">Submission: {{ task.submissionStatus }}</span>
+                <span class="submission-text">{{ $t('myTasks.submission') }}: {{ $t('myTasks.submissionStatus.' + task.submissionStatus) }}</span>
               </div>
               <div v-if="task.submissionDate" class="submission-date">
-                Submitted on {{ formatDate(task.submissionDate) }}
+                {{ $t('myTasks.submittedOn', { date: formatDate(task.submissionDate) }) }}
               </div>
             </div>
           </div>
@@ -174,7 +174,7 @@
               class="action-btn primary-btn"
             >
               <el-icon><View /></el-icon>
-              <span>View Materials</span>
+              <span>{{ $t('myTasks.viewMaterials') }}</span>
             </el-button>
             
             <el-button
@@ -185,7 +185,7 @@
               class="action-btn success-btn"
             >
               <el-icon><VideoPlay /></el-icon>
-              <span>{{ task.watchProgress > 0 ? 'Continue' : 'Start' }} Video</span>
+              <span>{{ task.watchProgress > 0 ? $t('myTasks.continueVideo') : $t('myTasks.startVideo') }}</span>
             </el-button>
 
             <el-button
@@ -196,7 +196,7 @@
               class="action-btn warning-btn"
             >
               <el-icon><Upload /></el-icon>
-              <span>Submit Work</span>
+              <span>{{ $t('myTasks.submitWork') }}</span>
             </el-button>
           </div>
         </div>
@@ -204,8 +204,8 @@
         <div v-if="filteredTasks.length === 0 && !loading" class="no-tasks">
           <div class="empty-state">
             <div class="empty-icon">📝</div>
-            <h3>No tasks found</h3>
-            <p>You don't have any tasks matching the current filters.</p>
+            <h3>{{ $t('myTasks.noTasksFound') }}</h3>
+            <p>{{ $t('myTasks.noTasksMatchingFilters') }}</p>
           </div>
         </div>
       </div>
@@ -214,7 +214,7 @@
     <!-- Task Resources Dialog -->
     <el-dialog
       v-model="resourcesDialogVisible"
-      :title="`Resources - ${selectedTask?.name}`"
+      :title="$t('myTasks.resourcesTitle', { taskName: selectedTask?.taskName })"
       width="80%"
       top="5vh"
     >
@@ -246,7 +246,7 @@
               @click="viewResource(resource)"
             >
               <el-icon><View /></el-icon>
-              View
+              {{ $t('common.view') }}
             </el-button>
             <el-button
               type="default"
@@ -254,7 +254,7 @@
               @click="downloadResource(resource)"
             >
               <el-icon><Download /></el-icon>
-              Download
+              {{ $t('common.download') }}
             </el-button>
           </div>
         </div>
@@ -285,7 +285,7 @@
     <!-- Task Submission Dialog -->
     <el-dialog
       v-model="submissionDialogVisible"
-      :title="`Submit: ${selectedTask?.taskName}`"
+      :title="$t('myTasks.submitTitle', { taskName: selectedTask?.taskName })"
       width="50%"
       @close="closeSubmissionDialog"
     >
@@ -311,10 +311,10 @@
             :file-list="fileList"
             :limit="1"
           >
-            <el-button type="primary">Select File</el-button>
+            <el-button type="primary">{{ $t('myTasks.selectFile') }}</el-button>
             <template #tip>
               <div class="el-upload__tip">
-                Please select the file you want to submit
+                {{ $t('myTasks.pleaseSelectFile') }}
               </div>
             </template>
           </el-upload>
@@ -322,7 +322,7 @@
         
         <el-form-item 
           v-else-if="selectedTask?.submissionMethod === 'text'"
-          label="Text Content" 
+          :label="$t('myTasks.textContent')" 
           prop="submissionContent"
         >
           <el-input
@@ -335,7 +335,7 @@
         
         <el-form-item 
           v-else-if="selectedTask?.submissionMethod === 'url'"
-          label="URL" 
+          :label="$t('myTasks.url')" 
           prop="submissionContent"
         >
           <el-input
@@ -346,7 +346,7 @@
         
         <el-form-item 
           v-else
-          label="Submission Content" 
+          :label="$t('myTasks.submissionContent')" 
           prop="submissionContent"
         >
           <el-input
@@ -360,9 +360,9 @@
       
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="closeSubmissionDialog">Cancel</el-button>
+          <el-button @click="closeSubmissionDialog">{{ $t('common.cancel') }}</el-button>
           <el-button type="primary" @click="confirmSubmission" :loading="submitting">
-            Submit
+            {{ $t('common.submit') }}
           </el-button>
         </div>
       </template>
@@ -375,6 +375,7 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import {
   Reading,
   Calendar,
@@ -418,6 +419,7 @@ export default {
     Search
   },
   setup() {
+    const { t } = useI18n()
     // Reactive data
     const loading = ref(false)
     const tasks = ref([])
@@ -453,12 +455,12 @@ export default {
 
     // Task types
     const taskTypes = [
-      { value: 'ASSIGNMENT', label: 'Assignment' },
-      { value: 'QUIZ', label: 'Quiz' },
-      { value: 'PROJECT', label: 'Project' },
-      { value: 'READING_MATERIAL', label: 'Reading Material' },
-      { value: 'VIDEO_WATCH', label: 'Video Watch' },
-      { value: 'DISCUSSION', label: 'Discussion' }
+      { value: 'ASSIGNMENT', label: t('myTasks.taskTypes.assignment') },
+      { value: 'QUIZ', label: t('myTasks.taskTypes.quiz') },
+      { value: 'PROJECT', label: t('myTasks.taskTypes.project') },
+      { value: 'READING_MATERIAL', label: t('myTasks.taskTypes.readingMaterial') },
+      { value: 'VIDEO_WATCH', label: t('myTasks.taskTypes.videoWatch') },
+      { value: 'DISCUSSION', label: t('myTasks.taskTypes.discussion') }
     ]
 
     // Computed properties
@@ -514,7 +516,7 @@ export default {
         courses.value = response.data || []
       } catch (error) {
         console.error('Error loading courses:', error)
-        ElMessage.error('Failed to load courses')
+        ElMessage.error(t('errors.failedToLoadCourses'))
       }
     }
 
@@ -553,9 +555,9 @@ export default {
           }
         }
       } catch (error) {
-        console.error('Error loading tasks:', error)
-        ElMessage.error('Failed to load tasks')
-      } finally {
+          console.error('Error loading tasks:', error)
+          ElMessage.error(t('errors.failedToLoadTasks'))
+        } finally {
         loading.value = false
       }
     }
@@ -605,7 +607,7 @@ export default {
 
     const getCourseNameById = (courseId) => {
       const course = courses.value.find(c => c.id === courseId)
-      return course ? course.name : 'Unknown Course'
+      return course ? course.name : t('myTasks.unknownCourse')
     }
 
     const getTaskTypeLabel = (type) => {
@@ -640,9 +642,9 @@ export default {
     }
 
     const formatFileSize = (bytes) => {
-      if (bytes === 0) return '0 Bytes'
+      if (bytes === 0) return `0 ${t('common.fileSizes.bytes')}`
       const k = 1024
-      const sizes = ['Bytes', 'KB', 'MB', 'GB']
+      const sizes = [t('common.fileSizes.bytes'), t('common.fileSizes.kb'), t('common.fileSizes.mb'), t('common.fileSizes.gb')]
       const i = Math.floor(Math.log(bytes) / Math.log(k))
       return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
     }
@@ -749,7 +751,7 @@ export default {
         window.URL.revokeObjectURL(url)
       } catch (error) {
         console.error('Error downloading resource:', error)
-        ElMessage.error('Failed to download resource')
+        ElMessage.error(t('errors.failedToDownloadResource'))
       }
     }
 
@@ -768,7 +770,7 @@ export default {
 
     const handlePlaybackComplete = (data) => {
       console.log('Playback complete:', data)
-      ElMessage.success(`Video completed! Watch percentage: ${Math.round(data.watchPercentage)}%`)
+      ElMessage.success(t('myTasks.videoCompleted', { percentage: Math.round(data.watchPercentage) }))
       
       // Update the task's watch progress
       if (selectedTask.value) {
@@ -798,7 +800,7 @@ export default {
 
     const confirmSubmission = async () => {
       if (!submissionForm.value.submissionContent) {
-        ElMessage.warning('Please provide submission content')
+        ElMessage.warning(t('myTasks.pleaseProvideSubmissionContent'))
         return
       }
       
@@ -832,7 +834,7 @@ export default {
           selectedTask.value.status = 'completed'
         }
         
-        ElMessage.success('Task submitted successfully!')
+        ElMessage.success(t('myTasks.taskSubmittedSuccessfully'))
         closeSubmissionDialog()
         
         // Reload task data to reflect changes
@@ -841,7 +843,7 @@ export default {
         }
       } catch (error) {
         console.error('Error submitting task:', error)
-        ElMessage.error('Failed to submit task')
+        ElMessage.error(t('errors.failedToSubmitTask'))
       } finally {
         submitting.value = false
       }

@@ -2,8 +2,8 @@
   <div class="student-ability-visualization">
     <!-- Header Section -->
     <div class="visualization-header">
-      <h3><i class="el-icon-data-analysis"></i> My Learning Abilities</h3>
-      <p class="subtitle">AI-powered analysis of your learning strengths and areas for improvement</p>
+      <h3><i class="el-icon-data-analysis"></i> {{ $t('studentAbility.myLearningAbilities') }}</h3>
+      <p class="subtitle">{{ $t('studentAbility.aiAnalysisSubtitle') }}</p>
     </div>
 
     <!-- Loading State -->
@@ -26,7 +26,7 @@
       <!-- Overall Score Card -->
       <el-card class="overall-score-card" shadow="hover">
         <div class="score-header">
-          <h4>Overall Learning Score</h4>
+          <h4>{{ $t('studentAbility.overallLearningScore') }}</h4>
           <div class="score-circle">
             <el-progress
               type="circle"
@@ -78,7 +78,7 @@
       <!-- Interested Fields -->
       <el-card class="interests-card" shadow="hover">
         <div class="card-header">
-          <h4><i class="el-icon-star-on"></i> Your Learning Interests</h4>
+          <h4><i class="el-icon-star-on"></i> {{ $t('studentAbility.yourLearningInterests') }}</h4>
         </div>
         <div class="interests-content">
           <el-tag
@@ -96,14 +96,14 @@
       <!-- Recommendations Section -->
       <el-card class="recommendations-card" shadow="hover">
         <div class="card-header">
-          <h4><i class="el-icon-magic-stick"></i> Personalized Recommendations</h4>
+          <h4><i class="el-icon-magic-stick"></i> {{ $t('studentAbility.personalizedRecommendations') }}</h4>
           <el-button
             type="primary"
             size="small"
             @click="loadRecommendations"
             :loading="recommendationsLoading"
           >
-            Get RAG Recommendations
+            {{ $t('studentAbility.getRagRecommendations') }}
           </el-button>
           <el-button
             type="success"
@@ -151,7 +151,7 @@
       <div class="analysis-footer">
         <el-text type="info" size="small">
           <i class="el-icon-time"></i>
-          Analysis generated on {{ formatDate(abilityData.analysisDate) }}
+          {{ $t('studentAbility.analysisGeneratedOn', { date: formatDate(abilityData.analysisDate) }) }}
         </el-text>
       </div>
     </div>
@@ -300,18 +300,18 @@ export default {
     },
 
     getScoreDescription(score) {
-      if (score >= 80) return 'Excellent! You\'re performing very well across all learning dimensions.'
-      if (score >= 60) return 'Good progress! There are some areas where you can improve further.'
-      return 'Keep working! Focus on the areas highlighted for improvement.'
+      if (score >= 80) return this.$t('studentAbility.scoreExcellent')
+      if (score >= 60) return this.$t('studentAbility.scoreGood')
+      return this.$t('studentAbility.scoreNeedsWork')
     },
 
     getAbilityTitle(key) {
       const titles = {
-        problemSolving: 'Problem Solving',
-        criticalThinking: 'Critical Thinking',
-        creativity: 'Creativity',
-        collaboration: 'Collaboration',
-        communication: 'Communication'
+        problemSolving: this.$t('abilities.problemSolving'),
+        criticalThinking: this.$t('abilities.criticalThinking'),
+        creativity: this.$t('abilities.creativity'),
+        collaboration: this.$t('abilities.collaboration'),
+        communication: this.$t('abilities.communication')
       }
       return titles[key] || key
     },
@@ -333,51 +333,51 @@ export default {
 
     getAbilityColor(level) {
       const colors = {
-        'Excellent': '#67c23a',
-        'Good': '#409eff',
-        'Average': '#e6a23c',
-        'Needs Improvement': '#f56c6c'
+        [this.$t('studentAbility.levelExcellent')]: '#67c23a',
+        [this.$t('studentAbility.levelGood')]: '#409eff',
+        [this.$t('studentAbility.levelAverage')]: '#e6a23c',
+        [this.$t('studentAbility.levelNeedsImprovement')]: '#f56c6c'
       }
       return colors[level] || '#909399'
     },
 
     getAbilityTagType(level) {
       const types = {
-        'Excellent': 'success',
-        'Good': 'primary',
-        'Average': 'warning',
-        'Needs Improvement': 'danger'
+        [this.$t('studentAbility.levelExcellent')]: 'success',
+        [this.$t('studentAbility.levelGood')]: 'primary',
+        [this.$t('studentAbility.levelAverage')]: 'warning',
+        [this.$t('studentAbility.levelNeedsImprovement')]: 'danger'
       }
       return types[level] || 'info'
     },
 
     getResourceTypeLabel(type) {
       const labels = {
-        videos: 'Videos',
-        articles: 'Articles', 
-        exercises: 'Exercises',
-        projects: 'Projects',
-        courses: 'Courses',
-        books: 'Books',
-        practices: 'Practice Materials',
-        overall: 'All Resources',
-        direct: 'Direct RAG Test'
+        videos: this.$t('studentAbility.resourceTypes.videos'),
+        articles: this.$t('studentAbility.resourceTypes.articles'),
+        exercises: this.$t('studentAbility.resourceTypes.exercises'),
+        projects: this.$t('studentAbility.resourceTypes.projects'),
+        courses: this.$t('studentAbility.resourceTypes.courses'),
+        books: this.$t('studentAbility.resourceTypes.books'),
+        practices: this.$t('studentAbility.resourceTypes.practices'),
+        overall: this.$t('studentAbility.resourceTypes.overall'),
+        direct: this.$t('studentAbility.resourceTypes.direct')
       }
       return labels[type] || type.charAt(0).toUpperCase() + type.slice(1)
     },
 
     getResourceDifficultyType(difficulty) {
       const types = {
-        'Beginner': 'success',
-        'Intermediate': 'warning',
-        'Advanced': 'danger'
+        [this.$t('studentAbility.difficultyBeginner')]: 'success',
+        [this.$t('studentAbility.difficultyIntermediate')]: 'warning',
+        [this.$t('studentAbility.difficultyAdvanced')]: 'danger'
       }
       return types[difficulty] || 'info'
     },
 
     formatDate(dateString) {
-      if (!dateString) return 'Unknown'
-      return new Date(dateString).toLocaleDateString('en-US', {
+      if (!dateString) return this.$t('studentAbility.unknownDate')
+      return new Date(dateString).toLocaleDateString(this.$i18n.locale === 'zh' ? 'zh-CN' : 'en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',

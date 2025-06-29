@@ -227,8 +227,8 @@ export default {
     }
 
    // Performance optimization variables
-    const isLargeGraph = computed(() => props.knowledgePoints.length > 50)
-    const isVeryLargeGraph = computed(() => props.knowledgePoints.length > 200)
+    const isLargeGraph = computed(() => props.knowledgePoints.length > 500)
+    const isVeryLargeGraph = computed(() => props.knowledgePoints.length > 2000)
     let isDragging = false
     let dragTimeout = null
     let physicsTimeout = null

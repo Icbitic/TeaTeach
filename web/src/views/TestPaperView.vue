@@ -761,7 +761,14 @@ export default {
     },
     
     formatQuestionType(type) {
-      return type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
+      const typeMap = {
+        'SINGLE_CHOICE': this.$t('questionBank.singleChoice'),
+        'MULTIPLE_CHOICE': this.$t('questionBank.multipleChoice'),
+        'FILL_IN_THE_BLANK': this.$t('questionBank.fillInTheBlank'),
+        'SHORT_ANSWER': this.$t('questionBank.shortAnswer'),
+        'PROGRAMMING': this.$t('questionBank.programming')
+      }
+      return typeMap[type] || type
     },
     
     formatDate(dateString) {

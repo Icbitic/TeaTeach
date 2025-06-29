@@ -16,7 +16,7 @@
         @seeked="onSeeked"
         class="video-player"
       >
-        Your browser does not support the video tag.
+        {{ $t('media.browserNotSupportVideo') }}
       </video>
       
       <!-- Video Progress Info -->
@@ -46,7 +46,7 @@
         <template #error>
           <div class="image-error">
             <el-icon><Picture /></el-icon>
-            <span>Failed to load image</span>
+            <span>{{ $t('media.failedToLoadImage') }}</span>
           </div>
         </template>
       </el-image>
@@ -59,12 +59,12 @@
         class="pdf-viewer"
         frameborder="0"
       >
-        Your browser does not support PDF viewing.
+        {{ $t('media.browserNotSupportPdf') }}
       </iframe>
       <div class="pdf-fallback">
         <el-button type="primary" @click="downloadFile">
           <el-icon><Download /></el-icon>
-          Download PDF
+          {{ $t('media.downloadPdf') }}
         </el-button>
       </div>
     </div>
@@ -83,7 +83,7 @@
         @ended="onEnded"
         class="audio-player"
       >
-        Your browser does not support the audio tag.
+        {{ $t('media.browserNotSupportAudio') }}
       </audio>
     </div>
 
@@ -100,11 +100,11 @@
       <div class="document-actions">
         <el-button type="primary" @click="downloadFile">
           <el-icon><Download /></el-icon>
-          Download
+          {{ $t('common.download') }}
         </el-button>
         <el-button v-if="canPreview" @click="previewFile">
           <el-icon><View /></el-icon>
-          Preview
+          {{ $t('common.preview') }}
         </el-button>
       </div>
     </div>
@@ -113,11 +113,11 @@
     <div v-else class="unsupported-container">
       <div class="unsupported-content">
         <el-icon class="unsupported-icon"><Warning /></el-icon>
-        <h4>Unsupported File Type</h4>
+        <h4>{{ $t('media.unsupportedFileType') }}</h4>
         <p>{{ resource.resourceName }}</p>
         <el-button type="primary" @click="downloadFile">
           <el-icon><Download /></el-icon>
-          Download File
+          {{ $t('media.downloadFile') }}
         </el-button>
       </div>
     </div>
@@ -125,7 +125,7 @@
     <!-- Loading State -->
     <div v-if="loading" class="loading-container">
       <el-loading-spinner />
-      <p>Loading media...</p>
+      <p>{{ $t('media.loadingMedia') }}</p>
     </div>
   </div>
 </template>
@@ -238,8 +238,8 @@ export default {
           mediaUrl.value = URL.createObjectURL(blob)
         }
       } catch (error) {
-        console.error('Error loading media:', error)
-        ElMessage.error('Failed to load media file')
+        console.error(t('errors.errorLoadingMedia'), error)
+        ElMessage.error(t('media.failedToLoadMediaFile'))
       } finally {
         loading.value = false
       }
@@ -398,7 +398,7 @@ export default {
         ElMessage.success('File downloaded successfully')
       } catch (error) {
         console.error('Download failed:', error)
-        ElMessage.error('Failed to download file')
+        ElMessage.error(t('media.failedToDownloadFile'))
       } finally {
         loading.value = false
       }
@@ -409,7 +409,7 @@ export default {
       if (mediaUrl.value) {
         window.open(mediaUrl.value, '_blank')
       } else {
-        ElMessage.info('Preview not available for this file type')
+        ElMessage.info(t('media.previewNotAvailable'))
       }
     }
     

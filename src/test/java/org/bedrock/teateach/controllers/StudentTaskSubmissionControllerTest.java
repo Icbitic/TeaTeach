@@ -9,11 +9,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -233,5 +241,58 @@ class StudentTaskSubmissionControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNull(response.getBody());
         verify(gradeService, times(1)).recordSubmissionScore(submissionId, score);
+    }
+
+
+    @Test
+    void testGradeSubmissionWithLLM_SubmissionNotFound() {
+        // Given
+        Long submissionId = 1L;
+        String gradingRubric = "Test rubric";
+
+        when(studentTaskSubmissionService.getSubmissionById(submissionId)).thenReturn(Optional.empty());
+
+        // When
+        ResponseEntity<?> response = studentTaskSubmissionController.gradeSubmissionWithLLM(submissionId, gradingRubric);
+
+        // Then
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        verify(studentTaskSubmissionService).getSubmissionById(submissionId);
+    }
+
+
+    @Test
+    void testGenerateFeedbackWithLLM_SubmissionNotFound() {
+        // Given
+        Long submissionId = 1L;
+        String feedbackPrompt = "Provide detailed feedback";
+
+        when(studentTaskSubmissionService.getSubmissionById(submissionId)).thenReturn(Optional.empty());
+
+        // When
+        ResponseEntity<?> response = studentTaskSubmissionController.generateFeedbackWithLLM(submissionId, feedbackPrompt);
+
+        // Then
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        verify(studentTaskSubmissionService).getSubmissionById(submissionId);
+    }
+
+
+    @Test
+    void batchGradeSubmissions_WhenException_ShouldReturnInternalServerError() {
+        // Given
+        Map<String, Object> request = new HashMap<>();
+        request.put("submissionIds", Arrays.asList(1L));
+        request.put("gradingRubric", "Test rubric");
+
+        when(studentTaskSubmissionService.getSubmissionById(1L))
+                .thenThrow(new RuntimeException("Batch grading failed"));
+
+        // When
+        ResponseEntity<?> response = studentTaskSubmissionController.batchGradeSubmissionsWithLLM(request);
+
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        verify(studentTaskSubmissionService, times(1)).getSubmissionById(1L);
     }
 }

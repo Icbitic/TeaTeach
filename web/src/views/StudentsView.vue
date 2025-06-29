@@ -180,19 +180,19 @@
           <el-icon-upload-filled/>
         </el-icon>
         <div class="el-upload__text">
-          Drop file here or <em>click to upload</em>
+          {{ $t('upload.dropFileHere') }} <em>{{ $t('upload.clickToUpload') }}</em>
         </div>
         <template #tip>
           <div class="el-upload__tip">
-            Supported formats: .xlsx, .xls, .csv
+            {{ $t('upload.supportedFormats') }} {{ $t('upload.supportedFormatsStudents') }}
           </div>
         </template>
       </el-upload>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="importDialog.visible = false">Cancel</el-button>
+          <el-button @click="importDialog.visible = false">{{ $t('common.cancel') }}</el-button>
           <el-button type="primary" @click="importStudents" :loading="importDialog.loading">
-            Import
+            {{ $t('common.import') }}
           </el-button>
         </span>
       </template>
@@ -243,18 +243,18 @@ export default {
       },
       rules: {
         studentId: [
-          { required: true, message: 'Please enter student ID', trigger: 'blur' },
-          { min: 3, max: 20, message: 'Length should be 3 to 20 characters', trigger: 'blur' }
+          { required: true, message: t('validation.pleaseEnterStudentId'), trigger: 'blur' },
+          { min: 3, max: 20, message: t('validation.lengthShouldBe3To20'), trigger: 'blur' }
         ],
         name: [
-          { required: true, message: 'Please enter name', trigger: 'blur' }
+          { required: true, message: t('validation.pleaseEnterName'), trigger: 'blur' }
         ],
         email: [
-          { required: true, message: 'Please enter email', trigger: 'blur' },
-          { type: 'email', message: 'Please enter a valid email address', trigger: 'blur' }
+          { required: true, message: t('validation.pleaseEnterEmail'), trigger: 'blur' },
+          { type: 'email', message: t('validation.pleaseEnterValidEmail'), trigger: 'blur' }
         ],
         major: [
-          { required: true, message: 'Please select major', trigger: 'change' }
+          { required: true, message: t('validation.pleaseSelectMajor'), trigger: 'change' }
         ]
       }
     })
@@ -300,8 +300,8 @@ export default {
           loading.value = false
         })
         .catch(error => {
-          console.error('Error fetching students:', error)
-          ElMessage.error('Failed to load students')
+          console.error(t('errors.errorFetchingStudents'), error)
+          ElMessage.error(t('messages.failedToLoadStudents'))
           loading.value = false
         })
     }
@@ -393,15 +393,15 @@ export default {
           apiCall
             .then(() => {
               ElMessage({
-                message: `Student ${studentDialog.isEdit ? 'updated' : 'created'} successfully`,
+                message: t(`messages.student${studentDialog.isEdit ? 'Updated' : 'Created'}Successfully`),
                 type: 'success'
               })
               studentDialog.visible = false
               fetchStudents()
             })
             .catch(error => {
-              console.error(`Error ${studentDialog.isEdit ? 'updating' : 'creating'} student:`, error)
-              const errorMessage = error.response?.data?.message || `Failed to ${studentDialog.isEdit ? 'update' : 'create'} student`
+              console.error(t(`errors.error${studentDialog.isEdit ? 'Updating' : 'Creating'}Student`), error)
+              const errorMessage = error.response?.data?.message || t(`messages.failedTo${studentDialog.isEdit ? 'Update' : 'Create'}Student`)
               ElMessage.error(errorMessage)
             })
             .finally(() => {
@@ -413,11 +413,11 @@ export default {
 
     const deleteStudent = (student) => {
       ElMessageBox.confirm(
-        `Are you sure you want to delete student "${student.name}"?`,
-        'Confirm Delete',
+        t('messages.confirmDeleteStudent', { name: student.name }),
+        t('common.confirmDelete'),
         {
-          confirmButtonText: 'Delete',
-          cancelButtonText: 'Cancel',
+          confirmButtonText: t('common.delete'),
+          cancelButtonText: t('common.cancel'),
           type: 'warning',
           confirmButtonClass: 'el-button--danger'
         }
@@ -427,13 +427,13 @@ export default {
             .then(() => {
               ElMessage({
                 type: 'success',
-                message: 'Student deleted successfully'
+                message: t('messages.studentDeletedSuccessfully')
               })
               fetchStudents()
             })
             .catch(error => {
-              console.error('Error deleting student:', error)
-              const errorMessage = error.response?.data?.message || 'Failed to delete student'
+              console.error(t('errors.errorDeletingStudent'), error)
+              const errorMessage = error.response?.data?.message || t('messages.failedToDeleteStudent')
               ElMessage.error(errorMessage)
             })
         })
@@ -454,7 +454,7 @@ export default {
 
     const importStudents = () => {
       if (importDialog.fileList.length === 0) {
-        ElMessage.warning('Please select a file to import')
+        ElMessage.warning(t('messages.pleaseSelectFileToImport'))
         return
       }
 
@@ -467,15 +467,15 @@ export default {
       studentService.importStudents(formData)
         .then(() => {
           ElMessage({
-            message: 'Students imported successfully',
+            message: t('messages.studentsImportedSuccessfully'),
             type: 'success'
           })
           importDialog.visible = false
           fetchStudents()
         })
         .catch(error => {
-          console.error('Error importing students:', error)
-          const errorMessage = error.response?.data?.message || 'Failed to import students'
+          console.error(t('errors.errorImportingStudents'), error)
+          const errorMessage = error.response?.data?.message || t('messages.failedToImportStudents')
           ElMessage.error(errorMessage)
         })
         .finally(() => {
@@ -500,13 +500,13 @@ export default {
           window.URL.revokeObjectURL(url)
 
           ElMessage({
-            message: 'Students exported successfully',
+            message: t('messages.studentsExportedSuccessfully'),
             type: 'success'
           })
         })
         .catch(error => {
-          console.error('Error exporting students:', error)
-          const errorMessage = error.response?.data?.message || 'Failed to export students'
+          console.error(t('errors.errorExportingStudents'), error)
+          const errorMessage = error.response?.data?.message || t('messages.failedToExportStudents')
           ElMessage.error(errorMessage)
         })
     }
@@ -531,7 +531,7 @@ export default {
 
         return date.toLocaleDateString()
       } catch (error) {
-        console.error('Error formatting date:', error, cellValue)
+        console.error(t('errors.errorFormattingDate'), error, cellValue)
         return ''
       }
     }

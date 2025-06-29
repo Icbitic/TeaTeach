@@ -99,13 +99,13 @@
                 :loading="loadingTaskResources[row.id]"
               >
                 <el-icon><Files /></el-icon>
-                Manage Files ({{ getResourceCount(row.id) }})
+                {{ $t('tasks.manageFiles') }} ({{ getResourceCount(row.id) }})
               </el-button>
             </div>
           </template>
         </el-table-column>
 
-        <el-table-column label="Actions" width="220" align="center">
+        <el-table-column :label="$t('common.actions')" width="220" align="center">
           <template #default="{ row }">
             <el-button
               type="primary"
@@ -129,7 +129,7 @@
     <!-- Resources Management Dialog -->
     <el-dialog
       v-model="resourcesDialogVisible"
-      :title="`Manage Files - ${selectedTask?.taskName || ''}`"
+      :title="$t('tasks.manageFilesFor', { taskName: selectedTask?.taskName || '' })"
       width="1000px"
       @close="closeResourcesDialog"
     >
@@ -147,22 +147,22 @@
           >
             <el-icon class="el-icon--upload"><upload-filled /></el-icon>
             <div class="el-upload__text">
-              Drop files here or <em>click to upload</em>
+              {{ $t('tasks.dropFilesOrClick') }}
             </div>
           </el-upload>
           <div class="upload-actions" v-if="uploadFileList.length > 0">
             <el-button type="primary" @click="uploadFiles" :loading="uploading">
-              Upload Selected Files
+              {{ $t('tasks.uploadSelectedFiles') }}
             </el-button>
-            <el-button @click="clearUploadList">Clear</el-button>
+            <el-button @click="clearUploadList">{{ $t('common.clear') }}</el-button>
           </div>
         </div>
 
         <!-- Existing Files Section -->
         <div class="existing-files-section">
-          <h4>Existing Files</h4>
+          <h4>{{ $t('tasks.existingFiles') }}</h4>
           <div v-if="taskResources.length === 0" class="no-files">
-            <el-empty description="No files uploaded yet" />
+            <el-empty :description="$t('tasks.noFilesUploadedYet')" />
           </div>
           <div v-else class="files-list">
             <div
@@ -182,7 +182,7 @@
                   @click="viewResource(resource)"
                 >
                   <el-icon><View /></el-icon>
-                  View
+                  {{ $t('common.view') }}
                 </el-button>
                 <el-button
                   type="success"
@@ -191,7 +191,7 @@
                   :loading="downloadingResources[resource.id]"
                 >
                   <el-icon><Download /></el-icon>
-                  Download
+                  {{ $t('common.download') }}
                 </el-button>
                 <el-button
                   type="danger"
@@ -290,7 +290,7 @@
           </el-select>
         </el-form-item>
         
-        <el-form-item label="Description" prop="taskDescription">
+        <el-form-item :label="$t('common.description')" prop="taskDescription">
           <el-input
             v-model="taskForm.taskDescription"
             type="textarea"
@@ -301,7 +301,7 @@
           />
         </el-form-item>
         
-        <el-form-item label="Deadline" prop="deadline">
+        <el-form-item :label="$t('tasks.deadline')" prop="deadline">
           <el-date-picker
             v-model="taskForm.deadline"
             type="datetime"
@@ -311,29 +311,29 @@
           />
         </el-form-item>
         
-        <el-form-item label="Submission" prop="submissionMethod">
+        <el-form-item :label="$t('tasks.submission')" prop="submissionMethod">
           <el-select
             v-model="taskForm.submissionMethod"
             :placeholder="$t('taskManagement.selectSubmissionMethod')"
             style="width: 100%"
           >
-            <el-option label="File Upload" value="upload" />
-            <el-option label="Text Submission" value="text" />
-            <el-option label="URL Submission" value="url" />
-            <el-option label="No Submission" value="none" />
+            <el-option :label="$t('tasks.fileUpload')" value="upload" />
+            <el-option :label="$t('tasks.textSubmission')" value="text" />
+            <el-option :label="$t('tasks.urlSubmission')" value="url" />
+            <el-option :label="$t('tasks.noSubmission')" value="none" />
           </el-select>
         </el-form-item>
       </el-form>
       
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleDialogClose">Cancel</el-button>
+          <el-button @click="handleDialogClose">{{ $t('common.cancel') }}</el-button>
           <el-button
             type="primary"
             @click="submitTask"
             :loading="submitting"
           >
-            {{ dialogMode === 'create' ? 'Create Task' : 'Update Task' }}
+            {{ dialogMode === 'create' ? $t('tasks.createTask') : $t('tasks.updateTask') }}
           </el-button>
         </div>
       </template>
@@ -429,35 +429,35 @@ export default {
     
     // Task types configuration
     const taskTypes = [
-      { value: 'CHAPTER_HOMEWORK', label: 'Chapter Homework', icon: 'Edit' },
-      { value: 'EXAM_QUIZ', label: 'Exam/Quiz', icon: 'Trophy' },
-      { value: 'VIDEO_WATCH', label: 'Video Watch', icon: 'VideoPlay' },
-      { value: 'READING_MATERIAL', label: 'Reading Material', icon: 'Document' },
-      { value: 'REPORT_UPLOAD', label: 'Report Upload', icon: 'Files' },
-      { value: 'PRACTICE_PROJECT', label: 'Practice Project', icon: 'Tools' }
+      { value: 'CHAPTER_HOMEWORK', label: t('tasks.chapterHomework'), icon: 'Edit' },
+      { value: 'EXAM_QUIZ', label: t('tasks.examQuiz'), icon: 'Trophy' },
+      { value: 'VIDEO_WATCH', label: t('tasks.videoWatch'), icon: 'VideoPlay' },
+      { value: 'READING_MATERIAL', label: t('tasks.readingMaterial'), icon: 'Document' },
+      { value: 'REPORT_UPLOAD', label: t('tasks.reportUpload'), icon: 'Files' },
+      { value: 'PRACTICE_PROJECT', label: t('tasks.practiceProject'), icon: 'Tools' }
     ]
     
     // Form validation rules
     const taskFormRules = {
       courseId: [
-        { required: true, message: 'Please select a course', trigger: 'change' }
+        { required: true, message: t('validation.pleaseSelectCourse'), trigger: 'change' }
       ],
       taskName: [
-        { required: true, message: 'Please enter task name', trigger: 'blur' },
-        { min: 2, max: 100, message: 'Length should be 2 to 100 characters', trigger: 'blur' }
+        { required: true, message: t('validation.pleaseEnterTaskName'), trigger: 'blur' },
+        { min: 2, max: 100, message: t('validation.lengthShouldBe2To100Characters'), trigger: 'blur' }
       ],
       taskType: [
-        { required: true, message: 'Please select task type', trigger: 'change' }
+        { required: true, message: t('validation.pleaseSelectTaskType'), trigger: 'change' }
       ],
       taskDescription: [
-        { required: true, message: 'Please enter task description', trigger: 'blur' },
-        { max: 500, message: 'Description cannot exceed 500 characters', trigger: 'blur' }
+        { required: true, message: t('validation.pleaseEnterTaskDescription'), trigger: 'blur' },
+        { max: 500, message: t('validation.descriptionCannotExceed500Characters'), trigger: 'blur' }
       ],
       deadline: [
-        { required: true, message: 'Please select deadline', trigger: 'change' }
+        { required: true, message: t('validation.pleaseSelectDeadline'), trigger: 'change' }
       ],
       submissionMethod: [
-        { required: true, message: 'Please select submission method', trigger: 'change' }
+        { required: true, message: t('validation.pleaseSelectSubmissionMethod'), trigger: 'change' }
       ]
     };
     
@@ -481,11 +481,11 @@ export default {
         // Enrich tasks with course names
         for (const task of tasks.value) {
           const course = courses.value.find(c => c.id === task.courseId)
-          task.courseName = course ? course.courseName : 'Unknown Course'
+          task.courseName = course ? course.courseName : t('tasks.unknownCourse')
         }
       } catch (error) {
         console.error('Error loading tasks:', error)
-        ElMessage.error('Failed to load tasks')
+        ElMessage.error(t('tasks.failedToLoadTasks'))
       } finally {
         loading.value = false
       }
@@ -497,7 +497,7 @@ export default {
         courses.value = response.data
       } catch (error) {
         console.error('Error loading courses:', error)
-        ElMessage.error('Failed to load courses')
+        ElMessage.error(t('courses.failedToLoadCourses'))
       }
     }
     
@@ -519,22 +519,22 @@ export default {
     const deleteTask = async (task) => {
       try {
         await ElMessageBox.confirm(
-          `Are you sure you want to delete the task "${task.taskName}"?`,
-          'Confirm Delete',
+          t('tasks.confirmDeleteTask', { taskName: task.taskName }),
+          t('common.confirmDelete'),
           {
-            confirmButtonText: 'Delete',
-            cancelButtonText: 'Cancel',
+            confirmButtonText: t('common.delete'),
+            cancelButtonText: t('common.cancel'),
             type: 'warning'
           }
         )
         
         await taskService.deleteTask(task.id)
-        ElMessage.success('Task deleted successfully')
+        ElMessage.success(t('tasks.taskDeletedSuccessfully'))
         await loadTasks()
       } catch (error) {
         if (error !== 'cancel') {
           console.error('Error deleting task:', error)
-          ElMessage.error('Failed to delete task')
+          ElMessage.error(t('tasks.failedToDeleteTask'))
         }
       }
     }
@@ -562,17 +562,17 @@ export default {
         
         if (dialogMode.value === 'create') {
           await taskService.createTask(taskData)
-          ElMessage.success('Task created successfully')
+          ElMessage.success(t('tasks.taskCreatedSuccessfully'))
         } else {
           await taskService.updateTask(taskForm.id, taskData)
-          ElMessage.success('Task updated successfully')
+          ElMessage.success(t('tasks.taskUpdatedSuccessfully'))
         }
         
         dialogVisible.value = false
         await loadTasks()
       } catch (error) {
         console.error('Error submitting task:', error)
-        ElMessage.error(`Failed to ${dialogMode.value} task`)
+        ElMessage.error(t('tasks.failedToSubmitTask', { mode: dialogMode.value }))
       } finally {
         submitting.value = false
       }
@@ -621,7 +621,7 @@ export default {
     }
     
     const formatDeadline = (deadline) => {
-      if (!deadline) return 'No deadline'
+      if (!deadline) return t('tasks.noDeadline')
       const date = new Date(deadline)
       return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
@@ -664,7 +664,7 @@ export default {
         return response.data
       } catch (error) {
         console.error('Failed to load task resources:', error)
-        ElMessage.error('Failed to load task resources')
+        ElMessage.error(t('tasks.failedToLoadTaskResources'))
         return []
       } finally {
         loadingTaskResources.value[taskId] = false
@@ -719,7 +719,7 @@ export default {
           )
         }
         
-        ElMessage.success(`${uploadFileList.value.length} file(s) uploaded successfully`)
+        ElMessage.success(t('tasks.filesUploadedSuccessfully', { count: uploadFileList.value.length }))
         
         // Refresh task resources
         taskResources.value = await loadTaskResources(selectedTask.value.id)
@@ -727,7 +727,7 @@ export default {
         
       } catch (error) {
         console.error('Upload failed:', error)
-        ElMessage.error('Failed to upload files')
+        ElMessage.error(t('tasks.failedToUploadFiles'))
       } finally {
         uploading.value = false
       }
@@ -762,10 +762,10 @@ export default {
         document.body.removeChild(link)
         window.URL.revokeObjectURL(url)
         
-        ElMessage.success('File downloaded successfully')
+        ElMessage.success(t('tasks.fileDownloadedSuccessfully'))
       } catch (error) {
         console.error('Download failed:', error)
-        ElMessage.error('Failed to download file')
+        ElMessage.error(t('tasks.failedToDownloadFile'))
       } finally {
         downloadingResources.value[resourceId] = false
       }
@@ -774,11 +774,11 @@ export default {
     // Confirm delete resource
     const confirmDeleteResource = (resource) => {
       ElMessageBox.confirm(
-        `Are you sure you want to delete "${resource.resourceName}"?`,
-        'Delete File',
+        t('tasks.confirmDeleteFile', { fileName: resource.resourceName }),
+        t('tasks.deleteFile'),
         {
-          confirmButtonText: 'Delete',
-          cancelButtonText: 'Cancel',
+          confirmButtonText: t('common.delete'),
+          cancelButtonText: t('common.cancel'),
           type: 'warning'
         }
       ).then(() => {
@@ -800,14 +800,14 @@ export default {
         // Delete the resource itself
         await resourceService.deleteResource(resource.id)
         
-        ElMessage.success('File deleted successfully')
+        ElMessage.success(t('tasks.fileDeletedSuccessfully'))
         
         // Refresh task resources
         taskResources.value = await loadTaskResources(selectedTask.value.id)
         
       } catch (error) {
         console.error('Delete failed:', error)
-        ElMessage.error('Failed to delete file')
+        ElMessage.error(t('tasks.failedToDeleteFile'))
       } finally {
         deletingResources.value[resource.id] = false
       }
@@ -815,8 +815,8 @@ export default {
 
     // Format file size
     const formatFileSize = (bytes) => {
-      if (!bytes) return 'Unknown size'
-      const sizes = ['Bytes', 'KB', 'MB', 'GB']
+      if (!bytes) return t('tasks.unknownSize')
+      const sizes = [t('tasks.bytes'), t('tasks.kb'), t('tasks.mb'), t('tasks.gb')]
       const i = Math.floor(Math.log(bytes) / Math.log(1024))
       return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i]
     }
@@ -839,7 +839,7 @@ export default {
     
     const handlePlaybackComplete = (completionData) => {
       console.log('Playback complete:', completionData)
-      ElMessage.success(`Video completed! Watch percentage: ${completionData.watchPercentage}%`)
+      ElMessage.success(t('tasks.videoCompleted', { percentage: completionData.watchPercentage }))
     }
     
     // Lifecycle

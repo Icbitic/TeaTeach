@@ -110,11 +110,11 @@
         :disabled="currentPage === 1"
         class="btn btn-outline"
       >
-        Previous
+        {{ $t('ui.previous') }}
       </button>
       
       <span class="page-info">
-        Page {{ currentPage }} of {{ totalPages }}
+        {{ $t('ui.pageInfo', { current: currentPage, total: totalPages }) }}
       </span>
       
       <button 
@@ -122,7 +122,7 @@
         :disabled="currentPage === totalPages"
         class="btn btn-outline"
       >
-        Next
+        {{ $t('ui.next') }}
       </button>
     </div>
 
@@ -182,7 +182,7 @@
             
             <!-- Options for Multiple Choice Questions -->
             <div v-if="isChoiceQuestion" class="form-group">
-              <label>Answer Options *</label>
+              <label>{{ $t('questionBank.answerOptions') }} *</label>
               <div class="options-container">
                 <div 
                   v-for="(option, index) in questionForm.options" 
@@ -275,7 +275,7 @@
             
             <!-- Template Code (for programming questions) -->
             <div v-if="questionForm.questionType === 'PROGRAMMING'" class="form-group">
-              <label>Template Code</label>
+              <label>{{ $t('questionBank.templateCode') }}</label>
               <textarea 
                 v-model="questionForm.templateCode" 
                 rows="6"
@@ -285,7 +285,7 @@
             </div>
             
             <div class="form-group">
-              <label>Explanation</label>
+              <label>{{ $t('questionBank.explanation') }}</label>
               <textarea 
                 v-model="questionForm.explanation" 
                 rows="3"
@@ -295,10 +295,10 @@
             
             <!-- Knowledge Points Selection -->
             <div class="form-group">
-              <label>Knowledge Points</label>
+              <label>{{ $t('questionBank.knowledgePoints') }}</label>
               <div class="knowledge-points-section">
                 <div class="selected-knowledge-points" v-if="selectedKnowledgePoints.length > 0">
-                  <h4>Selected Knowledge Points ({{ selectedKnowledgePoints.length }})</h4>
+                  <h4>{{ $t('questionBank.selectedKnowledgePoints', { count: selectedKnowledgePoints.length }) }}</h4>
                   <div class="selected-kp-list">
                     <div 
                       v-for="kp in selectedKnowledgePoints" 
@@ -324,13 +324,13 @@
                   class="btn btn-outline knowledge-graph-btn"
                 >
                   <i class="fas fa-project-diagram"></i> 
-                  {{ selectedKnowledgePoints.length > 0 ? 'Modify Knowledge Points' : 'Select Knowledge Points' }}
+                  {{ selectedKnowledgePoints.length > 0 ? $t('questionBank.modifyKnowledgePoints') : $t('questionBank.selectKnowledgePoints') }}
                 </button>
               </div>
             </div>
             
             <div class="form-group">
-              <label>Tags (comma-separated)</label>
+              <label>{{ $t('questionBank.tags') }}</label>
               <input 
                 type="text" 
                 v-model="tagsInput" 
@@ -343,7 +343,7 @@
                 {{ $t('common.cancel') }}
               </button>
               <button type="submit" class="btn btn-primary" :disabled="saving">
-                {{ saving ? 'Saving...' : (editingQuestion ? 'Update' : 'Create') }}
+                {{ saving ? $t('questionBank.saving') : (editingQuestion ? $t('questionBank.update') : $t('questionBank.create')) }}
               </button>
             </div>
           </form>
@@ -378,7 +378,7 @@
         
         <div class="modal-actions">
           <button type="button" @click="closeKnowledgeGraphModal" class="btn btn-outline">
-            Cancel
+            {{ $t('common.cancel') }}
           </button>
           <button type="button" @click="confirmKnowledgePointSelection" class="btn btn-primary">
             {{ $t('ui.confirmSelection') }}

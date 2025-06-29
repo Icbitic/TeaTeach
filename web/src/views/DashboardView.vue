@@ -130,8 +130,8 @@
                 <span class="month">May</span>
               </div>
               <div class="deadline-content">
-                <p class="deadline-title">Research Paper</p>
-                <p class="deadline-course">Computer Networks CN301</p>
+                <p class="deadline-title">{{ $t('dashboard.researchPaper') }}</p>
+                <p class="deadline-course">{{ $t('dashboard.computerNetworks') }}</p>
               </div>
             </div>
           </div>
@@ -144,6 +144,7 @@
 <script>
 import { computed, ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import studentService from '@/services/studentService'
 import courseService from '@/services/courseService'
@@ -155,6 +156,7 @@ export default {
     TypewriterText
   },
   setup() {
+    const { t } = useI18n()
     const store = useStore()
 
     // Get user from store
@@ -191,8 +193,8 @@ export default {
         // Mock data for other stats
         upcomingDeadlines.value = 12
       } catch (error) {
-        console.error('Error loading dashboard data:', error)
-        ElMessage.error('Failed to load dashboard statistics')
+        console.error(t('errors.errorLoadingDashboardData'), error)
+        ElMessage.error(t('dashboard.failedToLoadStatistics'))
         // Fallback values
         totalStudents.value = 0
         totalCourses.value = 0
