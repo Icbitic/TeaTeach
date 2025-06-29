@@ -156,10 +156,10 @@ export default {
         if (this.$refs.abilityVisualization) {
           await this.$refs.abilityVisualization.loadAbilityData()
         }
-        this.$message.success('Analysis refreshed successfully!')
+        this.$message.success(this.$t('studentAbility.analysisRefreshedSuccessfully'))
       } catch (error) {
-        console.error('Error refreshing analysis:', error)
-        this.$message.error('Failed to refresh analysis')
+        console.error(this.$t('errors.errorRefreshingAnalysis'), error)
+        this.$message.error(this.$t('studentAbility.failedToRefreshAnalysis'))
       } finally {
         this.refreshing = false
       }

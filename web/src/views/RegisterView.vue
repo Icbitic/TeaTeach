@@ -227,7 +227,7 @@ export default {
               router.push('/login')
             })
             .catch(error => {
-              console.error('Registration error:', error)
+              console.error(t('errors.registrationError'), error)
               ElMessage({
                 message: error.response?.data?.message || t('auth.registrationFailed'),
                 type: 'error'

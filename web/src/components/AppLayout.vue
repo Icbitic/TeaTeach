@@ -152,6 +152,7 @@
 import { ref, computed } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import TypewriterText from './TypewriterText.vue'
 
@@ -161,6 +162,7 @@ export default {
     TypewriterText
   },
   setup() {
+    const { t } = useI18n()
     const store = useStore()
     const router = useRouter()
     const route = useRoute()
@@ -179,11 +181,11 @@ export default {
     const logout = async () => {
       try {
         await store.dispatch('logout')
-        ElMessage.success('Logged out successfully')
+        ElMessage.success(t('messages.loggedOutSuccessfully'))
         router.push('/login')
       } catch (error) {
-        console.error('Logout error:', error)
-        ElMessage.error('Logout failed')
+        console.error(t('errors.logoutError'), error)
+        ElMessage.error(t('messages.logoutFailed'))
       }
     }
 

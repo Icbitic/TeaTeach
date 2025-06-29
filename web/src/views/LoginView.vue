@@ -98,7 +98,7 @@ export default {
               router.push('/')
             })
             .catch(error => {
-              console.error('Login error:', error)
+              console.error(t('errors.loginError'), error)
               ElMessage({
                 message: error.response?.data?.message || t('auth.loginFailed'),
                 type: 'error'

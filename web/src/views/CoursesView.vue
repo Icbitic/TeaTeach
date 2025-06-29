@@ -139,27 +139,27 @@
         <el-form-item :label="$t('courses.courseCode')" prop="courseCode">
           <el-input v-model="courseDialog.form.courseCode" :placeholder="$t('courseManagement.courseCodePlaceholder')"/>
         </el-form-item>
-        <el-form-item label="Course Name" prop="courseName">
+        <el-form-item :label="$t('courses.courseName')" prop="courseName">
           <el-input v-model="courseDialog.form.courseName" :placeholder="$t('courseManagement.courseNamePlaceholder')"/>
         </el-form-item>
-        <el-form-item label="Instructor" prop="instructor">
+        <el-form-item :label="$t('courses.instructor')" prop="instructor">
           <el-input v-model="courseDialog.form.instructor" :placeholder="$t('courseManagement.instructorPlaceholder')"/>
         </el-form-item>
-        <el-form-item label="Credits" prop="credits">
+        <el-form-item :label="$t('courses.credits')" prop="credits">
           <el-input-number v-model="courseDialog.form.credits" :min="1" :max="10" style="width: 100%"/>
         </el-form-item>
-        <el-form-item label="Hours" prop="hours">
+        <el-form-item :label="$t('courses.hours')" prop="hours">
           <el-input-number v-model="courseDialog.form.hours" :min="1" :max="200" style="width: 100%"/>
         </el-form-item>
-        <el-form-item label="Description" prop="description">
+        <el-form-item :label="$t('courses.description')" prop="description">
           <el-input v-model="courseDialog.form.description" type="textarea" :rows="3" :placeholder="$t('courseManagement.descriptionPlaceholder')"/>
         </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="courseDialog.visible = false">Cancel</el-button>
+          <el-button @click="courseDialog.visible = false">{{ $t('common.cancel') }}</el-button>
           <el-button type="primary" @click="submitCourseForm" :loading="courseDialog.loading">
-            {{ courseDialog.isEdit ? 'Update' : 'Create' }}
+            {{ courseDialog.isEdit ? $t('common.update') : $t('common.create') }}
           </el-button>
         </span>
       </template>
@@ -168,13 +168,13 @@
     <!-- Student Enrollment Dialog -->
     <el-dialog
         v-model="enrollmentDialog.visible"
-        title="Manage Course Students"
+:title="$t('courses.manageCourseStudents')"
         width="800px"
         :close-on-click-modal="false">
       <div class="enrollment-content">
         <div class="course-info">
           <h3>{{ enrollmentDialog.course.courseName }} ({{ enrollmentDialog.course.courseCode }})</h3>
-          <p>Instructor: {{ enrollmentDialog.course.instructor }}</p>
+          <p>{{ $t('courses.instructor') }}: {{ enrollmentDialog.course.instructor }}</p>
         </div>
         
         <el-tabs v-model="enrollmentDialog.activeTab">
@@ -198,16 +198,16 @@
               <el-table-column type="selection" width="55"/>
               <el-table-column prop="studentId" :label="$t('common.studentId')" width="120"/>
               <el-table-column prop="name" :label="$t('common.name')" min-width="150"/>
-              <el-table-column prop="email" label="Email" min-width="200"/>
-              <el-table-column prop="major" label="Major" min-width="150"/>
-              <el-table-column label="Actions" width="100">
+              <el-table-column prop="email" :label="$t('common.email')" min-width="200"/>
+              <el-table-column prop="major" :label="$t('common.major')" min-width="150"/>
+              <el-table-column :label="$t('common.actions')" width="100">
                 <template #default="scope">
                   <el-button
                       type="danger"
                       size="small"
                       @click="unenrollStudent(scope.row)"
                       plain>
-                    Remove
+                    {{ $t('courses.remove') }}
                   </el-button>
                 </template>
               </el-table-column>
@@ -264,7 +264,7 @@
       
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="enrollmentDialog.visible = false">Close</el-button>
+          <el-button @click="enrollmentDialog.visible = false">{{ $t('common.close') }}</el-button>
         </span>
       </template>
     </el-dialog>
@@ -272,17 +272,17 @@
     <!-- Knowledge Point Generation Dialog -->
     <el-dialog
         v-model="knowledgePointDialog.visible"
-        title="Generate Knowledge Points"
+        :title="$t('courses.generateKnowledgePoints')"
         width="600px"
         :close-on-click-modal="false">
       <div class="knowledge-point-content">
         <div class="course-info">
           <h3>{{ knowledgePointDialog.course.courseName }} ({{ knowledgePointDialog.course.courseCode }})</h3>
-          <p>Instructor: {{ knowledgePointDialog.course.instructor }}</p>
+          <p>{{ $t('courses.instructor') }}: {{ knowledgePointDialog.course.instructor }}</p>
         </div>
         
         <el-form :model="knowledgePointDialog.form" label-width="120px">
-          <el-form-item label="Course Content" required>
+          <el-form-item :label="$t('courses.courseContent')" required>
             <el-input
                 v-model="knowledgePointDialog.form.courseContent"
                 type="textarea"
@@ -294,16 +294,16 @@
           </el-form-item>
           <el-form-item>
             <el-alert
-                title="How it works"
+                :title="$t('courses.howItWorks')"
                 type="info"
                 :closable="false"
                 show-icon>
               <template #default>
-                <p>The AI will analyze your course content and:</p>
+                <p>{{ $t('courses.aiAnalysisDescription') }}</p>
                 <ul>
-                  <li>Extract key knowledge points and concepts</li>
-                  <li>Identify prerequisite relationships between topics</li>
-                  <li>Create a structured knowledge graph for your course</li>
+                  <li>{{ $t('courses.extractKnowledgePoints') }}</li>
+                  <li>{{ $t('courses.identifyPrerequisites') }}</li>
+                  <li>{{ $t('courses.createKnowledgeGraph') }}</li>
                 </ul>
               </template>
             </el-alert>
@@ -313,13 +313,13 @@
       
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="knowledgePointDialog.visible = false">Cancel</el-button>
+          <el-button @click="knowledgePointDialog.visible = false">{{ $t('common.cancel') }}</el-button>
           <el-button 
               type="primary" 
               @click="submitKnowledgePointGeneration" 
               :loading="knowledgePointDialog.loading"
               :disabled="!knowledgePointDialog.form.courseContent.trim()">
-            Generate Knowledge Points
+            {{ $t('courses.generateKnowledgePoints') }}
           </el-button>
         </span>
       </template>
@@ -368,20 +368,20 @@ export default {
       },
       rules: {
         courseCode: [
-          { required: true, message: 'Please enter course code', trigger: 'blur' },
-          { min: 2, max: 10, message: 'Length should be 2 to 10 characters', trigger: 'blur' }
+          { required: true, message: t('validation.pleaseEnterCourseCode'), trigger: 'blur' },
+          { min: 2, max: 10, message: t('validation.lengthShouldBe2To10Characters'), trigger: 'blur' }
         ],
         courseName: [
-          { required: true, message: 'Please enter course name', trigger: 'blur' }
+          { required: true, message: t('validation.pleaseEnterCourseName'), trigger: 'blur' }
         ],
         instructor: [
-          { required: true, message: 'Please enter instructor name', trigger: 'blur' }
+          { required: true, message: t('validation.pleaseEnterInstructorName'), trigger: 'blur' }
         ],
         credits: [
-          { required: true, message: 'Please enter credits', trigger: 'blur' }
+          { required: true, message: t('validation.pleaseEnterCredits'), trigger: 'blur' }
         ],
         hours: [
-          { required: true, message: 'Please enter hours', trigger: 'blur' }
+          { required: true, message: t('validation.pleaseEnterHours'), trigger: 'blur' }
         ]
       }
     })
@@ -438,8 +438,8 @@ export default {
           courseLoading.value = false
         })
         .catch(error => {
-          console.error('Error fetching courses:', error)
-          ElMessage.error('Failed to load courses')
+          console.error(t('errors.errorFetchingCourses'), error)
+          ElMessage.error(t('errors.failedToLoadCourses'))
           courseLoading.value = false
         })
     }
@@ -521,15 +521,15 @@ export default {
           apiCall
             .then(() => {
               ElMessage({
-                message: `Course ${courseDialog.isEdit ? 'updated' : 'created'} successfully`,
+                message: courseDialog.isEdit ? t('courses.courseUpdatedSuccessfully') : t('courses.courseCreatedSuccessfully'),
                 type: 'success'
               })
               courseDialog.visible = false
               fetchCourses()
             })
             .catch(error => {
-              console.error(`Error ${courseDialog.isEdit ? 'updating' : 'creating'} course:`, error)
-              const errorMessage = error.response?.data?.message || `Failed to ${courseDialog.isEdit ? 'update' : 'create'} course`
+              console.error(courseDialog.isEdit ? t('errors.errorUpdatingCourse') : t('errors.errorCreatingCourse'), error)
+              const errorMessage = error.response?.data?.message || (courseDialog.isEdit ? t('courses.failedToUpdateCourse') : t('courses.failedToCreateCourse'))
               ElMessage.error(errorMessage)
             })
             .finally(() => {
@@ -541,11 +541,11 @@ export default {
 
     const confirmDeleteCourse = (course) => {
       ElMessageBox.confirm(
-        `Are you sure you want to delete course "${course.courseName}"?`,
-        'Confirm Delete',
+        t('courses.confirmDeleteCourse', { courseName: course.courseName }),
+        t('common.confirmDelete'),
         {
-          confirmButtonText: 'Delete',
-          cancelButtonText: 'Cancel',
+          confirmButtonText: t('common.delete'),
+          cancelButtonText: t('common.cancel'),
           type: 'warning',
           confirmButtonClass: 'el-button--danger'
         }
@@ -555,13 +555,13 @@ export default {
             .then(() => {
               ElMessage({
                 type: 'success',
-                message: 'Course deleted successfully'
+                message: t('courses.courseDeletedSuccessfully')
               })
               fetchCourses()
             })
             .catch(error => {
-              console.error('Error deleting course:', error)
-              const errorMessage = error.response?.data?.message || 'Failed to delete course'
+              console.error(t('errors.errorDeletingCourse'), error)
+              const errorMessage = error.response?.data?.message || t('courses.failedToDeleteCourse')
               ElMessage.error(errorMessage)
             })
         })
@@ -575,7 +575,7 @@ export default {
         .then(response => {
           const courseData = response.data
           const csvContent = [
-            ['Course Code', 'Course Name', 'Instructor', 'Credits', 'Hours', 'Description'],
+            [t('courses.courseCode'), t('courses.courseName'), t('courses.instructor'), t('courses.credits'), t('courses.hours'), t('courses.description')],
             ...courseData.map(course => [
               course.courseCode,
               course.courseName,
@@ -599,13 +599,13 @@ export default {
           window.URL.revokeObjectURL(url)
 
           ElMessage({
-            message: 'Courses exported successfully',
+            message: t('courses.coursesExportedSuccessfully'),
             type: 'success'
           })
         })
         .catch(error => {
-          console.error('Error exporting courses:', error)
-          const errorMessage = error.response?.data?.message || 'Failed to export courses'
+          console.error(t('errors.errorExportingCourses'), error)
+          const errorMessage = error.response?.data?.message || t('courses.failedToExportCourses')
           ElMessage.error(errorMessage)
         })
     }
@@ -624,8 +624,8 @@ export default {
         const response = await courseEnrollmentService.getStudentsByCourse(courseId)
         enrolledStudents.value = response.data
       } catch (error) {
-        console.error('Error fetching enrolled students:', error)
-        ElMessage.error('Failed to fetch enrolled students')
+        console.error(t('errors.errorFetchingEnrolledStudents'), error)
+        ElMessage.error(t('courses.failedToFetchEnrolledStudents'))
       }
     }
 
@@ -634,14 +634,14 @@ export default {
         const response = await courseEnrollmentService.getAvailableStudents(courseId)
         availableStudents.value = response.data
       } catch (error) {
-        console.error('Error fetching available students:', error)
-        ElMessage.error('Failed to fetch available students')
+        console.error(t('errors.errorFetchingAvailableStudents'), error)
+        ElMessage.error(t('courses.failedToFetchAvailableStudents'))
       }
     }
 
     const removeSelectedStudents = async () => {
       if (selectedEnrolledStudents.value.length === 0) {
-        ElMessage.warning('Please select students to remove')
+        ElMessage.warning(t('courses.pleaseSelectStudentsToRemove'))
         return
       }
 
@@ -650,13 +650,13 @@ export default {
         for (const student of selectedEnrolledStudents.value) {
           await courseEnrollmentService.unenrollStudent(enrollmentDialog.course.id, student.id)
         }
-        ElMessage.success('Students removed successfully')
+        ElMessage.success(t('courses.studentsRemovedSuccessfully'))
         selectedEnrolledStudents.value = []
         await fetchEnrolledStudents(enrollmentDialog.course.id)
         await fetchAvailableStudents(enrollmentDialog.course.id)
       } catch (error) {
-        console.error('Error removing students:', error)
-        ElMessage.error('Failed to remove students')
+        console.error(t('errors.errorRemovingStudents'), error)
+        ElMessage.error(t('courses.failedToRemoveStudents'))
       } finally {
         enrollmentDialog.loading = false
       }
@@ -666,12 +666,12 @@ export default {
       try {
         enrollmentDialog.loading = true
         await courseEnrollmentService.unenrollStudent(enrollmentDialog.course.id, student.id)
-        ElMessage.success(`${student.name} removed successfully`)
+        ElMessage.success(t('courses.studentRemovedSuccessfully', { name: student.name }))
         await fetchEnrolledStudents(enrollmentDialog.course.id)
         await fetchAvailableStudents(enrollmentDialog.course.id)
       } catch (error) {
-        console.error('Error removing student:', error)
-        ElMessage.error('Failed to remove student')
+        console.error(t('errors.errorRemovingStudent'), error)
+        ElMessage.error(t('courses.failedToRemoveStudent'))
       } finally {
         enrollmentDialog.loading = false
       }
@@ -681,12 +681,12 @@ export default {
       try {
         enrollmentDialog.loading = true
         await courseEnrollmentService.enrollStudent(enrollmentDialog.course.id, student.id)
-        ElMessage.success(`${student.name} enrolled successfully`)
+        ElMessage.success(t('courses.studentEnrolledSuccessfully', { name: student.name }))
         await fetchEnrolledStudents(enrollmentDialog.course.id)
         await fetchAvailableStudents(enrollmentDialog.course.id)
       } catch (error) {
-        console.error('Error enrolling student:', error)
-        ElMessage.error('Failed to enroll student')
+        console.error(t('errors.errorEnrollingStudent'), error)
+        ElMessage.error(t('courses.failedToEnrollStudent'))
       } finally {
         enrollmentDialog.loading = false
       }
@@ -694,7 +694,7 @@ export default {
 
     const enrollSelectedStudents = async () => {
       if (selectedAvailableStudents.value.length === 0) {
-        ElMessage.warning('Please select students to enroll')
+        ElMessage.warning(t('courses.pleaseSelectStudentsToEnroll'))
         return
       }
 
@@ -702,13 +702,13 @@ export default {
         enrollmentDialog.loading = true
         const studentIds = selectedAvailableStudents.value.map(student => student.id)
         await courseEnrollmentService.enrollMultipleStudents(enrollmentDialog.course.id, studentIds)
-        ElMessage.success('Students enrolled successfully')
+        ElMessage.success(t('courses.studentsEnrolledSuccessfully'))
         selectedAvailableStudents.value = []
         await fetchEnrolledStudents(enrollmentDialog.course.id)
         await fetchAvailableStudents(enrollmentDialog.course.id)
       } catch (error) {
-        console.error('Error enrolling students:', error)
-        ElMessage.error('Failed to enroll students')
+        console.error(t('errors.errorEnrollingStudents'), error)
+        ElMessage.error(t('courses.failedToEnrollStudents'))
       } finally {
         enrollmentDialog.loading = false
       }
@@ -724,7 +724,7 @@ export default {
 
     const unenrollSelectedStudents = async () => {
       if (selectedEnrolledStudents.value.length === 0) {
-        ElMessage.warning('Please select students to unenroll')
+        ElMessage.warning(t('courses.pleaseSelectStudentsToUnenroll'))
         return
       }
 
@@ -733,13 +733,13 @@ export default {
         for (const student of selectedEnrolledStudents.value) {
           await courseEnrollmentService.unenrollStudent(enrollmentDialog.course.id, student.id)
         }
-        ElMessage.success(`${selectedEnrolledStudents.value.length} student(s) unenrolled successfully`)
+        ElMessage.success(t('courses.studentsUnenrolledSuccessfully', { count: selectedEnrolledStudents.value.length }))
         selectedEnrolledStudents.value = []
         await fetchEnrolledStudents(enrollmentDialog.course.id)
         await fetchAvailableStudents(enrollmentDialog.course.id)
       } catch (error) {
-        console.error('Error unenrolling students:', error)
-        ElMessage.error('Failed to unenroll students')
+        console.error(t('errors.errorUnenrollingStudents'), error)
+        ElMessage.error(t('courses.failedToUnenrollStudents'))
       } finally {
         enrollmentDialog.loading = false
       }
@@ -754,7 +754,7 @@ export default {
 
     const submitKnowledgePointGeneration = async () => {
       if (!knowledgePointDialog.form.courseContent.trim()) {
-        ElMessage.warning('Please enter course content')
+        ElMessage.warning(t('courses.pleaseEnterCourseContent'))
         return
       }
 
@@ -766,15 +766,15 @@ export default {
         )
         
         const generatedCount = response.data.length
-        ElMessage.success(`Successfully generated ${generatedCount} knowledge point${generatedCount !== 1 ? 's' : ''} for ${knowledgePointDialog.course.courseName}`)
+        ElMessage.success(t('courses.knowledgePointsGeneratedSuccessfully', { count: generatedCount, courseName: knowledgePointDialog.course.courseName }))
         
         // Reset form and close dialog
         knowledgePointDialog.form.courseContent = ''
         knowledgePointDialog.visible = false
         
       } catch (error) {
-        console.error('Error generating knowledge points:', error)
-        ElMessage.error('Failed to generate knowledge points. Please try again.')
+        console.error(t('errors.errorGeneratingKnowledgePoints'), error)
+        ElMessage.error(t('courses.failedToGenerateKnowledgePoints'))
       } finally {
         knowledgePointDialog.loading = false
       }
