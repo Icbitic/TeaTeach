@@ -263,7 +263,6 @@ export default {
     const courseDetailVisible = ref(false)
     const selectedCourse = ref(null)
     const courseTasks = ref([])
-    
     const user = JSON.parse(localStorage.getItem('user') || '{}')
     
     // Computed properties
