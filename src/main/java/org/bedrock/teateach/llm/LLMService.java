@@ -306,6 +306,7 @@ public class LLMService {
             String response = chatClient.prompt(prompt).call().content();
             // Remove think tags from response
             response = removeThinkTags(response);
+            response = cleanJsonResponse(response);
             // Parse the cleaned response directly
 
             return parseJsonResponse(response, new ParameterizedTypeReference<List<KnowledgePoint>>() {});
