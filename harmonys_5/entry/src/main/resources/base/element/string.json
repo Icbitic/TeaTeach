@@ -1,0 +1,29 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "label"
+    },
+    {
+      "name": "label_write_storage",
+      "value": "写入存储权限"
+    },
+    {
+      "name": "desc_write_storage",
+      "value": "允许写入文件以导出数据"
+    },
+    {
+      "name": "reason_write_storage",
+      "value": "导出学习数据至本地"
+    }
+
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "src": [
+    "pages/Index",
+    "pages/RegisterPage",
+    "pages/student/student",
+    "pages/teacher/teacher"
+  ]
+}

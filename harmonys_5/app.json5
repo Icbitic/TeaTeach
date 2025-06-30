@@ -1,0 +1,14 @@
+{
+  "app": {
+    "bundleName": "com.example.smartlearn",
+    "vendor": "your_company",
+    "version": {
+      "code": 1000000,
+      "name": "1.0.0"
+    },
+    "apiVersion": {
+      "compatible": 9,
+      "target": 9
+    }
+  }
+}
