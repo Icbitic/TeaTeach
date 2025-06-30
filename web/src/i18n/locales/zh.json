@@ -240,6 +240,10 @@
     "analysisGeneratedOn": "分析生成于 {date}",
     "analysisRefreshedSuccessfully": "分析刷新成功！",
     "failedToRefreshAnalysis": "刷新分析失败",
+    "failedToLoadAnalysis": "加载能力分析失败。请稍后重试。",
+    "failedToLoadRecommendations": "加载推荐失败",
+    "ragTestCompleted": "直接RAG测试完成 - 请查看控制台详情",
+    "ragTestFailed": "RAG直接测试失败",
     "resourceTypes": {
       "videos": "视频",
       "articles": "文章",
@@ -752,7 +756,14 @@
     "tags": "标签（逗号分隔）",
     "saving": "保存中...",
     "update": "更新",
-    "create": "创建"
+    "create": "创建",
+    "points": "分",
+    "usedTimes": "已使用 {count} 次",
+    "averageScore": "平均分：{score}%",
+    "moreOptions": "... 还有 {count} 个选项",
+    "confirmDeleteQuestion": "您确定要删除这个题目吗？",
+    "questionDeletedSuccessfully": "题目删除成功",
+    "failedToDeleteQuestion": "删除题目失败"
   },
   "settings": {
     "title": "设置",

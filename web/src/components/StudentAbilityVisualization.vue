@@ -225,7 +225,7 @@ export default {
         this.abilityData = response.data
       } catch (error) {
         console.error('Error loading ability data:', error)
-        this.error = 'Failed to load ability analysis. Please try again later.'
+        this.error = this.$t('studentAbility.failedToLoadAnalysis')
       } finally {
         this.loading = false
       }
@@ -262,7 +262,7 @@ export default {
         
       } catch (error) {
         console.error('Error loading recommendations:', error)
-        this.$message.error('Failed to load recommendations')
+        this.$message.error(this.$t('studentAbility.failedToLoadRecommendations'))
       } finally {
         this.recommendationsLoading = false
       }
@@ -283,11 +283,11 @@ export default {
         }
         
         this.recommendations = directRecommendations
-        this.$message.success('Direct RAG test completed - check console for details')
+        this.$message.success(this.$t('studentAbility.ragTestCompleted'))
         
       } catch (error) {
         console.error('Error testing RAG direct:', error)
-        this.$message.error('RAG direct test failed: ' + error.message)
+        this.$message.error(this.$t('studentAbility.ragTestFailed') + ': ' + error.message)
       } finally {
         this.recommendationsLoading = false
       }

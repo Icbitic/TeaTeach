@@ -64,7 +64,7 @@
             <span class="difficulty" :class="question.difficulty.toLowerCase()">
               {{ question.difficulty }}
             </span>
-            <span class="points">{{ question.points }} pts</span>
+            <span class="points">{{ question.points }} {{ $t('questionBank.points') }}</span>
           </div>
           
           <div class="question-content">
@@ -75,7 +75,7 @@
                 {{ String.fromCharCode(65 + index) }}. {{ option }}
               </div>
               <div v-if="question.options.length > 2" class="more-options">
-                ... and {{ question.options.length - 2 }} more options
+                {{ $t('questionBank.moreOptions', { count: question.options.length - 2 }) }}
               </div>
             </div>
           </div>
@@ -83,19 +83,19 @@
           <div class="question-footer">
             <div class="stats">
               <span class="usage-count">
-                <i class="fas fa-chart-line"></i> Used {{ question.usageCount }} times
+                <i class="fas fa-chart-line"></i> {{ $t('questionBank.usedTimes', { count: question.usageCount }) }}
               </span>
               <span class="avg-score">
-                <i class="fas fa-star"></i> Avg: {{ question.averageScore ? question.averageScore.toFixed(1) : 'N/A' }}%
+                <i class="fas fa-star"></i> {{ question.averageScore ? $t('questionBank.averageScore', { score: question.averageScore.toFixed(1) }) : 'N/A' }}
               </span>
             </div>
             
             <div class="actions">
               <button @click="editQuestion(question)" class="btn btn-sm btn-outline">
-                <i class="fas fa-edit"></i> Edit
+                <i class="fas fa-edit"></i> {{ $t('common.edit') }}
               </button>
               <button @click="deleteQuestion(question.id)" class="btn btn-sm btn-danger">
-                <i class="fas fa-trash"></i> Delete
+                <i class="fas fa-trash"></i> {{ $t('common.delete') }}
               </button>
             </div>
           </div>
@@ -519,15 +519,15 @@ export default {
     },
     
     async deleteQuestion(questionId) {
-      if (!confirm('Are you sure you want to delete this question?')) return
+      if (!confirm(this.$t('questionBank.confirmDeleteQuestion'))) return
       
       try {
         await questionService.deleteQuestion(questionId)
-        ElMessage.success('Question deleted successfully')
+        ElMessage.success(this.$t('questionBank.questionDeletedSuccessfully'))
         this.loadQuestions()
       } catch (error) {
         console.error('Error deleting question:', error)
-        ElMessage.error('Failed to delete question')
+        ElMessage.error(this.$t('questionBank.failedToDeleteQuestion'))
       }
     },
     
