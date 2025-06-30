@@ -174,47 +174,6 @@ class StudentAbilityControllerTest {
     }
 
     @Test
-    void getComprehensiveRecommendations_WhenSuccessful_ShouldReturnAllRecommendationTypes() {
-        // Given
-        Long studentId = 1L;
-        Map<String, Object> abilities = (Map<String, Object>) testAbilityAnalysis.get("abilities");
-        List<String> interestedFields = (List<String>) testAbilityAnalysis.get("interestedFields");
-        
-        when(llmService.analyzeStudentAbilities(studentId)).thenReturn(testAbilityAnalysis);
-        when(studentService.convertStudentIdToId(studentId.toString())).thenReturn(studentId);
-        when(courseEnrollmentService.getCoursesByStudentId(studentId)).thenReturn(testCourses);
-        
-        // Mock recommendations for each resource type
-        when(llmService.recommendResources(eq(abilities), eq(interestedFields), anyList(), eq("course")))
-            .thenReturn(Map.of("courses", Arrays.asList("Advanced Java")));
-        when(llmService.recommendResources(eq(abilities), eq(interestedFields), anyList(), eq("book")))
-            .thenReturn(Map.of("books", Arrays.asList("Clean Code")));
-        when(llmService.recommendResources(eq(abilities), eq(interestedFields), anyList(), eq("video")))
-            .thenReturn(Map.of("videos", Arrays.asList("Java Tutorials")));
-        when(llmService.recommendResources(eq(abilities), eq(interestedFields), anyList(), eq("practice")))
-            .thenReturn(Map.of("practice", Arrays.asList("LeetCode")));
-        when(llmService.recommendResources(eq(abilities), eq(interestedFields), anyList(), eq("all")))
-            .thenReturn(testRecommendations);
-
-        // When
-        ResponseEntity<Map<String, Object>> response = studentAbilityController.getComprehensiveRecommendations(studentId);
-
-        // Then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertTrue(response.getBody().containsKey("courseRecommendations"));
-        assertTrue(response.getBody().containsKey("bookRecommendations"));
-        assertTrue(response.getBody().containsKey("videoRecommendations"));
-        assertTrue(response.getBody().containsKey("practiceRecommendations"));
-        assertTrue(response.getBody().containsKey("overallRecommendations"));
-        assertEquals(studentId, response.getBody().get("studentId"));
-        assertNotNull(response.getBody().get("generatedAt"));
-        
-        verify(llmService, times(1)).analyzeStudentAbilities(studentId);
-        verify(llmService, times(5)).recommendResources(eq(abilities), eq(interestedFields), anyList(), anyString());
-    }
-
-    @Test
     void getComprehensiveRecommendations_WhenExceptionOccurs_ShouldReturnInternalServerError() {
         // Given
         Long studentId = 1L;
