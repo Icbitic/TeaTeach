@@ -126,14 +126,14 @@ public class StudentAbilityController {
                 enrolledCourses.add(course.getCourseName());
             }
 
-            // Get recommendations for each resource type using RAG
-            String[] resourceTypes = {"course", "book", "video", "practice"};
-            
-            for (String type : resourceTypes) {
-                Map<String, Object> typeRecommendations = llmService.recommendResources(
-                    abilities, interestedFields, enrolledCourses, type);
-                result.put(type + "Recommendations", typeRecommendations);
-            }
+//            // Get recommendations for each resource type using RAG
+//            String[] resourceTypes = {"video"};
+//
+//            for (String type : resourceTypes) {
+//                Map<String, Object> typeRecommendations = llmService.recommendResources(
+//                    abilities, interestedFields, enrolledCourses, type);
+//                result.put(type + "Recommendations", typeRecommendations);
+//            }
             
             // Get overall recommendations using RAG
             Map<String, Object> overallRecommendations = llmService.recommendResources(

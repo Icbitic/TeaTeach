@@ -259,6 +259,7 @@ public class LLMService {
                 YOU SHALL NOT OUTPUT KNOWLEDGE POINTS SHOWN IN THE Existing KnowledgePoints Part, they can only be referenced in the prerequisiteKnowledgePointIds field and related knowledge point ids field
                 YOU SHALL NOT OUTPUT KNOWLEDGE POINTS SHOWN IN THE Existing KnowledgePoints Part, they can only be referenced in the prerequisiteKnowledgePointIds field and related knowledge point ids field
                 YOU SHALL NOT OUTPUT KNOWLEDGE POINTS SHOWN IN THE Existing KnowledgePoints Part, they can only be referenced in the prerequisiteKnowledgePointIds field and related knowledge point ids field
+                YOU SHALL OUTPUT YOUR RESPONSE IN CHINESE
                 
                 Course ID: {courseId}
                 Course Content: {courseContent}
@@ -422,7 +423,7 @@ public class LLMService {
                     .template(promptTemplate)
                     .build();
             UserMessage userMessage = template.create(promptParams).getUserMessage();
-            SystemMessage systemMessage = new SystemMessage("You are an educational recommendation AI that analyzes student performance and suggests personalized learning content based on available resources. You MUST output ONLY valid JSON format without any markdown code blocks, explanations, or additional text. Do not wrap your response in ```json or ``` tags. this is a very easy task, so do not think too long");
+            SystemMessage systemMessage = new SystemMessage("You are an educational recommendation AI that analyzes student performance and suggests personalized learning content based on available resources. You MUST output ONLY valid JSON format without any markdown code blocks, explanations, or additional text. Do not wrap your response in ```json or ``` tags. this is a very easy task, so do not think too long, YOU SHALL OUTPUT YOUR RESPONSE IN CHINESE");
             Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
 
             // Execute prompt and parse results
@@ -547,7 +548,7 @@ public class LLMService {
                 .template(promptTemplate)
                 .build();
         UserMessage userMessage = template.create(promptParams).getUserMessage();
-        SystemMessage systemMessage = new SystemMessage("You are an educational assessment AI that calculates precise ability scores based on learning behavior metrics. You MUST output ONLY valid JSON format without any markdown code blocks, explanations, or additional text. Do not wrap your response in ```json or ``` tags. this is a very easy task, so do not think too long");
+        SystemMessage systemMessage = new SystemMessage("You are an educational assessment AI that calculates precise ability scores based on learning behavior metrics. You MUST output ONLY valid JSON format without any markdown code blocks, explanations, or additional text. Do not wrap your response in ```json or ``` tags. this is a very easy task, so do not think too long, YOU SHOULD OUTPUT YOUR RESPONSE IN CHINESE");
         Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
 
         // Execute prompt and parse result
@@ -646,7 +647,7 @@ public class LLMService {
                 .template(promptTemplate)
                 .build();
         UserMessage userMessage = template.create(promptParams).getUserMessage();
-        SystemMessage systemMessage = new SystemMessage("You are an educational assessment AI that provides fair, consistent, and detailed grading of student submissions. You MUST output ONLY valid JSON format without any markdown code blocks, explanations, or additional text. Do not wrap your response in ```json or ``` tags. this is a very easy task, so do not think too long");
+        SystemMessage systemMessage = new SystemMessage("You are an educational assessment AI that provides fair, consistent, and detailed grading of student submissions. You MUST output ONLY valid JSON format without any markdown code blocks, explanations, or additional text. Do not wrap your response in ```json or ``` tags. this is a very easy task, so do not think too long, YOU SHOULD OUTPUT YOUR RESPONSE IN CHINESE");
         Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
 
         // Execute prompt and parse results
@@ -740,7 +741,7 @@ public class LLMService {
 
             // Use custom prompt or default feedback-focused prompt
             String prompt = customPrompt != null ? customPrompt :
-                "Provide detailed, constructive feedback on this student submission. Focus on strengths, areas for improvement, and specific suggestions for enhancement. Do not provide a numerical score.";
+                "Provide detailed, constructive feedback on this student submission. Focus on strengths, areas for improvement, and specific suggestions for enhancement. Do not provide a numerical score. you should output your response in chinese";
 
             // Call the existing grading method but focus on feedback
             Map<String, Object> gradingResult = gradeStudentReport(submission, prompt);
@@ -841,7 +842,7 @@ public class LLMService {
 
             // Prepare data for LLM analysis
             StringBuilder analysisPrompt = new StringBuilder();
-            analysisPrompt.append("\"You are an educational recommendation AI that analyzes student performance and suggests personalized learning content based on available resources. You MUST output ONLY valid JSON format without any markdown code blocks, explanations, or additional text. Do not wrap your response in ```json or ``` tags. this is a very easy task, so do not think too long\"");
+            analysisPrompt.append("\"You are an educational recommendation AI that analyzes student performance and suggests personalized learning content based on available resources. You MUST output ONLY valid JSON format without any markdown code blocks, explanations, or additional text. Do not wrap your response in ```json or ``` tags. this is a very easy task, so do not think too long, you should output your response in chinese\"");
             analysisPrompt.append("Analyze the following student data and provide a comprehensive ability assessment:\n\n");
 
             // Add course information
@@ -1028,7 +1029,8 @@ public class LLMService {
         
         // Create enhanced prompt with real resource context
         StringBuilder prompt = new StringBuilder();
-        prompt.append("\"You are an educational recommendation AI that analyzes student performance and suggests personalized learning content based on available resources. You MUST output ONLY valid JSON format without any markdown code blocks, explanations, or additional text. Do not wrap your response in ```json or ``` tags. this is a very easy task, so do not think too long\"");
+        prompt.append("\"You are an educational recommendation AI that analyzes student performance and suggests personalized learning content based on available resources. You MUST output ONLY valid JSON format without any markdown code blocks, explanations, or additional text. Do not wrap your response in ```json or ``` tags. this is a very easy task, so do not think too long, you should output your response in chinese\"");
+        prompt.append("The description field should be written in Chinese");
         prompt.append("Based on the following student profile and available real resources, recommend specific learning resources:\n\n");
         prompt.append("Student Profile Analysis:\n");
         prompt.append("Student Abilities:\n");
@@ -1149,6 +1151,7 @@ public class LLMService {
             // Prepare prompt for resource recommendation
             StringBuilder prompt = new StringBuilder();
             prompt.append(" You MUST output ONLY valid JSON format without any markdown code blocks, explanations, or additional text. Do not wrap your response in ```json or ``` tags. this is a very easy task, so do not think too long\"");
+            prompt.append("you should output your response in chinese\n");
             prompt.append("Based on the following student ability analysis, recommend personalized learning resources:\n\n");
 
             // Add ability scores
@@ -1326,7 +1329,7 @@ public class LLMService {
             SearchRequest searchRequest = SearchRequest.builder()
                     .query(searchQuery)
                     .topK(8)
-                    .similarityThreshold(0.2)
+                    .similarityThreshold(0.6)
                     .build();
 
             List<Document> searchResults = vectorStore.similaritySearch(searchRequest);

@@ -261,6 +261,10 @@
     "analysisGeneratedOn": "Analysis generated on {date}",
     "analysisRefreshedSuccessfully": "Analysis refreshed successfully!",
     "failedToRefreshAnalysis": "Failed to refresh analysis",
+    "failedToLoadAnalysis": "Failed to load ability analysis. Please try again later.",
+    "failedToLoadRecommendations": "Failed to load recommendations",
+    "ragTestCompleted": "Direct RAG test completed - check console for details",
+    "ragTestFailed": "RAG direct test failed",
     "resourceTypes": {
       "videos": "Videos",
       "articles": "Articles",
@@ -846,7 +850,14 @@
     "tags": "Tags (comma-separated)",
     "saving": "Saving...",
     "update": "Update",
-    "create": "Create"
+    "create": "Create",
+    "points": "pts",
+    "usedTimes": "Used {count} times",
+    "averageScore": "Avg: {score}%",
+    "moreOptions": "... and {count} more options",
+    "confirmDeleteQuestion": "Are you sure you want to delete this question?",
+    "questionDeletedSuccessfully": "Question deleted successfully",
+    "failedToDeleteQuestion": "Failed to delete question"
   },
   "settings": {
     "title": "Settings",

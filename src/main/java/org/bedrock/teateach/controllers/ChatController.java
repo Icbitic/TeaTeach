@@ -20,7 +20,6 @@ public class ChatController {
         this.llmService = llmService;
     }
 
-
     @PostMapping
     public ResponseEntity<?> post(@RequestBody String prompt) {
         return new ResponseEntity<>("[PLACEHOLDER]", HttpStatus.OK);
