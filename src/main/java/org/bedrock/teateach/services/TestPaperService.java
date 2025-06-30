@@ -20,11 +20,13 @@ public class TestPaperService {
     private final TestPaperMapper testPaperMapper;
     private final QuestionService questionService;
     private final Random random = new Random();
+    private final CourseService courseService;
 
     @Autowired
-    public TestPaperService(TestPaperMapper testPaperMapper, QuestionService questionService) {
+    public TestPaperService(TestPaperMapper testPaperMapper, QuestionService questionService, CourseService courseService) {
         this.testPaperMapper = testPaperMapper;
         this.questionService = questionService;
+        this.courseService = courseService;
     }
 
     @Transactional
@@ -36,7 +38,7 @@ public class TestPaperService {
 
     @Transactional
     public TestPaper generateTestPaper(TestPaperGenerationRequest request) {
-        List<Question> selectedQuestions = selectQuestionsBasedOnCriteria(request);
+        List<Question> selectedQuestions = selectQuestionsBasedOnCriteria(request).stream().distinct().toList();
         
         TestPaper testPaper = new TestPaper();
         testPaper.setPaperName(request.getPaperName());
@@ -85,12 +87,12 @@ public class TestPaperService {
     }
 
     public List<Question> previewQuestions(TestPaperGenerationRequest request) {
-        return selectQuestionsBasedOnCriteria(request);
+        return selectQuestionsBasedOnCriteria(request).stream().distinct().toList();
     }
 
     private List<Question> selectQuestionsBasedOnCriteria(TestPaperGenerationRequest request) {
         List<Question> allQuestions = questionService.getAllQuestions();
-        List<Question> selectedQuestions = new ArrayList<>();
+        List<Question> selectedQuestions;
 
         switch (request.getGenerationMethod()) {
             case "RANDOM":
@@ -148,7 +150,7 @@ public class TestPaperService {
             
             selectedQuestions.addAll(questionsForKP.stream()
                     .limit(requiredCount)
-                    .collect(Collectors.toList()));
+                    .toList());
         }
         
         return selectedQuestions;
@@ -157,7 +159,7 @@ public class TestPaperService {
     private List<Question> selectQuestionsByDifficulty(List<Question> allQuestions, TestPaperGenerationRequest request) {
         List<Question> selectedQuestions = new ArrayList<>();
         
-        for (String difficulty : request.getDifficulties()) {
+        for (String difficulty : List.of("EASY", "MEDIUM", "HARD")) {
             List<Question> questionsForDifficulty = allQuestions.stream()
                     .filter(q -> difficulty.equals(q.getDifficulty()))
                     .collect(Collectors.toList());
@@ -167,7 +169,7 @@ public class TestPaperService {
             
             selectedQuestions.addAll(questionsForDifficulty.stream()
                     .limit(requiredCount)
-                    .collect(Collectors.toList()));
+                    .toList());
         }
         
         return selectedQuestions;
