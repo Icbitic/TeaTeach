@@ -744,7 +744,12 @@ export default {
         const url = window.URL.createObjectURL(new Blob([response.data]))
         const link = document.createElement('a')
         link.href = url
-        link.setAttribute('download', resource.fileName)
+        // Add file extension if not already present
+        let filename = resource.fileName
+        if (!filename.toLowerCase().endsWith('.' + resource.fileType.toLowerCase())) {
+          filename += '.' + resource.fileType.toLowerCase()
+        }
+        link.setAttribute('download', filename)
         document.body.appendChild(link)
         link.click()
         link.remove()

@@ -22,6 +22,9 @@ public class OllamaConfiguration {
 
     @Bean
     public VectorStore vectorStore(EmbeddingModel embeddingModel) {
-        return SimpleVectorStore.builder(embeddingModel).build();
+        // Using in-memory SimpleVectorStore since we're using MySQL (not PostgreSQL)
+        // This avoids the PostgreSQL-specific SQL syntax errors
+        return SimpleVectorStore.builder(embeddingModel)
+                .build();
     }
 }

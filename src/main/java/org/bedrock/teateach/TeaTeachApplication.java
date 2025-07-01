@@ -6,10 +6,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
-@SpringBootApplication
 @MapperScan("org.bedrock.teateach.mappers")
 @EnableCaching
 @EnableAspectJAutoProxy
+@SpringBootApplication(exclude = {
+        org.springframework.boot.autoconfigure.data.jdbc.JdbcRepositoriesAutoConfiguration.class
+})
 public class TeaTeachApplication {
 
     public static void main(String[] args) {

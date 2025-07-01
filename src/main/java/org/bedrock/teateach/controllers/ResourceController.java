@@ -80,7 +80,12 @@ public class ResourceController {
             }
 
             HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getResourceName() + "\"");
+            String filename = resource.getResourceName();
+            // Add file extension if not already present
+            if (!filename.toLowerCase().endsWith("." + resource.getFileType().toLowerCase())) {
+                filename += "." + resource.getFileType().toLowerCase();
+            }
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
             headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
             headers.add(HttpHeaders.PRAGMA, "no-cache");
             headers.add(HttpHeaders.EXPIRES, "0");
