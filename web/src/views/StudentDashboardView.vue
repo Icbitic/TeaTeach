@@ -75,11 +75,7 @@
               <h4>{{ $t('studentDashboard.myLearningAbilities') }}</h4>
               <p>{{ $t('studentDashboard.abilitiesDescription') }}</p>
             </div>
-            <div class="action-arrow">
-              <el-icon>
-                <el-icon-arrow-right/>
-              </el-icon>
-            </div>
+
           </div>
         </el-card>
       </el-col>
@@ -95,11 +91,7 @@
               <h4>{{ $t('studentDashboard.myGrades') }}</h4>
               <p>{{ $t('studentDashboard.gradesDescription') }}</p>
             </div>
-            <div class="action-arrow">
-              <el-icon>
-                <el-icon-arrow-right/>
-              </el-icon>
-            </div>
+
           </div>
         </el-card>
       </el-col>
@@ -115,11 +107,7 @@
               <h4>{{ $t('studentDashboard.learningResources') }}</h4>
               <p>{{ $t('studentDashboard.resourcesDescription') }}</p>
             </div>
-            <div class="action-arrow">
-              <el-icon>
-                <el-icon-arrow-right/>
-              </el-icon>
-            </div>
+
           </div>
         </el-card>
       </el-col>

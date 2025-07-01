@@ -5,7 +5,6 @@
       <p class="page-description">{{ $t('analytics.description') }}</p>
     </div>
 
-    <!-- Filter Controls -->
     <el-card class="filter-card" shadow="never">
       <el-row :gutter="20">
         <el-col :span="6">

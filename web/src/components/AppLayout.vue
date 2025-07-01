@@ -100,10 +100,7 @@
           </template>
           
           <!-- Common Menu Items -->
-          <el-menu-item index="settings">
-            <el-icon><el-icon-setting /></el-icon>
-            <span><TypewriterText :text="$t('navigation.settings')" :show="!isCollapse" :speed="50" /></span>
-          </el-menu-item>
+
         </el-menu>
       </el-aside>
 
