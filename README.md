@@ -27,7 +27,7 @@ TeaTeach 是一个全面的学习管理系统，后端使用 Spring Boot，前�
 ./mvnw spring-boot:run
 ```
 
-后端服务器将在 http://localhost:8080 启动
+后端服务器将在 http://localhost:12345 启动
 
 ## 前端 (Vue.js)
 
@@ -96,7 +96,7 @@ The project is organized into two main components:
 ./mvnw spring-boot:run
 ```
 
-The backend server will start on http://localhost:8080
+The backend server will start on http://localhost:12345
 
 ## Frontend (Vue.js)
 
