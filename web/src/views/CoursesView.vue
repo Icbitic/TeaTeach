@@ -845,7 +845,9 @@ export default {
 
 <style scoped>
 .courses-container {
-  padding: 0;
+  padding: 32px 0 0 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
 }
 
 .section-header {
@@ -853,24 +855,32 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  padding: 0 8px;
 }
 
 .section-header h2 {
   margin: 0;
-  color: #303133;
-  font-size: 24px;
-  font-weight: 600;
+  color: #4c6ef5;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 .section-actions {
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
 .filter-card {
-  margin-bottom: 20px;
+  margin-bottom: 22px;
   border: none;
-  border-radius: 8px;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(76, 110, 245, 0.07);
+  background: rgba(255,255,255,0.98);
+  transition: box-shadow 0.2s;
+}
+.filter-card:hover {
+  box-shadow: 0 6px 24px rgba(76, 110, 245, 0.13);
 }
 
 .search-form {
@@ -888,13 +898,54 @@ export default {
 
 .data-card {
   border: none;
-  border-radius: 8px;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(76, 110, 245, 0.10);
+  background: rgba(255,255,255,0.98);
+  transition: box-shadow 0.2s;
+}
+.data-card:hover {
+  box-shadow: 0 10px 32px rgba(76, 110, 245, 0.16);
+}
+
+.el-table {
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 15px;
+}
+.el-table th, .el-table td {
+  background: transparent;
+}
+.el-table__body tr:hover > td {
+  background: #f0f5ff !important;
+  transition: background 0.2s;
+}
+.el-table__body tr.current-row > td {
+  background: #e0e7ff !important;
+}
+
+.el-button {
+  border-radius: 8px !important;
+  transition: box-shadow 0.2s, background 0.2s, color 0.2s;
+}
+.el-button--primary {
+  background: linear-gradient(90deg, #4c6ef5 0%, #764ba2 100%);
+  border: none;
+}
+.el-button--primary:hover {
+  background: linear-gradient(90deg, #5f8cff 0%, #a084e8 100%);
+}
+.el-button--danger {
+  background: linear-gradient(90deg, #ff6b6b 0%, #f06595 100%);
+  border: none;
+}
+.el-button--danger:hover {
+  background: linear-gradient(90deg, #ff8787 0%, #f783ac 100%);
 }
 
 .pagination-container {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
 .dialog-footer {
@@ -913,14 +964,16 @@ export default {
 .knowledge-point-content .course-info {
   background: #f8f9fa;
   padding: 15px;
-  border-radius: 6px;
+  border-radius: 10px;
   margin-bottom: 20px;
+  box-shadow: 0 1px 6px rgba(76, 110, 245, 0.07);
 }
 
 .knowledge-point-content .course-info h3 {
   margin: 0 0 5px 0;
-  color: #303133;
-  font-size: 18px;
+  color: #4c6ef5;
+  font-size: 19px;
+  font-weight: 600;
 }
 
 .knowledge-point-content .course-info p {

@@ -130,6 +130,16 @@ export default {
   height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   position: relative;
+  overflow: hidden;
+}
+
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(2px);
+  z-index: 0;
 }
 
 .language-switcher-top {
@@ -140,52 +150,86 @@ export default {
 }
 
 .login-box {
-  width: 350px;
-  padding: 40px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 370px;
+  padding: 48px 40px 36px 40px;
+  background-color: rgba(255,255,255,0.95);
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(76, 110, 245, 0.18), 0 1.5px 8px rgba(0,0,0,0.08);
+  position: relative;
+  z-index: 1;
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+.login-box:hover {
+  box-shadow: 0 16px 48px rgba(76, 110, 245, 0.22), 0 3px 16px rgba(0,0,0,0.10);
+  transform: translateY(-4px) scale(1.015);
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 32px;
 }
 
 .login-header h1 {
   margin: 0;
-  color: #409EFF;
-  font-size: 28px;
+  color: #4c6ef5;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 .login-header p {
-  margin-top: 5px;
+  margin-top: 7px;
   color: #606266;
   font-size: 16px;
+  opacity: 0.85;
 }
 
 .login-form {
   margin-bottom: 20px;
 }
 
+.el-input__wrapper {
+  border-radius: 8px !important;
+  box-shadow: 0 1px 4px rgba(76, 110, 245, 0.04);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 2px #a5b4fc, 0 1px 8px rgba(76, 110, 245, 0.10);
+  border-color: #4c6ef5 !important;
+}
+
 .login-button {
   width: 100%;
-  padding: 12px 0;
-  font-size: 16px;
+  padding: 13px 0;
+  font-size: 17px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #4c6ef5 0%, #764ba2 100%);
+  border: none;
+  box-shadow: 0 2px 8px rgba(76, 110, 245, 0.10);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.login-button:hover {
+  background: linear-gradient(90deg, #5f8cff 0%, #a084e8 100%);
+  box-shadow: 0 4px 16px rgba(76, 110, 245, 0.18);
+  transform: translateY(-2px) scale(1.01);
 }
 
 .login-footer {
   text-align: center;
   color: #909399;
   font-size: 14px;
+  margin-top: 10px;
 }
 
 .login-footer a {
-  color: #409EFF;
+  color: #4c6ef5;
   text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
 }
 
 .login-footer a:hover {
+  color: #764ba2;
   text-decoration: underline;
 }
 
