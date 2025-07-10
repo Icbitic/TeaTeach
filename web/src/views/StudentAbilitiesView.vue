@@ -170,38 +170,47 @@ export default {
 
 <style scoped>
 .student-abilities-view {
-  padding: 20px;
+  padding: 32px 0 0 0;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
 }
 
 .page-header {
-  background: white;
-  border-radius: 12px;
-  padding: 30px;
-  margin-bottom: 30px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: rgba(255,255,255,0.98);
+  border-radius: 18px;
+  padding: 36px 32px;
+  margin-bottom: 36px;
+  box-shadow: 0 8px 32px rgba(76, 110, 245, 0.10);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.page-header:hover {
+  box-shadow: 0 16px 48px rgba(76, 110, 245, 0.16);
+  transform: translateY(-2px) scale(1.01);
 }
 
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
 }
 
 .header-text h1 {
   margin: 0 0 10px 0;
-  color: #303133;
-  font-size: 32px;
-  font-weight: 600;
+  background: linear-gradient(90deg, #4c6ef5 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: 1px;
 }
 
 .page-description {
   color: #606266;
-  font-size: 16px;
+  font-size: 17px;
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.6;
+  opacity: 0.88;
 }
 
 .header-actions {
@@ -209,15 +218,28 @@ export default {
 }
 
 .abilities-content {
-  background: white;
-  border-radius: 12px;
-  margin-bottom: 30px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: rgba(255,255,255,0.98);
+  border-radius: 18px;
+  margin-bottom: 36px;
+  box-shadow: 0 8px 32px rgba(76, 110, 245, 0.10);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.abilities-content:hover {
+  box-shadow: 0 16px 48px rgba(76, 110, 245, 0.16);
+  transform: translateY(-2px) scale(1.01);
 }
 
 .help-section,
 .tips-section {
-  margin-bottom: 30px;
+  margin-bottom: 36px;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(76, 110, 245, 0.10);
+  background: rgba(255,255,255,0.98);
+  transition: box-shadow 0.2s;
+}
+.help-section:hover,
+.tips-section:hover {
+  box-shadow: 0 10px 32px rgba(76, 110, 245, 0.16);
 }
 
 .help-header,
@@ -229,73 +251,83 @@ export default {
 .help-header h3,
 .tips-header h3 {
   margin: 0;
-  color: #303133;
-  font-size: 20px;
+  background: linear-gradient(90deg, #4c6ef5 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 22px;
+  font-weight: 700;
 }
 
 .help-item {
   text-align: center;
-  padding: 20px;
+  padding: 24px 12px;
   height: 100%;
+  border-radius: 12px;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.help-item:hover {
+  box-shadow: 0 4px 16px rgba(76, 110, 245, 0.10);
+  transform: translateY(-2px) scale(1.01);
 }
 
 .help-icon {
-  width: 60px;
-  height: 60px;
+  width: 62px;
+  height: 62px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 15px;
-  font-size: 24px;
+  font-size: 28px;
   color: white;
+  box-shadow: 0 2px 8px rgba(76, 110, 245, 0.10);
 }
-
 .help-icon.problem-solving {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
-
 .help-icon.critical-thinking {
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
 }
-
 .help-icon.creativity {
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
-
 .help-icon.collaboration {
   background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
 }
-
 .help-icon.communication {
   background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
 }
-
 .help-icon.recommendations {
   background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
 }
 
 .help-item h4 {
   margin: 0 0 10px 0;
-  color: #303133;
-  font-size: 16px;
+  color: #4c6ef5;
+  font-size: 17px;
+  font-weight: 700;
 }
 
 .help-item p {
   margin: 0;
   color: #606266;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 .tip-category {
-  padding: 20px;
+  padding: 24px 12px;
+  border-radius: 12px;
+  background: #f8f9fa;
+  box-shadow: 0 1px 6px rgba(76, 110, 245, 0.07);
+  margin-bottom: 10px;
 }
 
 .tip-category h4 {
   margin: 0 0 15px 0;
-  color: #303133;
-  font-size: 18px;
+  color: #764ba2;
+  font-size: 19px;
+  font-weight: 700;
 }
 
 .tip-category ul {
@@ -306,34 +338,30 @@ export default {
 
 .tip-category li {
   margin-bottom: 8px;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 @media (max-width: 768px) {
   .student-abilities-view {
     padding: 15px;
   }
-  
   .page-header {
-    padding: 20px;
+    padding: 18px 8px;
   }
-  
   .header-content {
     flex-direction: column;
     align-items: flex-start;
+    gap: 10px;
   }
-  
   .header-text h1 {
-    font-size: 24px;
+    font-size: 22px;
   }
-  
   .help-item {
-    padding: 15px;
-    margin-bottom: 20px;
+    padding: 12px 4px;
+    margin-bottom: 16px;
   }
-  
   .tip-category {
-    padding: 15px;
+    padding: 12px 4px;
   }
 }
 </style>
