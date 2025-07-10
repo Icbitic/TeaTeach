@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.bedrock.teateach.dto.CommonResponse;
 
 @RestController
 @RequestMapping("/api/students")
@@ -25,79 +26,79 @@ public class StudentController {
     }
 
     @PostMapping
-    public ResponseEntity<Student> createStudent(@RequestBody Student student) {
+    public ResponseEntity<CommonResponse<Student>> createStudent(@RequestBody Student student) {
         Student createdStudent = studentService.createStudent(student);
-        return new ResponseEntity<>(createdStudent, HttpStatus.CREATED);
+        return ResponseEntity.ok(CommonResponse.success(createdStudent));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Student> updateStudent(@PathVariable Long id, @RequestBody Student student) {
+    public ResponseEntity<CommonResponse<Student>> updateStudent(@PathVariable Long id, @RequestBody Student student) {
         student.setId(id); // Ensure the ID from path is used
         Student updatedStudent = studentService.updateStudent(student);
         if (updatedStudent != null) {
-            return ResponseEntity.ok(updatedStudent);
+            return ResponseEntity.ok(CommonResponse.success(updatedStudent));
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(CommonResponse.error(404, "Student not found"));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
+    public ResponseEntity<CommonResponse<Void>> deleteStudent(@PathVariable Long id) {
         studentService.deleteStudent(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(CommonResponse.success(null));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Student> getStudentById(@PathVariable Long id) {
+    public ResponseEntity<CommonResponse<Student>> getStudentById(@PathVariable Long id) {
         Student student = studentService.getStudentById(id);
         if (student != null) {
-            return ResponseEntity.ok(student);
+            return ResponseEntity.ok(CommonResponse.success(student));
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(CommonResponse.error(404, "Student not found"));
     }
 
     @GetMapping
-    public ResponseEntity<List<Student>> getAllStudents() {
+    public ResponseEntity<CommonResponse<List<Student>>> getAllStudents() {
         List<Student> students = studentService.getAllStudents();
-        return ResponseEntity.ok(students);
+        return ResponseEntity.ok(CommonResponse.success(students));
     }
 
     @GetMapping("/by-student-id/{studentId}")
-    public ResponseEntity<Student> getStudentByStudentId(@PathVariable String studentId) {
+    public ResponseEntity<CommonResponse<Student>> getStudentByStudentId(@PathVariable String studentId) {
         Student student = studentService.getStudentByStudentId(studentId);
         if (student != null) {
-            return ResponseEntity.ok(student);
+            return ResponseEntity.ok(CommonResponse.success(student));
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(CommonResponse.error(404, "Student not found"));
     }
 
     @GetMapping("/convert/student-id-to-id/{studentId}")
-    public ResponseEntity<Long> convertStudentIdToId(@PathVariable String studentId) {
+    public ResponseEntity<CommonResponse<Long>> convertStudentIdToId(@PathVariable String studentId) {
         Long id = studentService.convertStudentIdToId(studentId);
         if (id != null) {
-            return ResponseEntity.ok(id);
+            return ResponseEntity.ok(CommonResponse.success(id));
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(CommonResponse.error(404, "Student not found"));
     }
 
     @GetMapping("/convert/id-to-student-id/{id}")
-    public ResponseEntity<String> convertIdToStudentId(@PathVariable Long id) {
+    public ResponseEntity<CommonResponse<String>> convertIdToStudentId(@PathVariable Long id) {
         String studentId = studentService.convertIdToStudentId(id);
         if (studentId != null) {
-            return ResponseEntity.ok(studentId);
+            return ResponseEntity.ok(CommonResponse.success(studentId));
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(CommonResponse.error(404, "Student not found"));
     }
 
     @GetMapping("/exists/by-student-id/{studentId}")
-    public ResponseEntity<Boolean> existsByStudentId(@PathVariable String studentId) {
+    public ResponseEntity<CommonResponse<Boolean>> existsByStudentId(@PathVariable String studentId) {
         boolean exists = studentService.existsByStudentId(studentId);
-        return ResponseEntity.ok(exists);
+        return ResponseEntity.ok(CommonResponse.success(exists));
     }
 
     @GetMapping("/exists/by-id/{id}")
-    public ResponseEntity<Boolean> existsById(@PathVariable Long id) {
+    public ResponseEntity<CommonResponse<Boolean>> existsById(@PathVariable Long id) {
         boolean exists = studentService.existsById(id);
-        return ResponseEntity.ok(exists);
+        return ResponseEntity.ok(CommonResponse.success(exists));
     }
     
     /**
@@ -128,26 +129,22 @@ public class StudentController {
      * @return List of imported students
      */
     @PostMapping("/import")
-    public ResponseEntity<?> importStudents(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<CommonResponse<ImportResponse>> importStudents(@RequestParam("file") MultipartFile file) {
         try {
             if (file.isEmpty()) {
-                return ResponseEntity.badRequest()
-                    .body(new ImportResponse(false, "File is empty", 0, null));
+                return ResponseEntity.ok(CommonResponse.error(400, "File is empty"));
             }
             
             List<Student> importedStudents = studentService.importStudentsFromExcel(file);
             
             String message = String.format("Successfully imported %d students", importedStudents.size());
-            return ResponseEntity.ok(
-                new ImportResponse(true, message, importedStudents.size(), importedStudents)
-            );
+            ImportResponse resp = new ImportResponse(true, message, importedStudents.size(), importedStudents);
+            return ResponseEntity.ok(CommonResponse.success(resp));
             
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                .body(new ImportResponse(false, e.getMessage(), 0, null));
+            return ResponseEntity.ok(CommonResponse.error(400, e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ImportResponse(false, "Failed to import students: " + e.getMessage(), 0, null));
+            return ResponseEntity.ok(CommonResponse.error(500, "Failed to import students: " + e.getMessage()));
         }
     }
     
