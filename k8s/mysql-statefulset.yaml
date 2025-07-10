@@ -1,0 +1,414 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: teateach-mysql
+  namespace: teateach
+  labels:
+    app: teateach-mysql
+    component: database
+spec:
+  serviceName: teateach-mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: teateach-mysql
+  template:
+    metadata:
+      labels:
+        app: teateach-mysql
+        component: database
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9104"
+    spec:
+      serviceAccountName: teateach-mysql
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+      initContainers:
+      - name: init-mysql
+        image: mysql:8.0
+        command:
+        - bash
+        - "-c"
+        - |
+          set -ex
+          # Generate mysql server-id from pod ordinal index.
+          [[ `hostname` =~ -([0-9]+)$ ]] || exit 1
+          ordinal=${BASH_REMATCH[1]}
+          echo [mysqld] > /mnt/conf.d/server-id.cnf
+          # Add an offset to avoid reserved server-id=0 value.
+          echo server-id=$((100 + $ordinal)) >> /mnt/conf.d/server-id.cnf
+          # Copy appropriate conf.d files from config-map to emptyDir.
+          cp /mnt/config-map/my.cnf /mnt/conf.d/
+        volumeMounts:
+        - name: conf
+          mountPath: /mnt/conf.d
+        - name: config-map
+          mountPath: /mnt/config-map
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: teateach-db-secret
+              key: root-password
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: teateach-db-secret
+              key: database
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: teateach-db-secret
+              key: username
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: teateach-db-secret
+              key: password
+        ports:
+        - name: mysql
+          containerPort: 3306
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/mysql
+          subPath: mysql
+        - name: conf
+          mountPath: /etc/mysql/conf.d
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        livenessProbe:
+          exec:
+            command: ["mysqladmin", "ping"]
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command: ["mysql", "-h", "127.0.0.1", "-e", "SELECT 1"]
+          initialDelaySeconds: 5
+          periodSeconds: 2
+          timeoutSeconds: 1
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+      - name: mysql-exporter
+        image: prom/mysqld-exporter:latest
+        env:
+        - name: DATA_SOURCE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: teateach-mysql-exporter-secret
+              key: data-source-name
+        ports:
+        - name: metrics
+          containerPort: 9104
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: conf
+        emptyDir: {}
+      - name: config-map
+        configMap:
+          name: teateach-mysql-config
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: fast-ssd
+      resources:
+        requests:
+          storage: 20Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: teateach-mysql
+  namespace: teateach
+  labels:
+    app: teateach-mysql
+    component: database
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9104"
+spec:
+  ports:
+  - name: mysql
+    port: 3306
+    targetPort: 3306
+  - name: metrics
+    port: 9104
+    targetPort: 9104
+  clusterIP: None
+  selector:
+    app: teateach-mysql
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: teateach-mysql
+  namespace: teateach
+  labels:
+    app: teateach-mysql
+    component: database
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: teateach-mysql-config
+  namespace: teateach
+data:
+  my.cnf: |
+    [mysqld]
+    # Basic settings
+    default-storage-engine = innodb
+    pid-file = /var/run/mysqld/mysqld.pid
+    socket = /var/run/mysqld/mysqld.sock
+    datadir = /var/lib/mysql
+    secure-file-priv = /var/lib/mysql-files
+    user = mysql
+    
+    # Connection settings
+    bind-address = 0.0.0.0
+    port = 3306
+    max_connections = 200
+    max_connect_errors = 1000000
+    
+    # Character set
+    character-set-server = utf8mb4
+    collation-server = utf8mb4_unicode_ci
+    
+    # InnoDB settings
+    innodb_buffer_pool_size = 1G
+    innodb_log_file_size = 256M
+    innodb_flush_log_at_trx_commit = 1
+    innodb_flush_method = O_DIRECT
+    innodb_file_per_table = 1
+    innodb_open_files = 400
+    innodb_io_capacity = 400
+    innodb_io_capacity_max = 2000
+    
+    # Query cache
+    query_cache_type = 0
+    query_cache_size = 0
+    
+    # Logging
+    log-error = /var/log/mysql/error.log
+    slow_query_log = 1
+    slow_query_log_file = /var/log/mysql/slow.log
+    long_query_time = 2
+    log_queries_not_using_indexes = 1
+    
+    # Binary logging
+    log-bin = mysql-bin
+    binlog_format = ROW
+    expire_logs_days = 7
+    max_binlog_size = 100M
+    
+    # Performance
+    tmp_table_size = 64M
+    max_heap_table_size = 64M
+    sort_buffer_size = 2M
+    join_buffer_size = 2M
+    thread_cache_size = 50
+    
+    # Security
+    sql_mode = STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO
+    
+    [mysql]
+    default-character-set = utf8mb4
+    
+    [client]
+    default-character-set = utf8mb4
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: teateach-db-secret
+  namespace: teateach
+type: Opaque
+data:
+  # Base64 encoded values - replace with actual values
+  root-password: cm9vdHBhc3N3b3Jk  # rootpassword
+  database: dGVhdGVhY2g=  # teateach
+  username: dGVhdGVhY2g=  # teateach
+  password: cGFzc3dvcmQ=  # password
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: teateach-mysql-exporter-secret
+  namespace: teateach
+type: Opaque
+data:
+  # Base64 encoded MySQL connection string for exporter
+  data-source-name: dGVhdGVhY2g6cGFzc3dvcmRAKHRlYXRlYWNoLW15c3FsOjMzMDYpLw==  # teateach:password@(teateach-mysql:3306)/
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: teateach-mysql-init
+  namespace: teateach
+  labels:
+    app: teateach-mysql-init
+    component: database
+spec:
+  template:
+    metadata:
+      labels:
+        app: teateach-mysql-init
+        component: database
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: mysql-init
+        image: mysql:8.0
+        env:
+        - name: MYSQL_HOST
+          value: "teateach-mysql"
+        - name: MYSQL_PORT
+          value: "3306"
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: teateach-db-secret
+              key: database
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: teateach-db-secret
+              key: username
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: teateach-db-secret
+              key: password
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          echo "Waiting for MySQL to be ready..."
+          until mysql -h"$MYSQL_HOST" -P"$MYSQL_PORT" -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "SELECT 1" > /dev/null 2>&1; do
+            echo "MySQL is not ready yet, waiting..."
+            sleep 5
+          done
+          echo "MySQL is ready!"
+          
+          echo "Creating database schema..."
+          mysql -h"$MYSQL_HOST" -P"$MYSQL_PORT" -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" < /sql/schema.sql
+          
+          echo "Inserting initial data..."
+          mysql -h"$MYSQL_HOST" -P"$MYSQL_PORT" -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" < /sql/data.sql
+          
+          echo "Database initialization completed!"
+        volumeMounts:
+        - name: sql-scripts
+          mountPath: /sql
+          readOnly: true
+      volumes:
+      - name: sql-scripts
+        configMap:
+          name: teateach-mysql-init-scripts
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: teateach-mysql-init-scripts
+  namespace: teateach
+data:
+  schema.sql: |
+    -- TeaTeach Database Schema
+    CREATE TABLE IF NOT EXISTS users (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(50) UNIQUE NOT NULL,
+        email VARCHAR(100) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        first_name VARCHAR(50) NOT NULL,
+        last_name VARCHAR(50) NOT NULL,
+        role ENUM('STUDENT', 'TEACHER', 'ADMIN') NOT NULL,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_username (username),
+        INDEX idx_email (email),
+        INDEX idx_role (role)
+    );
+    
+    CREATE TABLE IF NOT EXISTS courses (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(200) NOT NULL,
+        description TEXT,
+        teacher_id BIGINT NOT NULL,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE,
+        INDEX idx_teacher (teacher_id),
+        INDEX idx_active (is_active)
+    );
+    
+    CREATE TABLE IF NOT EXISTS enrollments (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        student_id BIGINT NOT NULL,
+        course_id BIGINT NOT NULL,
+        enrolled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_enrollment (student_id, course_id),
+        INDEX idx_student (student_id),
+        INDEX idx_course (course_id)
+    );
+    
+    CREATE TABLE IF NOT EXISTS assignments (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        course_id BIGINT NOT NULL,
+        title VARCHAR(200) NOT NULL,
+        description TEXT,
+        due_date TIMESTAMP,
+        max_score DECIMAL(5,2) DEFAULT 100.00,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+        INDEX idx_course (course_id),
+        INDEX idx_due_date (due_date),
+        INDEX idx_active (is_active)
+    );
+  
+  data.sql: |
+    -- Initial admin user
+    INSERT IGNORE INTO users (username, email, password_hash, first_name, last_name, role) VALUES
+    ('admin', 'admin@teateach.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Admin', 'User', 'ADMIN');
+    
+    -- Sample teacher
+    INSERT IGNORE INTO users (username, email, password_hash, first_name, last_name, role) VALUES
+    ('teacher1', 'teacher@teateach.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'John', 'Teacher', 'TEACHER');
+    
+    -- Sample student
+    INSERT IGNORE INTO users (username, email, password_hash, first_name, last_name, role) VALUES
+    ('student1', 'student@teateach.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Jane', 'Student', 'STUDENT');

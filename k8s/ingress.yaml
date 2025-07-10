@@ -1,0 +1,296 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: teateach-ingress
+  namespace: teateach
+  labels:
+    app: teateach
+    component: ingress
+  annotations:
+    # Ingress class
+    kubernetes.io/ingress.class: "nginx"
+    
+    # SSL/TLS
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    
+    # Rate limiting
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/rate-limit-connections: "10"
+    
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' wss: https:; frame-ancestors 'none';";
+      more_set_headers "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload";
+    
+    # CORS
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://teateach.com,https://www.teateach.com"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+    nginx.ingress.kubernetes.io/cors-expose-headers: "Content-Length,Content-Range"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-max-age: "86400"
+    
+    # Proxy settings
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+    
+    # WebSocket support
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/websocket-services: "teateach-backend"
+    
+    # Compression
+    nginx.ingress.kubernetes.io/enable-gzip: "true"
+    nginx.ingress.kubernetes.io/gzip-types: "text/plain,text/css,text/xml,text/javascript,application/json,application/javascript,application/xml+rss,application/atom+xml,image/svg+xml"
+    
+    # Caching
+    nginx.ingress.kubernetes.io/server-snippet: |
+      location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        add_header Vary Accept-Encoding;
+      }
+      
+      location /api/auth/login {
+        limit_req zone=login burst=5 nodelay;
+      }
+spec:
+  tls:
+  - hosts:
+    - teateach.com
+    - www.teateach.com
+    - api.teateach.com
+    secretName: teateach-tls-secret
+  rules:
+  # Main application
+  - host: teateach.com
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: teateach-backend
+            port:
+              number: 8080
+      - path: /ws
+        pathType: Prefix
+        backend:
+          service:
+            name: teateach-backend
+            port:
+              number: 8080
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: teateach-frontend
+            port:
+              number: 80
+  
+  # WWW redirect
+  - host: www.teateach.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: teateach-frontend
+            port:
+              number: 80
+  
+  # API subdomain
+  - host: api.teateach.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: teateach-backend
+            port:
+              number: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: teateach-admin-ingress
+  namespace: teateach
+  labels:
+    app: teateach-admin
+    component: ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    
+    # Basic auth for admin endpoints
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: teateach-admin-auth
+    nginx.ingress.kubernetes.io/auth-realm: 'TeaTeach Admin Area'
+    
+    # IP whitelist for admin access
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+    
+    # Rate limiting for admin
+    nginx.ingress.kubernetes.io/rate-limit: "10"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+spec:
+  tls:
+  - hosts:
+    - admin.teateach.com
+    - monitoring.teateach.com
+    secretName: teateach-admin-tls-secret
+  rules:
+  # Admin interface
+  - host: admin.teateach.com
+    http:
+      paths:
+      - path: /api/admin
+        pathType: Prefix
+        backend:
+          service:
+            name: teateach-backend
+            port:
+              number: 8080
+      - path: /actuator
+        pathType: Prefix
+        backend:
+          service:
+            name: teateach-backend
+            port:
+              number: 8081
+  
+  # Monitoring endpoints
+  - host: monitoring.teateach.com
+    http:
+      paths:
+      - path: /grafana
+        pathType: Prefix
+        backend:
+          service:
+            name: teateach-grafana
+            port:
+              number: 3000
+      - path: /prometheus
+        pathType: Prefix
+        backend:
+          service:
+            name: teateach-prometheus
+            port:
+              number: 9090
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: teateach-admin-auth
+  namespace: teateach
+type: Opaque
+data:
+  # Generated with: htpasswd -nb admin password | base64
+  # Username: admin, Password: password (change in production!)
+  auth: YWRtaW46JGFwcjEkSDY1dnFUNDAkWVBLVUJBVUJBVUJBVUJBVUJBVUJBVQ==
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: teateach-ingress-network-policy
+  namespace: teateach
+spec:
+  podSelector:
+    matchLabels:
+      app: teateach-frontend
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: teateach-backend-network-policy
+  namespace: teateach
+spec:
+  podSelector:
+    matchLabels:
+      app: teateach-backend
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    - podSelector:
+        matchLabels:
+          app: teateach-frontend
+    ports:
+    - protocol: TCP
+      port: 8080
+    - protocol: TCP
+      port: 8081
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@teateach.com
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: admin@teateach.com
+    privateKeySecretRef:
+      name: letsencrypt-staging
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: teateach-nginx-rate-limit
+  namespace: ingress-nginx
+data:
+  rate-limit.conf: |
+    # Rate limiting zones
+    limit_req_zone $binary_remote_addr zone=api:10m rate=100r/m;
+    limit_req_zone $binary_remote_addr zone=login:10m rate=5r/m;
+    limit_req_zone $binary_remote_addr zone=register:10m rate=3r/m;
+    limit_req_zone $binary_remote_addr zone=upload:10m rate=10r/m;
+    limit_req_zone $binary_remote_addr zone=ai:10m rate=20r/m;
+    
+    # Connection limiting
+    limit_conn_zone $binary_remote_addr zone=conn_limit_per_ip:10m;
+    limit_conn_zone $server_name zone=conn_limit_per_server:10m;
