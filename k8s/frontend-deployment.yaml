@@ -1,0 +1,380 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teateach-frontend
+  namespace: teateach
+  labels:
+    app: teateach-frontend
+    component: frontend
+    version: v1
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: teateach-frontend
+  template:
+    metadata:
+      labels:
+        app: teateach-frontend
+        component: frontend
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "80"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: teateach-frontend
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        fsGroup: 101
+      containers:
+      - name: frontend
+        image: ghcr.io/teateach/frontend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: VUE_APP_API_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: teateach-frontend-config
+              key: api-base-url
+        - name: VUE_APP_WS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: teateach-frontend-config
+              key: websocket-url
+        - name: VUE_APP_ENVIRONMENT
+          value: "production"
+        - name: VUE_APP_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: teateach-frontend-config
+              key: app-version
+        - name: VUE_APP_SENTRY_DSN
+          valueFrom:
+            secretKeyRef:
+              name: teateach-frontend-secret
+              key: sentry-dsn
+              optional: true
+        - name: VUE_APP_GA_TRACKING_ID
+          valueFrom:
+            secretKeyRef:
+              name: teateach-frontend-secret
+              key: ga-tracking-id
+              optional: true
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 30
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+          readOnly: true
+        - name: nginx-cache
+          mountPath: /var/cache/nginx
+        - name: nginx-run
+          mountPath: /var/run
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+            add:
+            - NET_BIND_SERVICE
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: teateach-nginx-config
+      - name: nginx-cache
+        emptyDir: {}
+      - name: nginx-run
+        emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - teateach-frontend
+              topologyKey: kubernetes.io/hostname
+      tolerations:
+      - key: "node.kubernetes.io/not-ready"
+        operator: "Exists"
+        effect: "NoExecute"
+        tolerationSeconds: 300
+      - key: "node.kubernetes.io/unreachable"
+        operator: "Exists"
+        effect: "NoExecute"
+        tolerationSeconds: 300
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: teateach-frontend
+  namespace: teateach
+  labels:
+    app: teateach-frontend
+    component: frontend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: teateach-frontend
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: teateach-frontend
+  namespace: teateach
+  labels:
+    app: teateach-frontend
+    component: frontend
+automountServiceAccountToken: false
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: teateach-frontend-pdb
+  namespace: teateach
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: teateach-frontend
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: teateach-frontend-hpa
+  namespace: teateach
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: teateach-frontend
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+      selectPolicy: Max
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: teateach-nginx-config
+  namespace: teateach
+data:
+  nginx.conf: |
+    user nginx;
+    worker_processes auto;
+    error_log /var/log/nginx/error.log warn;
+    pid /var/run/nginx.pid;
+    
+    events {
+        worker_connections 1024;
+        use epoll;
+        multi_accept on;
+    }
+    
+    http {
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+        
+        log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" "$http_x_forwarded_for"';
+        
+        access_log /var/log/nginx/access.log main;
+        
+        sendfile on;
+        tcp_nopush on;
+        tcp_nodelay on;
+        keepalive_timeout 65;
+        types_hash_max_size 2048;
+        
+        # Gzip compression
+        gzip on;
+        gzip_vary on;
+        gzip_min_length 1024;
+        gzip_proxied any;
+        gzip_comp_level 6;
+        gzip_types
+            text/plain
+            text/css
+            text/xml
+            text/javascript
+            application/json
+            application/javascript
+            application/xml+rss
+            application/atom+xml
+            image/svg+xml;
+        
+        # Security headers
+        add_header X-Frame-Options DENY always;
+        add_header X-Content-Type-Options nosniff always;
+        add_header X-XSS-Protection "1; mode=block" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' wss: https:; frame-ancestors 'none';" always;
+        
+        # Rate limiting
+        limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+        limit_req_zone $binary_remote_addr zone=login:10m rate=1r/s;
+        
+        server {
+            listen 80;
+            server_name _;
+            root /usr/share/nginx/html;
+            index index.html;
+            
+            # Health check endpoint
+            location /health {
+                access_log off;
+                return 200 "healthy\n";
+                add_header Content-Type text/plain;
+            }
+            
+            # Static assets with long cache
+            location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+                expires 1y;
+                add_header Cache-Control "public, immutable";
+                add_header Vary Accept-Encoding;
+            }
+            
+            # API proxy with rate limiting
+            location /api/ {
+                limit_req zone=api burst=20 nodelay;
+                proxy_pass http://teateach-backend:8080;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_connect_timeout 30s;
+                proxy_send_timeout 30s;
+                proxy_read_timeout 30s;
+            }
+            
+            # WebSocket proxy
+            location /ws {
+                proxy_pass http://teateach-backend:8080;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_connect_timeout 7d;
+                proxy_send_timeout 7d;
+                proxy_read_timeout 7d;
+            }
+            
+            # Login endpoint with stricter rate limiting
+            location /api/auth/login {
+                limit_req zone=login burst=5 nodelay;
+                proxy_pass http://teateach-backend:8080;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+            
+            # SPA fallback
+            location / {
+                try_files $uri $uri/ /index.html;
+                add_header Cache-Control "no-cache, no-store, must-revalidate";
+                add_header Pragma "no-cache";
+                add_header Expires "0";
+            }
+            
+            # Deny access to hidden files
+            location ~ /\. {
+                deny all;
+            }
+        }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: teateach-frontend-config
+  namespace: teateach
+data:
+  api-base-url: "https://api.teateach.com/api"
+  websocket-url: "wss://api.teateach.com/ws"
+  app-version: "1.0.0"
+  environment: "production"
