@@ -10,10 +10,10 @@
 [![Element Plus](https://img.shields.io/badge/Element%20Plus-2.4.3-409EFF.svg)](https://element-plus.org/)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 
-![GitHub repo size](https://img.shields.io/github/repo-size/icbitic/teateach)
-![GitHub last commit](https://img.shields.io/github/last-commit/icbitic/teateach)
-![GitHub issues](https://img.shields.io/github/issues/icbitic/teateach)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/icbitic/teateach)
+![GitHub repo size](https://img.shields.io/github/repo-size/icbitic/TeaTeach)
+![GitHub last commit](https://img.shields.io/github/last-commit/icbitic/TeaTeach)
+![GitHub issues](https://img.shields.io/github/issues/icbitic/TeaTeach)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/icbitic/TeaTeach)
 
 [English](#english) | [中文](#中文)
 
@@ -65,7 +65,7 @@ graph TB
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/icbitic/teateach.git
+   git clone https://github.com/icbitic/TeaTeach.git
    cd TeaTeach
    ```
 
@@ -179,9 +179,9 @@ This project is proprietary and confidential. All rights reserved.
 ## 📞 Support
 
 For support and questions:
-- 📧 Email: support@teateach.com
-- 📖 Documentation: [Wiki](https://github.com/icbitic/teateach/wiki)
-- 🐛 Issues: [GitHub Issues](https://github.com/icbitic/teateach/issues)
+- 📧 Email: support@TeaTeach.com
+- 📖 Documentation: [Wiki](https://github.com/icbitic/TeaTeach/wiki)
+- 🐛 Issues: [GitHub Issues](https://github.com/icbitic/TeaTeach/issues)
 
 ---
 
