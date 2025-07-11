@@ -375,4 +375,13 @@ public class StudentService {
                student.getEmail() != null && !student.getEmail().trim().isEmpty() &&
                student.getEmail().contains("@");
     }
+    
+    // 在StudentService中添加批量插入方法
+    @Transactional
+    @CacheEvict(value = "allStudents", allEntries = true)
+    public List<Student> batchCreateStudents(List<Student> students) {
+    // 使用批量插入而不是逐个插入
+    studentMapper.batchInsert(students);
+    return students;
+    }
 }
