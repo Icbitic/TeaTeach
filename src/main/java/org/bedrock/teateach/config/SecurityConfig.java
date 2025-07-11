@@ -30,12 +30,14 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
+            // 添加更细粒度的权限控制
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
-                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/api/student/**").hasAuthority("STUDENT")
-                .requestMatchers("/api/teacher/**").hasAuthority("TEACHER")
+                .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/courses").hasAnyAuthority("STUDENT", "TEACHER")
+                .requestMatchers(HttpMethod.POST, "/api/courses").hasAuthority("TEACHER")
+                .requestMatchers("/api/students/export").hasAuthority("TEACHER")
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
