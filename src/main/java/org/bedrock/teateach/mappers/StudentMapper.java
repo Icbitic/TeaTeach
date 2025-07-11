@@ -22,15 +22,9 @@ public interface StudentMapper {
     void delete(@Param("id") Long id);
 
     // guess which one is right?
+    // 修正后的查询
+    // 问题查询 - 混合了ID类型
     @Select("SELECT * FROM students WHERE id=#{id} OR student_id=#{id}")
-    @Results({
-            @Result(property = "id", column = "id"),
-            @Result(property = "studentId", column = "student_id"),
-            @Result(property = "name", column = "name"),
-            @Result(property = "email", column = "email"),
-            @Result(property = "major", column = "major"),
-            @Result(property = "dateOfBirth", column = "date_of_birth")
-    })
     Student findById(@Param("id") Long id);
 
     @Select("SELECT * FROM students WHERE student_id=#{studentId}")
@@ -67,3 +61,12 @@ public interface StudentMapper {
     Optional<Student> findByEmail(String email);
     // You'd add more complex queries here, e.g., for search
 }
+
+
+@Insert({"<script>",
+    "INSERT INTO students(student_id, name, email, major, date_of_birth) VALUES",
+    "<foreach collection='students' item='student' separator=','>",
+    "(#{student.studentId}, #{student.name}, #{student.email}, #{student.major}, #{student.dateOfBirth})",
+    "</foreach>",
+    "</script>"})
+void batchInsert(@Param("students") List<Student> students);
