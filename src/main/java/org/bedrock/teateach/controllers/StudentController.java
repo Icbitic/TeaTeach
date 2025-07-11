@@ -57,8 +57,10 @@ public class StudentController {
     }
 
     @GetMapping
-    public ResponseEntity<CommonResponse<List<Student>>> getAllStudents() {
-        List<Student> students = studentService.getAllStudents();
+    public ResponseEntity<CommonResponse<Page<Student>>> getAllStudents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Page<Student> students = studentService.getAllStudents(page, size);
         return ResponseEntity.ok(CommonResponse.success(students));
     }
 
