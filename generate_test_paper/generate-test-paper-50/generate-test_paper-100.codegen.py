@@ -1,0 +1,63 @@
+from playwright.sync_api import Playwright, sync_playwright, expect
+import re
+import time
+
+
+def run(playwright: Playwright) -> None:
+    browser = playwright.chromium.launch(headless=False)
+    context = browser.new_context(ignore_https_errors=True, record_har_mode="full", record_har_path="F:\\实训测试资料\\实训测试资料\\webrunner-x86_64-windows-20250616145951-16898d5b9\\filestorage\\recorder\\simulate\\teateach-111\\har_1751560468.har", service_workers="block")
+    time.sleep(1)
+    page = context.new_page()
+    time.sleep(1)
+    page.goto("http://172.18.140.60:8081/")
+    time.sleep(1)
+    page.goto("http://172.18.140.60:8081/login")
+    time.sleep(1)
+    page.get_by_placeholder("用户名").click()
+    time.sleep(1)
+    page.get_by_placeholder("用户名").fill("zhao")
+    time.sleep(1)
+    page.get_by_placeholder("密码").click()
+    time.sleep(1)
+    page.get_by_placeholder("密码").fill("123456")
+    time.sleep(1)
+    page.get_by_role("button", name="登录").click()
+    time.sleep(1)
+    page.get_by_text("试卷").click()
+    time.sleep(1)
+    page.get_by_role("button", name="生成试卷").click()
+    time.sleep(1)
+    page.get_by_text("生成试卷×").click()
+    time.sleep(1)
+    page.get_by_text("生成试卷×").click()
+    time.sleep(1)
+    page.get_by_role("button", name="×").click()
+    time.sleep(1)
+    page.get_by_role("button", name="生成试卷").click()
+    time.sleep(1)
+    page.get_by_placeholder("请输入试卷名称").click()
+    time.sleep(1)
+    page.get_by_placeholder("请输入试卷名称").fill("python")
+    time.sleep(1)
+    page.locator("form div").filter(has_text="试卷名称 *课程 *选择课程Matlab数学模型设计C++程序设计Python进阶课程设计高等数学线性代数概率论与数理统计数值分析大学英语人工智能基础教育学电子").get_by_role("combobox").select_option("3")
+    time.sleep(1)
+    page.locator("div").filter(has_text=re.compile(r"^生成方式 \*选择方式随机选择按知识点按难度平衡分布$")).get_by_role("combobox").select_option("BY_KNOWLEDGE_POINT")
+    time.sleep(1)
+    page.get_by_placeholder("总分").click()
+    time.sleep(1)
+    page.get_by_placeholder("总分").fill("100")
+    time.sleep(1)
+    page.get_by_text("单选题").click()
+    time.sleep(1)
+    page.get_by_text("简答题").click()
+    time.sleep(1)
+    page.locator("form").get_by_role("button", name="生成试卷").click()
+
+    # ---------------------
+    time.sleep(2)
+    context.close()
+    browser.close()
+
+
+with sync_playwright() as playwright:
+    run(playwright)

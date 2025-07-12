@@ -1,0 +1,523 @@
+{
+    "url": "http://172.18.140.60:12345/api/test-papers/generate",
+    "code": "# -*- coding: utf-8 -*-\nfrom loguru import logger\nfrom webrunnercore import wr #wr模块是webrunner内置的脚本增强sdk\nfrom webrunnercore import *\n\n\n\nclass 测试负载(WebLoadMachine):\n    '''\n    用户自定义负载信息\n    '''\n    负载名称 = '默认负载'\n\n    测试机 = [\n        {\n            \"ip地址\": '172.22.60.67',\n            \"端口\": 50000,\n            \"节点数\": 1,\n            \"主节点\": True\n        },\n    ]\n\nclass 测试场景(WebScenario):\n    '''\n    用户自定义场景信息\n    '''\n    场景名称 = '默认场景'\n\n    模式 = '梯形负载'\n    参数 = {\n        '用户数': 50,\n        '创建速率': 10,\n        '运行时长': 300\n    }\n\n\n\nclass Transaction_Generate_paper(SerialTransaction):\n    '''\n    事务定义, 一个事务由多个task构成, 每个task只包含一个请求\n    '''\n\n    def __init__(self, parent: \"User\") -> None:\n        super().__init__(parent)\n\n    @property\n    def transaction(self):\n        # 事务名称\n        return \"generate_paper\"\n\n    def on_start(self):\n        # 事务启动函数\n        super().on_start()\n    \n    @task\n    def task_0(self):\n        url = \"http://172.18.140.60:12345/api/test-papers/generate\"\n        headers = {'Accept': 'application/json, text/plain, */*', 'Accept-Language': 'zh-CN,zh;q=0.9', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyVHlwZSI6IlRFQUNIRVIiLCJyZWZlcmVuY2VJZCI6IjEyMzQ1NiIsInN1YiI6InpoYW8iLCJpYXQiOjE3NTE1NjA0ODYsImV4cCI6MTc1MTY0Njg4Nn0.d5vMUK8KK5emB4KVDELJNc2DizJLNWg-MRs0ioH7xsI', 'Connection': 'keep-alive', 'Content-Length': '354', 'Content-Type': 'application/json', 'Host': '172.18.140.60:12345', 'Origin': 'http://172.18.140.60:8081', 'Referer': 'http://172.18.140.60:8081/', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'}\n        params = {}\n        # application/json (dict)\n        data = {}\n        data['paperName'] = 'python'\n        data['courseId'] = 3\n        data['generationMethod'] = 'BY_KNOWLEDGE_POINT'\n        data['totalQuestions'] = 20\n        data['durationMinutes'] = 60\n        data['totalScore'] = 100\n        data['questionTypes'] = [None, None]\n        data['questionTypes'][0] = 'SINGLE_CHOICE'\n        data['questionTypes'][1] = 'SHORT_ANSWER'\n        data['knowledgePointIds'] = []\n        data['knowledgePointQuestionCounts'] = {}\n        data['difficultyQuestionCounts'] = {}\n        data['difficultyQuestionCounts']['EASY'] = 0\n        data['difficultyQuestionCounts']['MEDIUM'] = 0\n        data['difficultyQuestionCounts']['HARD'] = 0\n        data['difficultyWeights'] = {}\n        data['difficultyWeights']['EASY'] = 0\n        data['difficultyWeights']['MEDIUM'] = 0\n        data['difficultyWeights']['HARD'] = 0\n\n        res = self.post(url, headers=headers, params=params, json=data)\n        # application/json,res.json()\n\n    \n    @task\n    def task_1(self):\n        url = \"http://172.18.140.60:12345/api/test-papers\"\n        headers = {'Accept': 'application/json, text/plain, */*', 'Accept-Language': 'zh-CN,zh;q=0.9', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyVHlwZSI6IlRFQUNIRVIiLCJyZWZlcmVuY2VJZCI6IjEyMzQ1NiIsInN1YiI6InpoYW8iLCJpYXQiOjE3NTE1NjA0ODYsImV4cCI6MTc1MTY0Njg4Nn0.d5vMUK8KK5emB4KVDELJNc2DizJLNWg-MRs0ioH7xsI', 'Connection': 'keep-alive', 'Host': '172.18.140.60:12345', 'Origin': 'http://172.18.140.60:8081', 'Referer': 'http://172.18.140.60:8081/', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'}\n        params = {}\n        params['page']='0'\n        params['size']='12'\n        params['search']=''\n        # null\n        data = None\n        res = self.get(url, headers=headers, params=params, data=data)\n        # application/json,res.json()\n\n\n    def on_stop(self):\n        # 事务结束函数\n        super().on_stop()\n\n\nclass WebrunnerAction(BrowserAction):\n    '''\n    事务集合, 一个Action包含多个Transaction事务, @task装饰器参数表示事务混合比，\n    初始化事务 和 结束事务只执行一次， 执行事务按照混合比执行多次\n    '''\n    def __init__(self, parent: \"User\") -> None:\n        super().__init__(parent)\n\n    def on_start(self):\n        super().on_start()\n\n    @task(1)\n    @transaction(\"generate_paper\")\n    def task_generate_paper(self):\n        # 执行事务\n        Transaction_Generate_paper(self).run()\n\n    def on_stop(self):\n        super().on_stop()\n\n\nclass WebrunnerUser(CFastHttpUser):\n    '''\n    虚拟用户, 一个用户循环执行一个Action\n    '''\n    host = \"\"\n    tasks = [WebrunnerAction]\n\n\n\n    def __init__(self, *args, **kwargs) -> None:\n        super().__init__(*args, **kwargs)\n\n    def on_start(self):\n        # 所有虚拟用户创建完成后开始执行，主要用于定义参数化和检查点的策略\n\n        super().on_start()",
+    "version": "6.0",
+    "mode": "edit",
+    "app_mode": "WR",
+    "can_edit": true,
+    "template_path": null,
+    "protocol": [
+        {
+            "id": "GlobalSettings",
+            "children": [],
+            "name": "全局配置",
+            "cmdType": "GlobalSettings",
+            "type": 1,
+            "haveChild": false,
+            "input": {
+                "virtual_ip": {
+                    "enable": false,
+                    "name": "WLAN"
+                },
+                "save_raw_data": {
+                    "enable": false
+                }
+            }
+        },
+        {
+            "id": "webloadmachine",
+            "children": [],
+            "name": "默认负载",
+            "cmdType": "webloadmachine",
+            "type": 1,
+            "haveChild": false,
+            "input": {
+                "name": "默认负载",
+                "hosts": [
+                    {
+                        "ip": "172.22.60.67",
+                        "port": 50000,
+                        "is_master": true,
+                        "count": 1
+                    }
+                ]
+            }
+        },
+        {
+            "id": "webscenario",
+            "children": [],
+            "name": "默认场景",
+            "cmdType": "webscenario",
+            "type": 1,
+            "haveChild": false,
+            "input": {
+                "name": "默认场景",
+                "mode": "TLoadShape",
+                "params": {
+                    "run_time": 300,
+                    "spawn_rate": 10,
+                    "user_count": 50
+                }
+            }
+        },
+        {
+            "children": [
+                {
+                    "children": [
+                        {
+                            "children": [],
+                            "cmdType": "httpRequest",
+                            "haveChild": false,
+                            "id": "f9b70046-a11d-4835-bf58-015bb757e911",
+                            "input": {
+                                "haritem": {
+                                    "pageref": "generate_paper",
+                                    "request": {
+                                        "method": "POST",
+                                        "url": "http://172.18.140.60:12345/api/test-papers/generate",
+                                        "httpVersion": "HTTP/1.1",
+                                        "cookies": [],
+                                        "headers": [
+                                            {
+                                                "name": "Accept",
+                                                "value": "application/json, text/plain, */*"
+                                            },
+                                            {
+                                                "name": "Accept-Language",
+                                                "value": "zh-CN,zh;q=0.9"
+                                            },
+                                            {
+                                                "name": "Authorization",
+                                                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyVHlwZSI6IlRFQUNIRVIiLCJyZWZlcmVuY2VJZCI6IjEyMzQ1NiIsInN1YiI6InpoYW8iLCJpYXQiOjE3NTE1NjA0ODYsImV4cCI6MTc1MTY0Njg4Nn0.d5vMUK8KK5emB4KVDELJNc2DizJLNWg-MRs0ioH7xsI"
+                                            },
+                                            {
+                                                "name": "Connection",
+                                                "value": "keep-alive"
+                                            },
+                                            {
+                                                "name": "Content-Length",
+                                                "value": "354"
+                                            },
+                                            {
+                                                "name": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "name": "Host",
+                                                "value": "172.18.140.60:12345"
+                                            },
+                                            {
+                                                "name": "Origin",
+                                                "value": "http://172.18.140.60:8081"
+                                            },
+                                            {
+                                                "name": "Referer",
+                                                "value": "http://172.18.140.60:8081/"
+                                            },
+                                            {
+                                                "name": "User-Agent",
+                                                "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+                                            }
+                                        ],
+                                        "queryString": [],
+                                        "postData": {
+                                            "mimeType": "application/json",
+                                            "params": [],
+                                            "text": "{\"paperName\":\"python\",\"courseId\":3,\"generationMethod\":\"BY_KNOWLEDGE_POINT\",\"totalQuestions\":20,\"durationMinutes\":60,\"totalScore\":100,\"questionTypes\":[\"SINGLE_CHOICE\",\"SHORT_ANSWER\"],\"knowledgePointIds\":[],\"knowledgePointQuestionCounts\":{},\"difficultyQuestionCounts\":{\"EASY\":0,\"MEDIUM\":0,\"HARD\":0},\"difficultyWeights\":{\"EASY\":0.3,\"MEDIUM\":0.5,\"HARD\":0.2}}"
+                                        },
+                                        "headersSize": 662,
+                                        "bodySize": 354
+                                    },
+                                    "response": {
+                                        "status": 201,
+                                        "statusText": "",
+                                        "httpVersion": "HTTP/1.1",
+                                        "headers": [
+                                            {
+                                                "name": "Access-Control-Allow-Credentials",
+                                                "value": "true"
+                                            },
+                                            {
+                                                "name": "Access-Control-Allow-Origin",
+                                                "value": "http://172.18.140.60:8081"
+                                            },
+                                            {
+                                                "name": "Access-Control-Expose-Headers",
+                                                "value": "Authorization, Content-Type, Content-Disposition"
+                                            },
+                                            {
+                                                "name": "Cache-Control",
+                                                "value": "no-cache, no-store, max-age=0, must-revalidate"
+                                            },
+                                            {
+                                                "name": "Connection",
+                                                "value": "keep-alive"
+                                            },
+                                            {
+                                                "name": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "name": "Date",
+                                                "value": "Thu, 03 Jul 2025 16:35:25 GMT"
+                                            },
+                                            {
+                                                "name": "Expires",
+                                                "value": "0"
+                                            },
+                                            {
+                                                "name": "Keep-Alive",
+                                                "value": "timeout=60"
+                                            },
+                                            {
+                                                "name": "Pragma",
+                                                "value": "no-cache"
+                                            },
+                                            {
+                                                "name": "Transfer-Encoding",
+                                                "value": "chunked"
+                                            },
+                                            {
+                                                "name": "Vary",
+                                                "value": "Origin"
+                                            },
+                                            {
+                                                "name": "Vary",
+                                                "value": "Access-Control-Request-Method"
+                                            },
+                                            {
+                                                "name": "Vary",
+                                                "value": "Access-Control-Request-Headers"
+                                            },
+                                            {
+                                                "name": "X-Content-Type-Options",
+                                                "value": "nosniff"
+                                            },
+                                            {
+                                                "name": "X-Frame-Options",
+                                                "value": "DENY"
+                                            },
+                                            {
+                                                "name": "X-XSS-Protection",
+                                                "value": "0"
+                                            }
+                                        ],
+                                        "content": {
+                                            "compression": 0,
+                                            "mimeType": "application/json",
+                                            "size": 204,
+                                            "text": "{\"id\":85219,\"paperName\":\"python\",\"courseId\":3,\"instructorId\":null,\"questionIds\":[],\"totalScore\":100.0,\"durationMinutes\":60,\"createdAt\":\"2025-07-04T00:35:25.065341\",\"generationMethod\":\"BY_KNOWLEDGE_POINT\"}"
+                                        },
+                                        "cookies": [],
+                                        "redirectURL": "",
+                                        "headersSize": 597,
+                                        "bodySize": 216
+                                    },
+                                    "cache": {},
+                                    "timings": {
+                                        "send": -1.0,
+                                        "receive": 15.948,
+                                        "wait": 23.152,
+                                        "connect": -1.0,
+                                        "ssl": -1.0,
+                                        "blocked": -1.0,
+                                        "dns": -1.0
+                                    },
+                                    "time": 39.1,
+                                    "serverIPAddress": "172.18.140.60",
+                                    "startedDateTime": "2025-07-03T16:35:23.840Z"
+                                },
+                                "headers": [],
+                                "method": "POST",
+                                "queryString": [],
+                                "postData": {
+                                    "mimeType": "application/json",
+                                    "params": [],
+                                    "text": "{\"paperName\":\"python\",\"courseId\":3,\"generationMethod\":\"BY_KNOWLEDGE_POINT\",\"totalQuestions\":20,\"durationMinutes\":60,\"totalScore\":100,\"questionTypes\":[\"SINGLE_CHOICE\",\"SHORT_ANSWER\"],\"knowledgePointIds\":[],\"knowledgePointQuestionCounts\":{},\"difficultyQuestionCounts\":{\"EASY\":0,\"MEDIUM\":0,\"HARD\":0},\"difficultyWeights\":{\"EASY\":0.3,\"MEDIUM\":0.5,\"HARD\":0.2}}"
+                                },
+                                "url": "http://172.18.140.60:12345/api/test-papers/generate"
+                            },
+                            "name": "POST请求",
+                            "output": {
+                                "cmdId": "",
+                                "cmdName": ""
+                            },
+                            "type": 3
+                        }
+                    ],
+                    "cmdType": "task",
+                    "haveChild": true,
+                    "id": "6abf3fa8-d6dd-4abf-92fa-d729ff8a039d",
+                    "input": {
+                        "name": "0"
+                    },
+                    "name": "任务",
+                    "type": 2,
+                    "output": {}
+                },
+                {
+                    "children": [
+                        {
+                            "children": [],
+                            "cmdType": "httpRequest",
+                            "haveChild": false,
+                            "id": "6d7eb25f-76b0-410a-8aa9-21470b0222ca",
+                            "input": {
+                                "haritem": {
+                                    "pageref": "generate_paper",
+                                    "request": {
+                                        "method": "GET",
+                                        "url": "http://172.18.140.60:12345/api/test-papers?page=0&size=12&search=",
+                                        "httpVersion": "HTTP/1.1",
+                                        "cookies": [],
+                                        "headers": [
+                                            {
+                                                "name": "Accept",
+                                                "value": "application/json, text/plain, */*"
+                                            },
+                                            {
+                                                "name": "Accept-Language",
+                                                "value": "zh-CN,zh;q=0.9"
+                                            },
+                                            {
+                                                "name": "Authorization",
+                                                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyVHlwZSI6IlRFQUNIRVIiLCJyZWZlcmVuY2VJZCI6IjEyMzQ1NiIsInN1YiI6InpoYW8iLCJpYXQiOjE3NTE1NjA0ODYsImV4cCI6MTc1MTY0Njg4Nn0.d5vMUK8KK5emB4KVDELJNc2DizJLNWg-MRs0ioH7xsI"
+                                            },
+                                            {
+                                                "name": "Connection",
+                                                "value": "keep-alive"
+                                            },
+                                            {
+                                                "name": "Host",
+                                                "value": "172.18.140.60:12345"
+                                            },
+                                            {
+                                                "name": "Origin",
+                                                "value": "http://172.18.140.60:8081"
+                                            },
+                                            {
+                                                "name": "Referer",
+                                                "value": "http://172.18.140.60:8081/"
+                                            },
+                                            {
+                                                "name": "User-Agent",
+                                                "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+                                            }
+                                        ],
+                                        "queryString": [
+                                            {
+                                                "name": "page",
+                                                "value": "0"
+                                            },
+                                            {
+                                                "name": "size",
+                                                "value": "12"
+                                            },
+                                            {
+                                                "name": "search",
+                                                "value": ""
+                                            }
+                                        ],
+                                        "headersSize": 599,
+                                        "bodySize": 0
+                                    },
+                                    "response": {
+                                        "status": 200,
+                                        "statusText": "",
+                                        "httpVersion": "HTTP/1.1",
+                                        "headers": [
+                                            {
+                                                "name": "Access-Control-Allow-Credentials",
+                                                "value": "true"
+                                            },
+                                            {
+                                                "name": "Access-Control-Allow-Origin",
+                                                "value": "http://172.18.140.60:8081"
+                                            },
+                                            {
+                                                "name": "Access-Control-Expose-Headers",
+                                                "value": "Authorization, Content-Type, Content-Disposition"
+                                            },
+                                            {
+                                                "name": "Cache-Control",
+                                                "value": "no-cache, no-store, max-age=0, must-revalidate"
+                                            },
+                                            {
+                                                "name": "Connection",
+                                                "value": "keep-alive"
+                                            },
+                                            {
+                                                "name": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "name": "Date",
+                                                "value": "Thu, 03 Jul 2025 16:35:25 GMT"
+                                            },
+                                            {
+                                                "name": "Expires",
+                                                "value": "0"
+                                            },
+                                            {
+                                                "name": "Keep-Alive",
+                                                "value": "timeout=60"
+                                            },
+                                            {
+                                                "name": "Pragma",
+                                                "value": "no-cache"
+                                            },
+                                            {
+                                                "name": "Transfer-Encoding",
+                                                "value": "chunked"
+                                            },
+                                            {
+                                                "name": "Vary",
+                                                "value": "Origin"
+                                            },
+                                            {
+                                                "name": "Vary",
+                                                "value": "Access-Control-Request-Method"
+                                            },
+                                            {
+                                                "name": "Vary",
+                                                "value": "Access-Control-Request-Headers"
+                                            },
+                                            {
+                                                "name": "X-Content-Type-Options",
+                                                "value": "nosniff"
+                                            },
+                                            {
+                                                "name": "X-Frame-Options",
+                                                "value": "DENY"
+                                            },
+                                            {
+                                                "name": "X-XSS-Protection",
+                                                "value": "0"
+                                            }
+                                        ],
+                                        "content": {
+                                            "compression": 0,
+                                            "mimeType": "application/json",
+                                            "size": 199,
+                                            "text": "[{\"id\":85219,\"paperName\":\"python\",\"courseId\":3,\"instructorId\":null,\"questionIds\":[],\"totalScore\":100.0,\"durationMinutes\":60,\"createdAt\":\"2025-07-04T00:35:25\",\"generationMethod\":\"BY_KNOWLEDGE_POINT\"}]"
+                                        },
+                                        "cookies": [],
+                                        "redirectURL": "",
+                                        "headersSize": 597,
+                                        "bodySize": 211
+                                    },
+                                    "cache": {},
+                                    "timings": {
+                                        "send": -1.0,
+                                        "receive": 0.976,
+                                        "wait": 98.414,
+                                        "connect": -1.0,
+                                        "ssl": -1.0,
+                                        "blocked": -1.0,
+                                        "dns": -1.0
+                                    },
+                                    "time": 99.39,
+                                    "serverIPAddress": "172.18.140.60",
+                                    "startedDateTime": "2025-07-03T16:35:23.885Z"
+                                },
+                                "headers": [],
+                                "method": "GET",
+                                "queryString": [
+                                    {
+                                        "name": "page",
+                                        "value": "0"
+                                    },
+                                    {
+                                        "name": "size",
+                                        "value": "12"
+                                    },
+                                    {
+                                        "name": "search",
+                                        "value": ""
+                                    }
+                                ],
+                                "postData": {},
+                                "url": "http://172.18.140.60:12345/api/test-papers?page=0&size=12&search="
+                            },
+                            "name": "GET请求",
+                            "output": {
+                                "cmdId": "",
+                                "cmdName": ""
+                            },
+                            "type": 3
+                        }
+                    ],
+                    "cmdType": "task",
+                    "haveChild": true,
+                    "id": "f0936294-a85d-450a-8efd-742bba7cd553",
+                    "input": {
+                        "name": "1"
+                    },
+                    "name": "任务",
+                    "type": 2,
+                    "output": {}
+                }
+            ],
+            "cmdType": "transaction",
+            "haveChild": true,
+            "id": "77dd2464-ab50-4976-bf72-88683ebe7216",
+            "input": {
+                "mode": "SerialTransaction",
+                "name": "generate_paper",
+                "ratio": "1",
+                "type": "normal",
+                "enableWaitEvent": false,
+                "waitEvent": {
+                    "name": "wait",
+                    "ratio": 1,
+                    "timeout": 3000
+                },
+                "rpacodes": [
+                    "    time.sleep(1)\n    page = context.new_page()",
+                    "    time.sleep(1)\n    page.goto(\"http://172.18.140.60:8081/\")",
+                    "    time.sleep(1)\n    page.goto(\"http://172.18.140.60:8081/login\")",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"用户名\").click()",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"用户名\").fill(\"zhao\")",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"密码\").click()",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"密码\").fill(\"123456\")",
+                    "    time.sleep(1)\n    page.get_by_role(\"button\", name=\"登录\").click()",
+                    "    time.sleep(1)\n    page.get_by_text(\"试卷\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"button\", name=\"生成试卷\").click()",
+                    "    time.sleep(1)\n    page.get_by_text(\"生成试卷×\").click()",
+                    "    time.sleep(1)\n    page.get_by_text(\"生成试卷×\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"button\", name=\"×\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"button\", name=\"生成试卷\").click()",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"请输入试卷名称\").click()",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"请输入试卷名称\").fill(\"python\")",
+                    "    time.sleep(1)\n    page.locator(\"form div\").filter(has_text=\"试卷名称 *课程 *选择课程Matlab数学模型设计C++程序设计Python进阶课程设计高等数学线性代数概率论与数理统计数值分析大学英语人工智能基础教育学电子\").get_by_role(\"combobox\").select_option(\"3\")",
+                    "    time.sleep(1)\n    page.locator(\"div\").filter(has_text=re.compile(r\"^生成方式 \\*选择方式随机选择按知识点按难度平衡分布$\")).get_by_role(\"combobox\").select_option(\"BY_KNOWLEDGE_POINT\")",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"总分\").click()",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"总分\").fill(\"100\")",
+                    "    time.sleep(1)\n    page.get_by_text(\"单选题\").click()",
+                    "    time.sleep(1)\n    page.get_by_text(\"简答题\").click()",
+                    "    time.sleep(1)\n    page.locator(\"form\").get_by_role(\"button\", name=\"生成试卷\").click()"
+                ]
+            },
+            "name": "事务",
+            "type": 1,
+            "output": {}
+        }
+    ],
+    "repository": "",
+    "project": "generate-test_paper-100",
+    "description": "",
+    "script_path": null,
+    "client_protocol": "",
+    "create_by": null,
+    "update_by": null,
+    "id": "c88340d2-582b-11f0-983a-b0dcefeb812a",
+    "projectUrl": "http://172.22.60.67:50000/filestorage/editor/generate-test_paper-100/generate-test_paper-100.json",
+    "projectPyCodeUrl": "http://172.22.60.67:50000/filestorage/editor/generate-test_paper-100/generate-test_paper-100.py",
+    "project_records": "http://172.22.60.67:50000/filestorage/editor/generate-test_paper-100/generate-test_paper-100.py.records.json",
+    "project_report": "http://172.22.60.67:50000/filestorage/editor/generate-test_paper-100/generate-test_paper-100/guirunner/log.html",
+    "pyfilePath": "editor/generate-test_paper-100/generate-test_paper-100.py",
+    "protocolUrl": "http://172.22.60.67:50000/filestorage/editor/generate-test_paper-100/generate-test_paper-100.json",
+    "protocolfilePath": "/editor/generate-test_paper-100/generate-test_paper-100.json",
+    "harUrl": "http://172.22.60.67:50000/filestorage/editor/generate-test_paper-100/generate-test_paper-100.har",
+    "harfilePath": "/editor/generate-test_paper-100/generate-test_paper-100.har"
+}
