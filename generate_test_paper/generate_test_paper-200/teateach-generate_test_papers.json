@@ -1,0 +1,759 @@
+{
+    "url": "http://172.22.46.32:8080/api/test-papers/preview",
+    "code": "# -*- coding: utf-8 -*-\nfrom loguru import logger\nfrom webrunnercore import wr #wr模块是webrunner内置的脚本增强sdk\nfrom webrunnercore import *\n\n\n\nclass 测试负载(WebLoadMachine):\n    '''\n    用户自定义负载信息\n    '''\n    负载名称 = '默认负载'\n\n    测试机 = [\n        {\n            \"ip地址\": '172.22.60.67',\n            \"端口\": 50000,\n            \"节点数\": 1,\n            \"主节点\": True\n        },\n    ]\n\nclass 测试场景(WebScenario):\n    '''\n    用户自定义场景信息\n    '''\n    场景名称 = '默认场景'\n\n    模式 = '梯形负载'\n    参数 = {\n        '用户数': 50,\n        '创建速率': 10,\n        '运行时长': 300\n    }\n\n\n\nclass Transaction_Generate_test_papers(SerialTransaction):\n    '''\n    事务定义, 一个事务由多个task构成, 每个task只包含一个请求\n    '''\n\n    def __init__(self, parent: \"User\") -> None:\n        super().__init__(parent)\n\n    @property\n    def transaction(self):\n        # 事务名称\n        return \"Generate_test_papers\"\n\n    def on_start(self):\n        # 事务启动函数\n        super().on_start()\n    \n    @task\n    def task_0(self):\n        url = \"http://172.22.46.32:8080/api/test-papers/preview\"\n        headers = {'Accept': 'application/json, text/plain, */*', 'Accept-Language': 'zh-CN,zh;q=0.9', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyVHlwZSI6IlRFQUNIRVIiLCJyZWZlcmVuY2VJZCI6IjEyMzQ1NiIsInN1YiI6InpoYW8iLCJpYXQiOjE3NTE1NTA3MzYsImV4cCI6MTc1MTYzNzEzNn0.3tRfm7LphB602K4vM1KWUbVy_ZwfKWKVOnH10G3vY58', 'Connection': 'keep-alive', 'Content-Length': '365', 'Content-Type': 'application/json', 'Host': '172.22.46.32:8080', 'Origin': 'http://172.22.46.32:8081', 'Referer': 'http://172.22.46.32:8081/', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'}\n        params = {}\n        # application/json (dict)\n        data = {}\n        data['paperName'] = 'python基础测试'\n        data['courseId'] = 3\n        data['generationMethod'] = 'BY_KNOWLEDGE_POINT'\n        data['totalQuestions'] = 20\n        data['durationMinutes'] = 60\n        data['totalScore'] = 10\n        data['questionTypes'] = [None, None]\n        data['questionTypes'][0] = 'SINGLE_CHOICE'\n        data['questionTypes'][1] = 'SHORT_ANSWER'\n        data['knowledgePointIds'] = []\n        data['knowledgePointQuestionCounts'] = {}\n        data['difficultyQuestionCounts'] = {}\n        data['difficultyQuestionCounts']['EASY'] = 0\n        data['difficultyQuestionCounts']['MEDIUM'] = 0\n        data['difficultyQuestionCounts']['HARD'] = 0\n        data['difficultyWeights'] = {}\n        data['difficultyWeights']['EASY'] = 0\n        data['difficultyWeights']['MEDIUM'] = 0\n        data['difficultyWeights']['HARD'] = 0\n\n        res = self.post(url, headers=headers, params=params, json=data)\n        # application/json,res.json()\n\n    \n    @task\n    def task_1(self):\n        url = \"http://172.22.46.32:8080/api/test-papers/generate\"\n        headers = {'Accept': 'application/json, text/plain, */*', 'Accept-Language': 'zh-CN,zh;q=0.9', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyVHlwZSI6IlRFQUNIRVIiLCJyZWZlcmVuY2VJZCI6IjEyMzQ1NiIsInN1YiI6InpoYW8iLCJpYXQiOjE3NTE1NTA3MzYsImV4cCI6MTc1MTYzNzEzNn0.3tRfm7LphB602K4vM1KWUbVy_ZwfKWKVOnH10G3vY58', 'Connection': 'keep-alive', 'Content-Length': '365', 'Content-Type': 'application/json', 'Host': '172.22.46.32:8080', 'Origin': 'http://172.22.46.32:8081', 'Referer': 'http://172.22.46.32:8081/', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'}\n        params = {}\n        # application/json (dict)\n        data = {}\n        data['paperName'] = 'python基础测试'\n        data['courseId'] = 3\n        data['generationMethod'] = 'BY_KNOWLEDGE_POINT'\n        data['totalQuestions'] = 20\n        data['durationMinutes'] = 60\n        data['totalScore'] = 10\n        data['questionTypes'] = [None, None]\n        data['questionTypes'][0] = 'SINGLE_CHOICE'\n        data['questionTypes'][1] = 'SHORT_ANSWER'\n        data['knowledgePointIds'] = []\n        data['knowledgePointQuestionCounts'] = {}\n        data['difficultyQuestionCounts'] = {}\n        data['difficultyQuestionCounts']['EASY'] = 0\n        data['difficultyQuestionCounts']['MEDIUM'] = 0\n        data['difficultyQuestionCounts']['HARD'] = 0\n        data['difficultyWeights'] = {}\n        data['difficultyWeights']['EASY'] = 0\n        data['difficultyWeights']['MEDIUM'] = 0\n        data['difficultyWeights']['HARD'] = 0\n\n        res = self.post(url, headers=headers, params=params, json=data)\n        # application/json,res.json()\n\n    \n    @task\n    def task_2(self):\n        url = \"http://172.22.46.32:8080/api/test-papers\"\n        headers = {'Accept': 'application/json, text/plain, */*', 'Accept-Language': 'zh-CN,zh;q=0.9', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyVHlwZSI6IlRFQUNIRVIiLCJyZWZlcmVuY2VJZCI6IjEyMzQ1NiIsInN1YiI6InpoYW8iLCJpYXQiOjE3NTE1NTA3MzYsImV4cCI6MTc1MTYzNzEzNn0.3tRfm7LphB602K4vM1KWUbVy_ZwfKWKVOnH10G3vY58', 'Connection': 'keep-alive', 'Host': '172.22.46.32:8080', 'Origin': 'http://172.22.46.32:8081', 'Referer': 'http://172.22.46.32:8081/', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'}\n        params = {}\n        params['page']='0'\n        params['size']='12'\n        params['search']=''\n        # null\n        data = None\n        res = self.get(url, headers=headers, params=params, data=data)\n        # application/json,res.json()\n\n\n    def on_stop(self):\n        # 事务结束函数\n        super().on_stop()\n\n\nclass WebrunnerAction(BrowserAction):\n    '''\n    事务集合, 一个Action包含多个Transaction事务, @task装饰器参数表示事务混合比，\n    初始化事务 和 结束事务只执行一次， 执行事务按照混合比执行多次\n    '''\n    def __init__(self, parent: \"User\") -> None:\n        super().__init__(parent)\n\n    def on_start(self):\n        super().on_start()\n\n    @task(1)\n    @transaction(\"Generate_test_papers\")\n    def task_Generate_test_papers(self):\n        # 执行事务\n        Transaction_Generate_test_papers(self).run()\n\n    def on_stop(self):\n        super().on_stop()\n\n\nclass WebrunnerUser(CFastHttpUser):\n    '''\n    虚拟用户, 一个用户循环执行一个Action\n    '''\n    host = \"\"\n    tasks = [WebrunnerAction]\n\n\n\n    def __init__(self, *args, **kwargs) -> None:\n        super().__init__(*args, **kwargs)\n\n    def on_start(self):\n        # 所有虚拟用户创建完成后开始执行，主要用于定义参数化和检查点的策略\n\n        super().on_start()",
+    "version": "6.0",
+    "mode": "edit",
+    "app_mode": "WR",
+    "can_edit": true,
+    "template_path": null,
+    "protocol": [
+        {
+            "id": "GlobalSettings",
+            "children": [],
+            "name": "全局配置",
+            "cmdType": "GlobalSettings",
+            "type": 1,
+            "haveChild": false,
+            "input": {
+                "virtual_ip": {
+                    "enable": false,
+                    "name": "WLAN"
+                },
+                "save_raw_data": {
+                    "enable": false
+                }
+            }
+        },
+        {
+            "id": "webloadmachine",
+            "children": [],
+            "name": "默认负载",
+            "cmdType": "webloadmachine",
+            "type": 1,
+            "haveChild": false,
+            "input": {
+                "name": "默认负载",
+                "hosts": [
+                    {
+                        "ip": "172.22.60.67",
+                        "port": 50000,
+                        "is_master": true,
+                        "count": 1
+                    }
+                ]
+            }
+        },
+        {
+            "id": "webscenario",
+            "children": [],
+            "name": "默认场景",
+            "cmdType": "webscenario",
+            "type": 1,
+            "haveChild": false,
+            "input": {
+                "name": "默认场景",
+                "mode": "TLoadShape",
+                "params": {
+                    "run_time": 300,
+                    "spawn_rate": 10,
+                    "user_count": 50
+                }
+            }
+        },
+        {
+            "children": [
+                {
+                    "children": [
+                        {
+                            "children": [],
+                            "cmdType": "httpRequest",
+                            "haveChild": false,
+                            "id": "8f06968c-6115-401f-b9e2-b8c93566b72a",
+                            "input": {
+                                "haritem": {
+                                    "pageref": "Generate_test_papers",
+                                    "request": {
+                                        "method": "POST",
+                                        "url": "http://172.22.46.32:8080/api/test-papers/preview",
+                                        "httpVersion": "HTTP/1.1",
+                                        "cookies": [],
+                                        "headers": [
+                                            {
+                                                "name": "Accept",
+                                                "value": "application/json, text/plain, */*"
+                                            },
+                                            {
+                                                "name": "Accept-Language",
+                                                "value": "zh-CN,zh;q=0.9"
+                                            },
+                                            {
+                                                "name": "Authorization",
+                                                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyVHlwZSI6IlRFQUNIRVIiLCJyZWZlcmVuY2VJZCI6IjEyMzQ1NiIsInN1YiI6InpoYW8iLCJpYXQiOjE3NTE1NTA3MzYsImV4cCI6MTc1MTYzNzEzNn0.3tRfm7LphB602K4vM1KWUbVy_ZwfKWKVOnH10G3vY58"
+                                            },
+                                            {
+                                                "name": "Connection",
+                                                "value": "keep-alive"
+                                            },
+                                            {
+                                                "name": "Content-Length",
+                                                "value": "365"
+                                            },
+                                            {
+                                                "name": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "name": "Host",
+                                                "value": "172.22.46.32:8080"
+                                            },
+                                            {
+                                                "name": "Origin",
+                                                "value": "http://172.22.46.32:8081"
+                                            },
+                                            {
+                                                "name": "Referer",
+                                                "value": "http://172.22.46.32:8081/"
+                                            },
+                                            {
+                                                "name": "User-Agent",
+                                                "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+                                            }
+                                        ],
+                                        "queryString": [],
+                                        "postData": {
+                                            "mimeType": "application/json",
+                                            "params": [],
+                                            "text": "{\"paperName\":\"python基础测试\",\"courseId\":3,\"generationMethod\":\"BY_KNOWLEDGE_POINT\",\"totalQuestions\":20,\"durationMinutes\":60,\"totalScore\":10,\"questionTypes\":[\"SINGLE_CHOICE\",\"SHORT_ANSWER\"],\"knowledgePointIds\":[],\"knowledgePointQuestionCounts\":{},\"difficultyQuestionCounts\":{\"EASY\":0,\"MEDIUM\":0,\"HARD\":0},\"difficultyWeights\":{\"EASY\":0.3,\"MEDIUM\":0.5,\"HARD\":0.2}}"
+                                        },
+                                        "headersSize": 657,
+                                        "bodySize": 365
+                                    },
+                                    "response": {
+                                        "status": 200,
+                                        "statusText": "",
+                                        "httpVersion": "HTTP/1.1",
+                                        "headers": [
+                                            {
+                                                "name": "Access-Control-Allow-Credentials",
+                                                "value": "true"
+                                            },
+                                            {
+                                                "name": "Access-Control-Allow-Origin",
+                                                "value": "http://172.22.46.32:8081"
+                                            },
+                                            {
+                                                "name": "Access-Control-Expose-Headers",
+                                                "value": "Authorization, Content-Type, Content-Disposition"
+                                            },
+                                            {
+                                                "name": "Cache-Control",
+                                                "value": "no-cache, no-store, max-age=0, must-revalidate"
+                                            },
+                                            {
+                                                "name": "Connection",
+                                                "value": "keep-alive"
+                                            },
+                                            {
+                                                "name": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "name": "Date",
+                                                "value": "Thu, 03 Jul 2025 13:55:28 GMT"
+                                            },
+                                            {
+                                                "name": "Expires",
+                                                "value": "0"
+                                            },
+                                            {
+                                                "name": "Keep-Alive",
+                                                "value": "timeout=60"
+                                            },
+                                            {
+                                                "name": "Pragma",
+                                                "value": "no-cache"
+                                            },
+                                            {
+                                                "name": "Transfer-Encoding",
+                                                "value": "chunked"
+                                            },
+                                            {
+                                                "name": "Vary",
+                                                "value": "Origin"
+                                            },
+                                            {
+                                                "name": "Vary",
+                                                "value": "Access-Control-Request-Method"
+                                            },
+                                            {
+                                                "name": "Vary",
+                                                "value": "Access-Control-Request-Headers"
+                                            },
+                                            {
+                                                "name": "X-Content-Type-Options",
+                                                "value": "nosniff"
+                                            },
+                                            {
+                                                "name": "X-Frame-Options",
+                                                "value": "DENY"
+                                            },
+                                            {
+                                                "name": "X-XSS-Protection",
+                                                "value": "0"
+                                            }
+                                        ],
+                                        "content": {
+                                            "compression": 0,
+                                            "mimeType": "application/json",
+                                            "size": 2,
+                                            "text": "[]"
+                                        },
+                                        "cookies": [],
+                                        "redirectURL": "",
+                                        "headersSize": 596,
+                                        "bodySize": 13
+                                    },
+                                    "cache": {},
+                                    "timings": {
+                                        "send": -1.0,
+                                        "receive": 102.756,
+                                        "wait": 43.668,
+                                        "connect": -1.0,
+                                        "ssl": -1.0,
+                                        "blocked": -1.0,
+                                        "dns": -1.0
+                                    },
+                                    "time": 146.424,
+                                    "serverIPAddress": "172.22.46.32",
+                                    "startedDateTime": "2025-07-03T13:55:27.241Z"
+                                },
+                                "headers": [],
+                                "method": "POST",
+                                "queryString": [],
+                                "postData": {
+                                    "mimeType": "application/json",
+                                    "params": [],
+                                    "text": "{\"paperName\":\"python基础测试\",\"courseId\":3,\"generationMethod\":\"BY_KNOWLEDGE_POINT\",\"totalQuestions\":20,\"durationMinutes\":60,\"totalScore\":10,\"questionTypes\":[\"SINGLE_CHOICE\",\"SHORT_ANSWER\"],\"knowledgePointIds\":[],\"knowledgePointQuestionCounts\":{},\"difficultyQuestionCounts\":{\"EASY\":0,\"MEDIUM\":0,\"HARD\":0},\"difficultyWeights\":{\"EASY\":0.3,\"MEDIUM\":0.5,\"HARD\":0.2}}"
+                                },
+                                "url": "http://172.22.46.32:8080/api/test-papers/preview"
+                            },
+                            "name": "POST请求",
+                            "output": {
+                                "cmdId": "",
+                                "cmdName": ""
+                            },
+                            "type": 3
+                        }
+                    ],
+                    "cmdType": "task",
+                    "haveChild": true,
+                    "id": "66058327-352f-44c5-8903-7864e8712baa",
+                    "input": {
+                        "name": "0"
+                    },
+                    "name": "任务",
+                    "type": 2,
+                    "output": {}
+                },
+                {
+                    "children": [
+                        {
+                            "children": [],
+                            "cmdType": "httpRequest",
+                            "haveChild": false,
+                            "id": "660ecd41-9d06-4b64-b511-76d4a722352d",
+                            "input": {
+                                "haritem": {
+                                    "pageref": "Generate_test_papers",
+                                    "request": {
+                                        "method": "POST",
+                                        "url": "http://172.22.46.32:8080/api/test-papers/generate",
+                                        "httpVersion": "HTTP/1.1",
+                                        "cookies": [],
+                                        "headers": [
+                                            {
+                                                "name": "Accept",
+                                                "value": "application/json, text/plain, */*"
+                                            },
+                                            {
+                                                "name": "Accept-Language",
+                                                "value": "zh-CN,zh;q=0.9"
+                                            },
+                                            {
+                                                "name": "Authorization",
+                                                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyVHlwZSI6IlRFQUNIRVIiLCJyZWZlcmVuY2VJZCI6IjEyMzQ1NiIsInN1YiI6InpoYW8iLCJpYXQiOjE3NTE1NTA3MzYsImV4cCI6MTc1MTYzNzEzNn0.3tRfm7LphB602K4vM1KWUbVy_ZwfKWKVOnH10G3vY58"
+                                            },
+                                            {
+                                                "name": "Connection",
+                                                "value": "keep-alive"
+                                            },
+                                            {
+                                                "name": "Content-Length",
+                                                "value": "365"
+                                            },
+                                            {
+                                                "name": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "name": "Host",
+                                                "value": "172.22.46.32:8080"
+                                            },
+                                            {
+                                                "name": "Origin",
+                                                "value": "http://172.22.46.32:8081"
+                                            },
+                                            {
+                                                "name": "Referer",
+                                                "value": "http://172.22.46.32:8081/"
+                                            },
+                                            {
+                                                "name": "User-Agent",
+                                                "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+                                            }
+                                        ],
+                                        "queryString": [],
+                                        "postData": {
+                                            "mimeType": "application/json",
+                                            "params": [],
+                                            "text": "{\"paperName\":\"python基础测试\",\"courseId\":3,\"generationMethod\":\"BY_KNOWLEDGE_POINT\",\"totalQuestions\":20,\"durationMinutes\":60,\"totalScore\":10,\"questionTypes\":[\"SINGLE_CHOICE\",\"SHORT_ANSWER\"],\"knowledgePointIds\":[],\"knowledgePointQuestionCounts\":{},\"difficultyQuestionCounts\":{\"EASY\":0,\"MEDIUM\":0,\"HARD\":0},\"difficultyWeights\":{\"EASY\":0.3,\"MEDIUM\":0.5,\"HARD\":0.2}}"
+                                        },
+                                        "headersSize": 658,
+                                        "bodySize": 365
+                                    },
+                                    "response": {
+                                        "status": 201,
+                                        "statusText": "",
+                                        "httpVersion": "HTTP/1.1",
+                                        "headers": [
+                                            {
+                                                "name": "Access-Control-Allow-Credentials",
+                                                "value": "true"
+                                            },
+                                            {
+                                                "name": "Access-Control-Allow-Origin",
+                                                "value": "http://172.22.46.32:8081"
+                                            },
+                                            {
+                                                "name": "Access-Control-Expose-Headers",
+                                                "value": "Authorization, Content-Type, Content-Disposition"
+                                            },
+                                            {
+                                                "name": "Cache-Control",
+                                                "value": "no-cache, no-store, max-age=0, must-revalidate"
+                                            },
+                                            {
+                                                "name": "Connection",
+                                                "value": "keep-alive"
+                                            },
+                                            {
+                                                "name": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "name": "Date",
+                                                "value": "Thu, 03 Jul 2025 13:55:29 GMT"
+                                            },
+                                            {
+                                                "name": "Expires",
+                                                "value": "0"
+                                            },
+                                            {
+                                                "name": "Keep-Alive",
+                                                "value": "timeout=60"
+                                            },
+                                            {
+                                                "name": "Pragma",
+                                                "value": "no-cache"
+                                            },
+                                            {
+                                                "name": "Transfer-Encoding",
+                                                "value": "chunked"
+                                            },
+                                            {
+                                                "name": "Vary",
+                                                "value": "Origin"
+                                            },
+                                            {
+                                                "name": "Vary",
+                                                "value": "Access-Control-Request-Method"
+                                            },
+                                            {
+                                                "name": "Vary",
+                                                "value": "Access-Control-Request-Headers"
+                                            },
+                                            {
+                                                "name": "X-Content-Type-Options",
+                                                "value": "nosniff"
+                                            },
+                                            {
+                                                "name": "X-Frame-Options",
+                                                "value": "DENY"
+                                            },
+                                            {
+                                                "name": "X-XSS-Protection",
+                                                "value": "0"
+                                            }
+                                        ],
+                                        "content": {
+                                            "compression": 0,
+                                            "mimeType": "application/json",
+                                            "size": 211,
+                                            "text": "{\"id\":1,\"paperName\":\"python基础测试\",\"courseId\":3,\"instructorId\":null,\"questionIds\":[],\"totalScore\":10.0,\"durationMinutes\":60,\"createdAt\":\"2025-07-03T21:55:29.466665\",\"generationMethod\":\"BY_KNOWLEDGE_POINT\"}"
+                                        },
+                                        "cookies": [],
+                                        "redirectURL": "",
+                                        "headersSize": 596,
+                                        "bodySize": 223
+                                    },
+                                    "cache": {},
+                                    "timings": {
+                                        "send": -1.0,
+                                        "receive": 13.682,
+                                        "wait": 111.209,
+                                        "connect": -1.0,
+                                        "ssl": -1.0,
+                                        "blocked": -1.0,
+                                        "dns": -1.0
+                                    },
+                                    "time": 124.891,
+                                    "serverIPAddress": "172.22.46.32",
+                                    "startedDateTime": "2025-07-03T13:55:28.633Z"
+                                },
+                                "headers": [],
+                                "method": "POST",
+                                "queryString": [],
+                                "postData": {
+                                    "mimeType": "application/json",
+                                    "params": [],
+                                    "text": "{\"paperName\":\"python基础测试\",\"courseId\":3,\"generationMethod\":\"BY_KNOWLEDGE_POINT\",\"totalQuestions\":20,\"durationMinutes\":60,\"totalScore\":10,\"questionTypes\":[\"SINGLE_CHOICE\",\"SHORT_ANSWER\"],\"knowledgePointIds\":[],\"knowledgePointQuestionCounts\":{},\"difficultyQuestionCounts\":{\"EASY\":0,\"MEDIUM\":0,\"HARD\":0},\"difficultyWeights\":{\"EASY\":0.3,\"MEDIUM\":0.5,\"HARD\":0.2}}"
+                                },
+                                "url": "http://172.22.46.32:8080/api/test-papers/generate"
+                            },
+                            "name": "POST请求",
+                            "output": {
+                                "cmdId": "",
+                                "cmdName": ""
+                            },
+                            "type": 3
+                        }
+                    ],
+                    "cmdType": "task",
+                    "haveChild": true,
+                    "id": "19c6c3c3-cecd-4d98-9c73-dbd8a8446de6",
+                    "input": {
+                        "name": "1"
+                    },
+                    "name": "任务",
+                    "type": 2,
+                    "output": {}
+                },
+                {
+                    "children": [
+                        {
+                            "children": [],
+                            "cmdType": "httpRequest",
+                            "haveChild": false,
+                            "id": "6c9e4095-d0d0-40de-976c-36e2efa0a3f6",
+                            "input": {
+                                "haritem": {
+                                    "pageref": "Generate_test_papers",
+                                    "request": {
+                                        "method": "GET",
+                                        "url": "http://172.22.46.32:8080/api/test-papers?page=0&size=12&search=",
+                                        "httpVersion": "HTTP/1.1",
+                                        "cookies": [],
+                                        "headers": [
+                                            {
+                                                "name": "Accept",
+                                                "value": "application/json, text/plain, */*"
+                                            },
+                                            {
+                                                "name": "Accept-Language",
+                                                "value": "zh-CN,zh;q=0.9"
+                                            },
+                                            {
+                                                "name": "Authorization",
+                                                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyVHlwZSI6IlRFQUNIRVIiLCJyZWZlcmVuY2VJZCI6IjEyMzQ1NiIsInN1YiI6InpoYW8iLCJpYXQiOjE3NTE1NTA3MzYsImV4cCI6MTc1MTYzNzEzNn0.3tRfm7LphB602K4vM1KWUbVy_ZwfKWKVOnH10G3vY58"
+                                            },
+                                            {
+                                                "name": "Connection",
+                                                "value": "keep-alive"
+                                            },
+                                            {
+                                                "name": "Host",
+                                                "value": "172.22.46.32:8080"
+                                            },
+                                            {
+                                                "name": "Origin",
+                                                "value": "http://172.22.46.32:8081"
+                                            },
+                                            {
+                                                "name": "Referer",
+                                                "value": "http://172.22.46.32:8081/"
+                                            },
+                                            {
+                                                "name": "User-Agent",
+                                                "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+                                            }
+                                        ],
+                                        "queryString": [
+                                            {
+                                                "name": "page",
+                                                "value": "0"
+                                            },
+                                            {
+                                                "name": "size",
+                                                "value": "12"
+                                            },
+                                            {
+                                                "name": "search",
+                                                "value": ""
+                                            }
+                                        ],
+                                        "headersSize": 595,
+                                        "bodySize": 0
+                                    },
+                                    "response": {
+                                        "status": 200,
+                                        "statusText": "",
+                                        "httpVersion": "HTTP/1.1",
+                                        "headers": [
+                                            {
+                                                "name": "Access-Control-Allow-Credentials",
+                                                "value": "true"
+                                            },
+                                            {
+                                                "name": "Access-Control-Allow-Origin",
+                                                "value": "http://172.22.46.32:8081"
+                                            },
+                                            {
+                                                "name": "Access-Control-Expose-Headers",
+                                                "value": "Authorization, Content-Type, Content-Disposition"
+                                            },
+                                            {
+                                                "name": "Cache-Control",
+                                                "value": "no-cache, no-store, max-age=0, must-revalidate"
+                                            },
+                                            {
+                                                "name": "Connection",
+                                                "value": "keep-alive"
+                                            },
+                                            {
+                                                "name": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "name": "Date",
+                                                "value": "Thu, 03 Jul 2025 13:55:29 GMT"
+                                            },
+                                            {
+                                                "name": "Expires",
+                                                "value": "0"
+                                            },
+                                            {
+                                                "name": "Keep-Alive",
+                                                "value": "timeout=60"
+                                            },
+                                            {
+                                                "name": "Pragma",
+                                                "value": "no-cache"
+                                            },
+                                            {
+                                                "name": "Transfer-Encoding",
+                                                "value": "chunked"
+                                            },
+                                            {
+                                                "name": "Vary",
+                                                "value": "Origin"
+                                            },
+                                            {
+                                                "name": "Vary",
+                                                "value": "Access-Control-Request-Method"
+                                            },
+                                            {
+                                                "name": "Vary",
+                                                "value": "Access-Control-Request-Headers"
+                                            },
+                                            {
+                                                "name": "X-Content-Type-Options",
+                                                "value": "nosniff"
+                                            },
+                                            {
+                                                "name": "X-Frame-Options",
+                                                "value": "DENY"
+                                            },
+                                            {
+                                                "name": "X-XSS-Protection",
+                                                "value": "0"
+                                            }
+                                        ],
+                                        "content": {
+                                            "compression": 0,
+                                            "mimeType": "application/json",
+                                            "size": 206,
+                                            "text": "[{\"id\":1,\"paperName\":\"python基础测试\",\"courseId\":3,\"instructorId\":null,\"questionIds\":[],\"totalScore\":10.0,\"durationMinutes\":60,\"createdAt\":\"2025-07-03T21:55:29\",\"generationMethod\":\"BY_KNOWLEDGE_POINT\"}]"
+                                        },
+                                        "cookies": [],
+                                        "redirectURL": "",
+                                        "headersSize": 596,
+                                        "bodySize": 218
+                                    },
+                                    "cache": {},
+                                    "timings": {
+                                        "send": -1.0,
+                                        "receive": 0.62,
+                                        "wait": 160.166,
+                                        "connect": -1.0,
+                                        "ssl": -1.0,
+                                        "blocked": -1.0,
+                                        "dns": -1.0
+                                    },
+                                    "time": 160.786,
+                                    "serverIPAddress": "172.22.46.32",
+                                    "startedDateTime": "2025-07-03T13:55:28.762Z"
+                                },
+                                "headers": [],
+                                "method": "GET",
+                                "queryString": [
+                                    {
+                                        "name": "page",
+                                        "value": "0"
+                                    },
+                                    {
+                                        "name": "size",
+                                        "value": "12"
+                                    },
+                                    {
+                                        "name": "search",
+                                        "value": ""
+                                    }
+                                ],
+                                "postData": {},
+                                "url": "http://172.22.46.32:8080/api/test-papers?page=0&size=12&search="
+                            },
+                            "name": "GET请求",
+                            "output": {
+                                "cmdId": "",
+                                "cmdName": ""
+                            },
+                            "type": 3
+                        }
+                    ],
+                    "cmdType": "task",
+                    "haveChild": true,
+                    "id": "59095c13-2fa1-467a-a5fe-c00d668dc4ac",
+                    "input": {
+                        "name": "2"
+                    },
+                    "name": "任务",
+                    "type": 2,
+                    "output": {}
+                }
+            ],
+            "cmdType": "transaction",
+            "haveChild": true,
+            "id": "2eafd0c3-4f57-467a-84fb-8c893b5734e8",
+            "input": {
+                "mode": "SerialTransaction",
+                "name": "Generate_test_papers",
+                "ratio": "1",
+                "type": "normal",
+                "enableWaitEvent": false,
+                "waitEvent": {
+                    "name": "wait",
+                    "ratio": 1,
+                    "timeout": 3000
+                },
+                "rpacodes": [
+                    "    time.sleep(1)\n    page = context.new_page()",
+                    "    time.sleep(1)\n    page.goto(\"http://172.22.46.32:8081/\")",
+                    "    time.sleep(1)\n    page.goto(\"http://172.22.46.32:8081/login\")",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"用户名\").click()",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"用户名\").fill(\"zhao\")",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"密码\").click()",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"密码\").fill(\"123456\")",
+                    "    time.sleep(1)\n    page.get_by_role(\"button\", name=\"登录\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"任务\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"分析\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"任务\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"视频热图\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"题库\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"提交\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"视频热图\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"分析\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"视频热图\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"提交\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"题库\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"试卷\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"题库\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"提交\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"知识点\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"button\", name=\"添加知识点\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"button\", name=\"Close this dialog\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"button\", name=\"从内容生成\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"dialog\", name=\"从内容生成知识点\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"button\", name=\"Close this dialog\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"资源\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"button\", name=\"上传资源\").click()",
+                    "    time.sleep(1)\n    page.get_by_text(\"资源名称描述文件将文件拖拽到此处或 点击上传支持的格式： PDF, DOCX, PPTX, MP4, JPG, PNG, TXT\").click()",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"输入资源名称\").click()",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"输入资源名称\").fill(\"\")",
+                    "    time.sleep(1)\n    page.get_by_role(\"button\", name=\"Close this dialog\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"任务\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"课程\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"任务\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"cell\", name=\"Python进阶课程设计\").get_by_text(\"Python进阶课程设计\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"cell\", name=\"python进阶学习\").get_by_role(\"img\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"分析\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"视频热图\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"提交\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"题库\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"menuitem\", name=\"试卷\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"button\", name=\"生成试卷\").click()",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"请输入试卷名称\").click()",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"请输入试卷名称\").fill(\"\")",
+                    "    time.sleep(1)\n    page.get_by_role(\"button\", name=\"×\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"button\", name=\"生成试卷\").click()",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"请输入试卷名称\").click()",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"请输入试卷名称\").fill(\"python基础测试\")",
+                    "    time.sleep(1)\n    page.locator(\"form div\").filter(has_text=\"试卷名称 *课程 *选择课程Matlab数学模型设计C++程序设计Python进阶课程设计高等数学线性代数概率论与数理统计数值分析大学英语人工智能基础教育学电子\").get_by_role(\"combobox\").select_option(\"3\")",
+                    "    time.sleep(1)\n    page.locator(\"div\").filter(has_text=re.compile(r\"^生成方式 \\*选择方式随机选择按知识点按难度平衡分布$\")).get_by_role(\"combobox\").select_option(\"BY_KNOWLEDGE_POINT\")",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"题目数量\").click()",
+                    "    time.sleep(1)\n    page.get_by_text(\"时长（分钟）总分\").click()",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"总分\").click()",
+                    "    time.sleep(1)\n    page.get_by_placeholder(\"总分\").fill(\"10\")",
+                    "    time.sleep(1)\n    page.get_by_text(\"单选题\").click()",
+                    "    time.sleep(1)\n    page.get_by_text(\"简答题\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"button\", name=\"从知识图谱选择\").click()",
+                    "    time.sleep(1)\n    page.locator(\"canvas\").click(position={\"x\":621,\"y\":243})",
+                    "    time.sleep(1)\n    page.get_by_role(\"button\", name=\"Fit to Screen\").click()",
+                    "    time.sleep(1)\n    page.locator(\"div\").filter(has_text=re.compile(r\"^选择知识点×$\")).get_by_role(\"button\", name=\"×\").click()",
+                    "    time.sleep(1)\n    page.get_by_role(\"button\", name=\"预览题目\").click()",
+                    "    time.sleep(1)\n    page.locator(\"form\").get_by_role(\"button\", name=\"生成试卷\").click()",
+                    "    page.close()"
+                ]
+            },
+            "name": "事务",
+            "type": 1,
+            "output": {}
+        }
+    ],
+    "repository": "",
+    "project": "teateach-generate_test_papers",
+    "description": "",
+    "script_path": null,
+    "client_protocol": "",
+    "create_by": null,
+    "update_by": null,
+    "id": "74521085-5815-11f0-8789-b0dcefeb812a",
+    "projectUrl": "http://172.22.60.67:50000/filestorage/editor/teateach-generate_test_papers/teateach-generate_test_papers.json",
+    "projectPyCodeUrl": "http://172.22.60.67:50000/filestorage/editor/teateach-generate_test_papers/teateach-generate_test_papers.py",
+    "project_records": "http://172.22.60.67:50000/filestorage/editor/teateach-generate_test_papers/teateach-generate_test_papers.py.records.json",
+    "project_report": "http://172.22.60.67:50000/filestorage/editor/teateach-generate_test_papers/teateach-generate_test_papers/guirunner/log.html",
+    "pyfilePath": "editor/teateach-generate_test_papers/teateach-generate_test_papers.py",
+    "protocolUrl": "http://172.22.60.67:50000/filestorage/editor/teateach-generate_test_papers/teateach-generate_test_papers.json",
+    "protocolfilePath": "/editor/teateach-generate_test_papers/teateach-generate_test_papers.json",
+    "harUrl": "http://172.22.60.67:50000/filestorage/editor/teateach-generate_test_papers/teateach-generate_test_papers.har",
+    "harfilePath": "/editor/teateach-generate_test_papers/teateach-generate_test_papers.har"
+}
